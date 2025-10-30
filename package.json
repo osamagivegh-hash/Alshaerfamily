@@ -9,7 +9,8 @@
     "client:dev": "cd client && npm run dev",
     "build": "cd client && npm run build",
     "start": "cd server && npm start",
-    "install:all": "npm install && cd client && npm install && cd ../server && npm install"
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
+    "postinstall": "cd server && npm install && cd ../client && npm install"
   },
   "keywords": ["family", "arabic", "palestinian", "website"],
   "author": "Al-Sha'er Family",
