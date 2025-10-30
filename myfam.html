@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>عائلة الشاعر</title>
+  <style>
+    body {
+      font-family: 'Cairo', sans-serif;
+      background-color: #fff8f0;
+      color: #2e2e2e;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      text-align: center;
+      padding: 2rem 1rem 1rem;
+    }
+    header img {
+      max-height: 180px;
+    }
+    section {
+      padding: 1.5rem;
+      border-bottom: 1px solid #eee;
+    }
+    .section-title {
+      font-size: 1.6rem;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    .section-desc {
+      font-size: 1rem;
+      color: #444;
+    }
+    .btn {
+      display: inline-block;
+      margin-top: 0.7rem;
+      padding: 0.4rem 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      background-color: transparent;
+      color: #444;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+    .btn-green {
+      background-color: #6b8e23;
+      color: white;
+      border: none;
+    }
+    .gallery {
+      display: flex;
+      gap: 1rem;
+      overflow-x: auto;
+      padding: 1rem;
+    }
+    .gallery img {
+      width: 200px;
+      height: 140px;
+      object-fit: cover;
+      border-radius: 8px;
+    }
+    footer {
+      background-color: #eee;
+      padding: 2rem 1rem;
+      text-align: center;
+    }
+    .footer-contact {
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .footer-contact input, .footer-contact textarea {
+      width: 100%;
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-family: 'Cairo';
+    }
+    .olive-tree {
+      display: block;
+      margin: 0 auto;
+      width: 140px;
+    }
+    .palestine-section {
+      background-color: #507c3a;
+      color: white;
+      padding: 1.5rem;
+    }
+    .palestine-section .btn {
+      background-color: white;
+      color: #507c3a;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/03/Olive_tree_icon.svg/1024px-Olive_tree_icon.svg.png" alt="شجرة الزيتون" class="olive-tree">
+  </header>
+
+  <section>
+    <div class="section-title">الأخبار</div>
+    <div class="section-desc">آخر الأخبار والمستجدات المتعلقة بالعائلة.</div>
+    <a href="#" class="btn">عرض المزيد</a>
+  </section>
+
+  <section>
+    <div class="section-title">حوارات</div>
+    <div class="section-desc">مقابلات ولقاءات مع أفراد من العائلة.</div>
+    <a href="#" class="btn">عرض المزيد</a>
+  </section>
+
+  <section>
+    <div class="section-title">شجرة العائلة</div>
+    <div class="section-desc">استعرض شجرة العائلة وتاريخها.</div>
+    <a href="#" class="btn btn-green">عرض المزيد</a>
+  </section>
+
+  <section class="palestine-section">
+    <div class="section-title">فلسطين</div>
+    <div class="section-desc">مواضيع وقضايا مرتبطة بوطننا الأم.</div>
+    <a href="#" class="btn">عرض المزيد</a>
+  </section>
+
+  <section>
+    <div class="section-title">مقالات</div>
+    <div class="section-desc">كتابات ومقالات متنوعة في مختلف المواضيع.</div>
+    <a href="#" class="btn">عرض المزيد</a>
+  </section>
+
+  <section>
+    <div class="section-title">معرض الصور</div>
+    <div class="gallery">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/3/3e/Flag-map_of_Palestine.svg" alt="علم فلسطين">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/e/eb/Olive_trees_in_Palestine.jpg" alt="أشجار الزيتون">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/48/Village_Palestine.jpg" alt="قرية فلسطينية">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/0/0d/Family_Gathering.jpg" alt="اجتماع عائلي">
+    </div>
+  </section>
+
+  <footer>
+    <div class="section-title">تواصل معنا</div>
+    <div class="footer-contact">
+      <input type="text" placeholder="الاسم">
+      <input type="email" placeholder="البريد الإلكتروني">
+      <textarea rows="4" placeholder="رسالتك"></textarea>
+      <button class="btn btn-green">إرسال</button>
+    </div>
+  </footer>
+
+</body>
+</html>
