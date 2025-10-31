@@ -1,6 +1,4 @@
 const express = require('express');
-const path = require('path');
-const fs = require('fs-extra');
 const { 
   News, 
   Conversations, 
@@ -89,24 +87,8 @@ const sampleData = {
   ]
 };
 
-// Initialize data files
-const initializeData = async () => {
-  const contactsFile = path.join(dataDir, 'contacts.json');
-  
-  if (!await fs.pathExists(contactsFile)) {
-    await fs.writeJson(contactsFile, []);
-  }
-  
-  // Save sample data
-  for (const [key, value] of Object.entries(sampleData)) {
-    const filePath = path.join(dataDir, `${key}.json`);
-    if (!await fs.pathExists(filePath)) {
-      await fs.writeJson(filePath, value);
-    }
-  }
-};
-
-initializeData();
+// Note: Sample data is now handled by MongoDB initialization script
+// Run: cd server && node scripts/initializeData.js to populate sample data
 
 // Get all sections data
 router.get('/sections', async (req, res) => {
@@ -135,15 +117,35 @@ router.get('/sections', async (req, res) => {
 router.get('/sections/:section', async (req, res) => {
   try {
     const { section } = req.params;
-    const filePath = path.join(dataDir, `${section}.json`);
+    let data = [];
     
-    if (await fs.pathExists(filePath)) {
-      const data = await fs.readJson(filePath);
-      res.json(data);
-    } else {
-      res.status(404).json({ message: 'القسم غير موجود' });
+    switch (section) {
+      case 'news':
+        data = await News.find().sort({ date: -1 }).limit(10);
+        break;
+      case 'conversations':
+        data = await Conversations.find().sort({ date: -1 }).limit(10);
+        break;
+      case 'articles':
+        data = await Articles.find().sort({ date: -1 }).limit(10);
+        break;
+      case 'palestine':
+        data = await Palestine.find().sort({ createdAt: -1 });
+        break;
+      case 'gallery':
+        data = await Gallery.find().sort({ createdAt: -1 });
+        break;
+      case 'familyTree':
+        const familyTree = await FamilyTree.findOne();
+        data = familyTree || { patriarch: '', generations: [] };
+        break;
+      default:
+        return res.status(404).json({ message: 'القسم غير موجود' });
     }
+    
+    res.json(data);
   } catch (error) {
+    console.error(`API section ${req.params.section} error:`, error);
     res.status(500).json({ message: 'خطأ في جلب البيانات' });
   }
 });
@@ -176,10 +178,10 @@ router.post('/contact', async (req, res) => {
 // Get contact messages (for admin)
 router.get('/contacts', async (req, res) => {
   try {
-    const contactsFile = path.join(dataDir, 'contacts.json');
-    const contacts = await fs.readJson(contactsFile);
+    const contacts = await Contacts.find().sort({ date: -1 });
     res.json(contacts);
   } catch (error) {
+    console.error('Get contacts error:', error);
     res.status(500).json({ message: 'خطأ في جلب الرسائل' });
   }
 });
