@@ -1,6 +1,17 @@
 import axios from 'axios'
 
-const ADMIN_API_BASE_URL = '/api/admin'
+// Determine the base URL based on environment
+const getBaseURL = () => {
+  if (import.meta.env.PROD) {
+    // Production - use relative URLs
+    return '/api/admin'
+  } else {
+    // Development - use full URL
+    return 'http://localhost:5000/api/admin'
+  }
+}
+
+const ADMIN_API_BASE_URL = getBaseURL()
 
 // Create axios instance for admin API
 const adminApi = axios.create({
@@ -8,6 +19,8 @@ const adminApi = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 30000, // 30 second timeout
+  withCredentials: false // Set to false for production CORS
 })
 
 // Request interceptor to add auth token
@@ -28,10 +41,14 @@ adminApi.interceptors.request.use(
 adminApi.interceptors.response.use(
   (response) => response,
   (error) => {
+    console.error('API Error:', error.response?.data || error.message)
+    
     if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('adminToken')
       localStorage.removeItem('adminUser')
-      window.location.href = '/admin/login'
+      if (window.location.pathname !== '/admin/login') {
+        window.location.href = '/admin/login'
+      }
     }
     return Promise.reject(error)
   }
