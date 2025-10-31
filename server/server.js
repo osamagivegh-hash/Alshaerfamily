@@ -39,6 +39,16 @@ app.use(express.static(path.join(__dirname, '../client/dist')));
 // Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Health check endpoint
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'OK', 
+    timestamp: new Date().toISOString(),
+    mongodb: process.env.MONGODB_URI ? 'Configured' : 'Not Configured',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
 // API Routes
 app.use('/api', require('./routes/api'));
 app.use('/api/admin', require('./routes/adminMongo'));
