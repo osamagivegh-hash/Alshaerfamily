@@ -150,6 +150,37 @@ app.post('/api/debug/create-admin', async (req, res) => {
   }
 });
 
+// Reset admin password endpoint (remove in production)
+app.post('/api/debug/reset-admin-password', async (req, res) => {
+  try {
+    const { Admin } = require('./models');
+    const bcrypt = require('bcryptjs');
+    
+    const admin = await Admin.findOne({ username: 'admin' });
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+    
+    // Reset to default password
+    const newPassword = process.env.ADMIN_PASSWORD || 'AlShaer2024!';
+    admin.password = await bcrypt.hash(newPassword, 10);
+    admin.updatedAt = new Date();
+    await admin.save();
+    
+    res.json({ 
+      message: 'Admin password reset successfully',
+      newPassword: newPassword,
+      admin: {
+        username: admin.username,
+        email: admin.email,
+        role: admin.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // API Routes
 app.use('/api', require('./routes/api'));
 app.use('/api/admin', require('./routes/adminMongo'));
