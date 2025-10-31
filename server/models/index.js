@@ -4,10 +4,7 @@ require('dotenv').config();
 // MongoDB connection
 const connectDB = async () => {
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+    const conn = await mongoose.connect(process.env.MONGODB_URI);
     
     console.log(`✓ MongoDB Atlas متصل: ${conn.connection.host}`);
     console.log(`✓ قاعدة البيانات: ${conn.connection.name}`);
