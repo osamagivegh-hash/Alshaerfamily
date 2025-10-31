@@ -88,6 +88,32 @@ app.get('/api/health', (req, res) => {
   });
 });
 
+// Debug endpoint to check admin user (remove in production)
+app.get('/api/debug/admin', async (req, res) => {
+  try {
+    const { Admin } = require('./models');
+    const adminCount = await Admin.countDocuments();
+    const adminUser = await Admin.findOne({ username: 'admin' }, { password: 0 });
+    
+    res.json({
+      adminExists: !!adminUser,
+      adminCount,
+      adminUser: adminUser ? {
+        username: adminUser.username,
+        email: adminUser.email,
+        role: adminUser.role,
+        lastLogin: adminUser.lastLogin
+      } : null,
+      defaultCredentials: {
+        username: process.env.ADMIN_USERNAME || 'admin',
+        passwordSet: !!(process.env.ADMIN_PASSWORD || 'AlShaer2024!')
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // API Routes
 app.use('/api', require('./routes/api'));
 app.use('/api/admin', require('./routes/adminMongo'));

@@ -67,19 +67,25 @@ const requireAdmin = (req, res, next) => {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
+    console.log('Login attempt:', { username, hasPassword: !!password });
 
     if (!username || !password) {
+      console.log('Missing credentials');
       return res.status(400).json({ message: 'اسم المستخدم وكلمة المرور مطلوبان' });
     }
 
     const admin = await Admin.findOne({ username });
+    console.log('Admin found:', !!admin);
     
     if (!admin) {
+      console.log('Admin not found for username:', username);
       return res.status(401).json({ message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
     }
 
     const validPassword = await bcrypt.compare(password, admin.password);
+    console.log('Password valid:', validPassword);
     if (!validPassword) {
+      console.log('Invalid password for username:', username);
       return res.status(401).json({ message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
     }
 
