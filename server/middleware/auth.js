@@ -57,7 +57,8 @@ const authenticateToken = async (req, res, next) => {
 
 // Admin role check
 const requireAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
+  const allowedRoles = ['admin', 'super-admin'];
+  if (!allowedRoles.includes(req.user.role)) {
     return res.status(403).json({ message: 'صلاحيات المدير مطلوبة' });
   }
   next();

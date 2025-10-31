@@ -114,6 +114,42 @@ app.get('/api/debug/admin', async (req, res) => {
   }
 });
 
+// Manual admin creation endpoint (remove in production)
+app.post('/api/debug/create-admin', async (req, res) => {
+  try {
+    const { Admin } = require('./models');
+    const bcrypt = require('bcryptjs');
+    
+    // Check if admin already exists
+    const existingAdmin = await Admin.findOne({ username: 'admin' });
+    if (existingAdmin) {
+      return res.json({ message: 'Admin already exists', adminExists: true });
+    }
+    
+    // Create new admin
+    const defaultAdmin = new Admin({
+      username: process.env.ADMIN_USERNAME || 'admin',
+      email: process.env.ADMIN_EMAIL || 'admin@alshaerfamily.com',
+      password: await bcrypt.hash(process.env.ADMIN_PASSWORD || 'AlShaer2024!', 10),
+      role: 'admin',
+      lastLogin: null
+    });
+    
+    await defaultAdmin.save();
+    
+    res.json({ 
+      message: 'Admin created successfully',
+      admin: {
+        username: defaultAdmin.username,
+        email: defaultAdmin.email,
+        role: defaultAdmin.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // API Routes
 app.use('/api', require('./routes/api'));
 app.use('/api/admin', require('./routes/adminMongo'));
