@@ -5,6 +5,8 @@ import { AdminProvider } from './contexts/AdminContext'
 
 // Public Components
 import PublicApp from './components/PublicApp'
+import ArticleDetail from './components/ArticleDetail'
+import ConversationDetail from './components/ConversationDetail'
 
 // Admin Components
 import AdminLogin from './components/admin/AdminLogin'
@@ -28,6 +30,8 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<PublicApp />} />
+            <Route path="/articles/:id" element={<ArticleDetail />} />
+            <Route path="/conversations/:id" element={<ConversationDetail />} />
             
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />

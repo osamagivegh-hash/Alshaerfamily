@@ -1,7 +1,7 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Articles = ({ data }) => {
-  const [selectedArticle, setSelectedArticle] = useState(null)
 
   if (!data || data.length === 0) {
     return (
@@ -26,10 +26,10 @@ const Articles = ({ data }) => {
         
         <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
           {data.map((article) => (
-            <article 
-              key={article.id} 
-              className="card fade-in hover:shadow-xl transition-all duration-300 cursor-pointer"
-              onClick={() => setSelectedArticle(article)}
+            <Link
+              key={article.id}
+              to={`/articles/${article.id}`}
+              className="card fade-in hover:shadow-xl transition-all duration-300 block"
             >
               {/* Article Header */}
               <div className="mb-4">
@@ -52,20 +52,27 @@ const Articles = ({ data }) => {
               </div>
               
               {/* Article Preview */}
-              <p className="text-gray-700 leading-relaxed mb-6">
-                {article.content.substring(0, 150)}...
-              </p>
+              <div className="text-gray-700 leading-relaxed mb-6">
+                {article.content && (
+                  <p className="whitespace-pre-line">
+                    {article.content.length > 150 
+                      ? `${article.content.substring(0, 150).replace(/\s+/g, ' ').trim()}...`
+                      : article.content.replace(/\s+/g, ' ').trim()
+                    }
+                  </p>
+                )}
+              </div>
               
               {/* Article Footer */}
               <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                <button className="text-palestine-green hover:text-olive-700 font-medium text-sm transition-colors duration-200">
+                <span className="text-palestine-green hover:text-olive-700 font-medium text-sm transition-colors duration-200">
                   اقرأ المقال كاملاً ←
-                </button>
+                </span>
                 <div className="flex items-center text-gray-500 text-sm">
-                  <span>5 دقائق قراءة</span>
+                  <span>{Math.ceil((article.content?.length || 500) / 1000)} دقائق قراءة</span>
                 </div>
               </div>
-            </article>
+            </Link>
           ))}
         </div>
         
@@ -88,14 +95,19 @@ const Articles = ({ data }) => {
                 </span>
               </div>
               
-              <p className="text-gray-700 leading-relaxed text-lg mb-6">
-                {data[0].content}
-              </p>
+              <div className="text-gray-700 leading-relaxed text-lg mb-6">
+                <p className="whitespace-pre-line">
+                  {data[0].content && data[0].content.length > 300 
+                    ? `${data[0].content.substring(0, 300).replace(/\s+/g, ' ').trim()}...`
+                    : data[0].content?.replace(/\s+/g, ' ').trim()
+                  }
+                </p>
+              </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <button className="btn-primary">
+                <Link to={`/articles/${data[0].id}`} className="btn-primary">
                   اقرأ المقال كاملاً
-                </button>
+                </Link>
                 <button className="btn-secondary">
                   شارك المقال
                 </button>
@@ -103,43 +115,6 @@ const Articles = ({ data }) => {
             </div>
           )}
         </div>
-        
-        {/* Article Modal */}
-        {selectedArticle && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-            <div className="bg-white rounded-lg max-w-4xl max-h-96 overflow-y-auto p-8 relative">
-              <button
-                onClick={() => setSelectedArticle(null)}
-                className="absolute top-4 left-4 text-gray-500 hover:text-gray-700 text-2xl"
-              >
-                ×
-              </button>
-              
-              <div className="mb-6">
-                <h3 className="text-3xl font-bold text-palestine-black mb-4">
-                  {selectedArticle.title}
-                </h3>
-                <div className="flex justify-between items-center text-sm text-gray-600 mb-4">
-                  <span>بقلم: {selectedArticle.author}</span>
-                  <span>{new Date(selectedArticle.date).toLocaleDateString('ar-SA')}</span>
-                </div>
-              </div>
-              
-              <div className="prose prose-lg max-w-none text-gray-700 leading-relaxed">
-                {selectedArticle.content}
-              </div>
-              
-              <div className="mt-8 pt-6 border-t border-gray-200 flex justify-center">
-                <button 
-                  onClick={() => setSelectedArticle(null)}
-                  className="btn-primary"
-                >
-                  إغلاق
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
         
         {/* Submit Article Button */}
         <div className="text-center mt-12">

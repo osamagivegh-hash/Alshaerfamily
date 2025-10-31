@@ -101,3 +101,119 @@ body {
 .form-textarea {
   @apply w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-palestine-green focus:border-transparent transition-all duration-200 resize-y min-h-32;
 }
+
+/* Enhanced Typography Styles */
+.prose-arabic {
+  @apply text-right;
+  font-family: 'Cairo', 'Tajawal', system-ui, sans-serif;
+}
+
+.prose-arabic h1,
+.prose-arabic h2,
+.prose-arabic h3,
+.prose-arabic h4,
+.prose-arabic h5,
+.prose-arabic h6 {
+  @apply font-bold text-palestine-black;
+  line-height: 1.4;
+}
+
+.prose-arabic p {
+  @apply text-gray-700 leading-relaxed mb-4;
+  white-space: pre-line;
+  word-spacing: 0.1em;
+}
+
+.prose-arabic blockquote {
+  @apply border-r-4 border-palestine-green bg-gray-50 p-4 my-6 italic;
+  border-left: none;
+}
+
+.prose-arabic strong {
+  @apply text-palestine-black font-bold;
+}
+
+.prose-arabic em {
+  @apply italic text-gray-600;
+}
+
+.prose-arabic ul,
+.prose-arabic ol {
+  @apply mr-6 mb-4;
+}
+
+.prose-arabic li {
+  @apply mb-2;
+}
+
+/* Dialogue specific styles */
+.dialogue-text strong {
+  @apply text-palestine-green font-bold;
+}
+
+.dialogue-text p {
+  @apply mb-3;
+}
+
+/* Line clamp utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.line-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Image handling */
+.content-image {
+  @apply rounded-lg shadow-md max-w-full h-auto my-4;
+}
+
+.content-image-error {
+  @apply bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg p-8 text-center text-gray-500;
+}
+
+/* Enhanced card styles */
+.card-enhanced {
+  @apply bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden;
+}
+
+.card-enhanced:hover {
+  transform: translateY(-2px);
+}
+
+/* Content formatting fixes */
+.formatted-content {
+  white-space: pre-line;
+  word-spacing: 0.05em;
+  line-height: 1.7;
+}
+
+.formatted-content p {
+  margin-bottom: 1rem;
+}
+
+.formatted-content h1,
+.formatted-content h2,
+.formatted-content h3 {
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+}
+
+/* RTL improvements */
+.rtl-content {
+  direction: rtl;
+  text-align: right;
+}
+
+.rtl-content ul,
+.rtl-content ol {
+  padding-right: 1.5rem;
+  padding-left: 0;
+}

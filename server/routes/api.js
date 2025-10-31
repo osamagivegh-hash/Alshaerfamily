@@ -186,4 +186,36 @@ router.get('/contacts', async (req, res) => {
   }
 });
 
+// Get single article by ID
+router.get('/articles/:id', async (req, res) => {
+  try {
+    const article = await Articles.findById(req.params.id);
+    
+    if (!article) {
+      return res.status(404).json({ message: 'المقال غير موجود' });
+    }
+    
+    res.json(article);
+  } catch (error) {
+    console.error('Error reading article:', error);
+    res.status(500).json({ message: 'خطأ في قراءة المقال' });
+  }
+});
+
+// Get single conversation by ID
+router.get('/conversations/:id', async (req, res) => {
+  try {
+    const conversation = await Conversations.findById(req.params.id);
+    
+    if (!conversation) {
+      return res.status(404).json({ message: 'الحوار غير موجود' });
+    }
+    
+    res.json(conversation);
+  } catch (error) {
+    console.error('Error reading conversation:', error);
+    res.status(500).json({ message: 'خطأ في قراءة الحوار' });
+  }
+});
+
 module.exports = router;

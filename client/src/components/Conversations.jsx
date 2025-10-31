@@ -1,4 +1,5 @@
 import React from 'react'
+import { Link } from 'react-router-dom'
 
 const Conversations = ({ data }) => {
   if (!data || data.length === 0) {
@@ -24,7 +25,11 @@ const Conversations = ({ data }) => {
         
         <div className="space-y-8">
           {data.map((conversation) => (
-            <div key={conversation.id} className="card slide-in-right">
+            <Link 
+              key={conversation.id} 
+              to={`/conversations/${conversation.id}`}
+              className="card slide-in-right block hover:shadow-xl transition-all duration-300"
+            >
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
                 <h3 className="text-2xl font-bold text-palestine-black mb-2 lg:mb-0">
                   {conversation.title}
@@ -48,19 +53,26 @@ const Conversations = ({ data }) => {
                 </div>
               </div>
               
-              <p className="text-gray-700 leading-relaxed mb-6">
-                {conversation.content}
-              </p>
+              <div className="text-gray-700 leading-relaxed mb-6">
+                {conversation.content && (
+                  <p className="whitespace-pre-line">
+                    {conversation.content.length > 200 
+                      ? `${conversation.content.substring(0, 200).replace(/\s+/g, ' ').trim()}...`
+                      : conversation.content.replace(/\s+/g, ' ').trim()
+                    }
+                  </p>
+                )}
+              </div>
               
               <div className="flex justify-between items-center pt-4 border-t border-gray-200">
-                <button className="btn-primary text-sm">
-                  استمع للحوار
-                </button>
-                <button className="text-palestine-green hover:text-olive-700 font-medium text-sm transition-colors duration-200">
+                <span className="bg-palestine-green text-white px-4 py-2 rounded-lg text-sm font-medium">
+                  🎧 استمع للحوار
+                </span>
+                <span className="text-palestine-green hover:text-olive-700 font-medium text-sm transition-colors duration-200">
                   قراءة النص كاملاً ←
-                </button>
+                </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
         
