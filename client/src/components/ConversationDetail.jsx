@@ -23,7 +23,7 @@ const ConversationDetail = () => {
         // Fetch related conversations
         const allConversationsResponse = await api.get('/conversations')
         const related = allConversationsResponse.data
-          .filter(c => c.id !== parseInt(id))
+          .filter(c => (c._id || c.id) !== id)
           .slice(0, 3)
         setRelatedConversations(related)
       } catch (err) {
@@ -84,7 +84,7 @@ const ConversationDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 rtl-content">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
@@ -93,7 +93,7 @@ const ConversationDetail = () => {
               to="/#conversations" 
               className="flex items-center text-palestine-green hover:text-olive-700 transition-colors"
             >
-              <span className="ml-2">←</span>
+              <span className="mr-2">←</span>
               العودة إلى الحوارات
             </Link>
             <Link to="/" className="text-xl font-bold text-palestine-black">
@@ -123,7 +123,7 @@ const ConversationDetail = () => {
               <div className="flex flex-wrap gap-3">
                 {conversation.participants?.map((participant, index) => (
                   <div key={index} className="flex items-center bg-olive-50 rounded-lg p-3">
-                    <div className="w-10 h-10 bg-olive-600 rounded-full flex items-center justify-center text-white font-bold ml-3">
+                    <div className="w-10 h-10 bg-olive-600 rounded-full flex items-center justify-center text-white font-bold mr-3">
                       {participant.charAt(0)}
                     </div>
                     <div>
@@ -170,7 +170,7 @@ const ConversationDetail = () => {
 
           {/* Conversation Body */}
           <div className="p-8">
-            <div className="prose prose-lg max-w-none prose-headings:text-palestine-black prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-palestine-green">
+            <div className="prose prose-lg max-w-none prose-headings:text-palestine-black prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-palestine-green prose-arabic formatted-content dialogue-text">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw]}
@@ -251,8 +251,8 @@ const ConversationDetail = () => {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {relatedConversations.map((relatedConversation) => (
                 <Link
-                  key={relatedConversation.id}
-                  to={`/conversations/${relatedConversation.id}`}
+                  key={relatedConversation._id || relatedConversation.id}
+                  to={`/conversations/${relatedConversation._id || relatedConversation.id}`}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <div className="p-6">

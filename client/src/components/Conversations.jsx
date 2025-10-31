@@ -26,8 +26,8 @@ const Conversations = ({ data }) => {
         <div className="space-y-8">
           {data.map((conversation) => (
             <Link 
-              key={conversation.id} 
-              to={`/conversations/${conversation.id}`}
+              key={conversation._id || conversation.id} 
+              to={`/conversations/${conversation._id || conversation.id}`}
               className="card slide-in-right block hover:shadow-xl transition-all duration-300"
             >
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">

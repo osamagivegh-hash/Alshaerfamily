@@ -23,7 +23,7 @@ const ArticleDetail = () => {
         // Fetch related articles
         const allArticlesResponse = await api.get('/articles')
         const related = allArticlesResponse.data
-          .filter(a => a.id !== parseInt(id))
+          .filter(a => (a._id || a.id) !== id)
           .slice(0, 3)
         setRelatedArticles(related)
       } catch (err) {
@@ -83,7 +83,7 @@ const ArticleDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 rtl-content">
       {/* Header */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-4xl mx-auto px-4 py-4">
@@ -92,7 +92,7 @@ const ArticleDetail = () => {
               to="/#articles" 
               className="flex items-center text-palestine-green hover:text-olive-700 transition-colors"
             >
-              <span className="ml-2">←</span>
+              <span className="mr-2">←</span>
               العودة إلى المقالات
             </Link>
             <Link to="/" className="text-xl font-bold text-palestine-black">
@@ -119,7 +119,7 @@ const ArticleDetail = () => {
             
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-gray-600 mb-6">
               <div className="flex items-center mb-2 sm:mb-0">
-                <div className="w-10 h-10 bg-palestine-green rounded-full flex items-center justify-center text-white font-bold ml-3">
+                <div className="w-10 h-10 bg-palestine-green rounded-full flex items-center justify-center text-white font-bold mr-3">
                   {article.author?.charAt(0) || 'م'}
                 </div>
                 <div>
@@ -153,7 +153,7 @@ const ArticleDetail = () => {
 
           {/* Article Body */}
           <div className="p-8">
-            <div className="prose prose-lg max-w-none prose-headings:text-palestine-black prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-palestine-black prose-a:text-palestine-green hover:prose-a:text-olive-700">
+            <div className="prose prose-lg max-w-none prose-headings:text-palestine-black prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-palestine-black prose-a:text-palestine-green hover:prose-a:text-olive-700 prose-arabic formatted-content">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 rehypePlugins={[rehypeRaw]}
@@ -234,8 +234,8 @@ const ArticleDetail = () => {
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {relatedArticles.map((relatedArticle) => (
                 <Link
-                  key={relatedArticle.id}
-                  to={`/articles/${relatedArticle.id}`}
+                  key={relatedArticle._id || relatedArticle.id}
+                  to={`/articles/${relatedArticle._id || relatedArticle.id}`}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
                 >
                   <div className="p-6">

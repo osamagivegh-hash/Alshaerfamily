@@ -27,8 +27,8 @@ const Articles = ({ data }) => {
         <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
           {data.map((article) => (
             <Link
-              key={article.id}
-              to={`/articles/${article.id}`}
+              key={article._id || article.id}
+              to={`/articles/${article._id || article.id}`}
               className="card fade-in hover:shadow-xl transition-all duration-300 block"
             >
               {/* Article Header */}
@@ -105,7 +105,7 @@ const Articles = ({ data }) => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to={`/articles/${data[0].id}`} className="btn-primary">
+                <Link to={`/articles/${data[0]._id || data[0].id}`} className="btn-primary">
                   اقرأ المقال كاملاً
                 </Link>
                 <button className="btn-secondary">
