@@ -8,10 +8,9 @@
     "server:dev": "cd server && npm run dev",
     "client:dev": "cd client && npm run dev",
     "build": "cd client && npm run build",
-    "build:render": "cd server && npm install && cd ../client && npm install && npm run build",
+    "build:render": "echo 'Using optimized build command from render.yaml'",
     "start": "cd server && npm start",
-    "install:all": "npm install && cd client && npm install && cd ../server && npm install",
-    "postinstall": "cd server && npm install && cd ../client && npm install"
+    "install:all": "npm install && cd client && npm install && cd ../server && npm install"
   },
   "keywords": ["family", "arabic", "palestinian", "website"],
   "author": "Al-Sha'er Family",

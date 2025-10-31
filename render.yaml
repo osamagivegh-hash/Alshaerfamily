@@ -3,7 +3,7 @@ services:
     name: al-shaer-family-website
     env: node
     plan: free
-    buildCommand: npm run build:render
+    buildCommand: cd server && npm install && cd ../client && npm install && npm run build
     startCommand: cd server && npm start
     healthCheckPath: /api/health
     envVars:
