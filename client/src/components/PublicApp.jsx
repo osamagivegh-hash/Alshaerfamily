@@ -1,16 +1,19 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, Suspense, lazy } from 'react'
 import Header from './Header'
 import Hero from './Hero'
-import News from './News'
-import Conversations from './Conversations'
-import FamilyTree from './FamilyTree'
-import Palestine from './Palestine'
-import Articles from './Articles'
-import Gallery from './Gallery'
-import Contact from './Contact'
-import Footer from './Footer'
 import LoadingSpinner from './LoadingSpinner'
+import LazySection from './common/LazySection'
 import { fetchSectionsData } from '../utils/api'
+
+// Lazy load components
+const News = lazy(() => import('./News'))
+const Conversations = lazy(() => import('./Conversations'))
+const FamilyTree = lazy(() => import('./FamilyTree'))
+const Palestine = lazy(() => import('./Palestine'))
+const Articles = lazy(() => import('./Articles'))
+const Gallery = lazy(() => import('./Gallery'))
+const Contact = lazy(() => import('./Contact'))
+const Footer = lazy(() => import('./Footer'))
 
 const PublicApp = () => {
   const [sectionsData, setSectionsData] = useState(null)
@@ -54,20 +57,67 @@ const PublicApp = () => {
     )
   }
 
+  const SectionFallback = ({ name }) => (
+    <div className="py-16 bg-gray-50">
+      <div className="max-w-6xl mx-auto px-4 text-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-palestine-green mx-auto mb-4"></div>
+        <p className="text-gray-600">جاري تحميل {name}...</p>
+      </div>
+    </div>
+  )
+
   return (
     <>
       <Header />
       <main>
         <Hero />
-        <News data={sectionsData?.news || []} />
-        <Conversations data={sectionsData?.conversations || []} />
-        <FamilyTree data={sectionsData?.familyTree || {}} />
-        <Palestine data={sectionsData?.palestine || []} />
-        <Articles data={sectionsData?.articles || []} />
-        <Gallery data={sectionsData?.gallery || []} />
-        <Contact />
+        
+        <LazySection>
+          <Suspense fallback={<SectionFallback name="الأخبار" />}>
+            <News data={sectionsData?.news || []} />
+          </Suspense>
+        </LazySection>
+
+        <LazySection>
+          <Suspense fallback={<SectionFallback name="الحوارات" />}>
+            <Conversations data={sectionsData?.conversations || []} />
+          </Suspense>
+        </LazySection>
+
+        <LazySection>
+          <Suspense fallback={<SectionFallback name="شجرة العائلة" />}>
+            <FamilyTree data={sectionsData?.familyTree || {}} />
+          </Suspense>
+        </LazySection>
+
+        <LazySection>
+          <Suspense fallback={<SectionFallback name="فلسطين" />}>
+            <Palestine data={sectionsData?.palestine || []} />
+          </Suspense>
+        </LazySection>
+
+        <LazySection>
+          <Suspense fallback={<SectionFallback name="المقالات" />}>
+            <Articles data={sectionsData?.articles || []} />
+          </Suspense>
+        </LazySection>
+
+        <LazySection>
+          <Suspense fallback={<SectionFallback name="معرض الصور" />}>
+            <Gallery data={sectionsData?.gallery || []} />
+          </Suspense>
+        </LazySection>
+
+        <LazySection>
+          <Suspense fallback={<SectionFallback name="التواصل" />}>
+            <Contact />
+          </Suspense>
+        </LazySection>
       </main>
-      <Footer />
+      
+      <Suspense fallback={<SectionFallback name="التذييل" />}>
+        <Footer />
+      </Suspense>
     </>
   )
 }

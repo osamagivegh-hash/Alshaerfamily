@@ -7,6 +7,9 @@ import { AdminProvider } from './contexts/AdminContext'
 import PublicApp from './components/PublicApp'
 import ArticleDetail from './components/ArticleDetail'
 import ConversationDetail from './components/ConversationDetail'
+import NewsDetail from './components/NewsDetail'
+import NotFound from './components/common/NotFound'
+import ScrollToTop from './components/common/ScrollToTop'
 
 // Admin Components
 import AdminLogin from './components/admin/AdminLogin'
@@ -27,11 +30,13 @@ function App() {
     <AdminProvider>
       <Router>
         <div className="min-h-screen bg-palestine-white">
+          <ScrollToTop />
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<PublicApp />} />
             <Route path="/articles/:id" element={<ArticleDetail />} />
             <Route path="/conversations/:id" element={<ConversationDetail />} />
+            <Route path="/news/:id" element={<NewsDetail />} />
             
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
@@ -50,6 +55,7 @@ function App() {
               <Route path="contacts" element={<AdminContacts />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
+            <Route path="*" element={<NotFound />} />
           </Routes>
           
           {/* Toast Notifications */}

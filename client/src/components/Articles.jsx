@@ -1,5 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
+import ImageWithFallback from './common/ImageWithFallback'
 
 const Articles = ({ data }) => {
 
@@ -27,8 +28,8 @@ const Articles = ({ data }) => {
         <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
           {data.map((article) => (
             <Link
-              key={article._id || article.id}
-              to={`/articles/${article._id || article.id}`}
+              key={article.id}
+              to={`/articles/${article.id}`}
               className="card fade-in hover:shadow-xl transition-all duration-300 block"
             >
               {/* Article Header */}
@@ -41,11 +42,21 @@ const Articles = ({ data }) => {
                     {new Date(article.date).toLocaleDateString('ar-SA')}
                   </span>
                 </div>
-                
+
+                {article.image && (
+                  <ImageWithFallback
+                    src={article.image}
+                    alt={article.title}
+                    containerClassName="w-full aspect-video rounded-lg overflow-hidden mb-4 shadow"
+                    imgClassName="w-full h-full object-cover"
+                    fallbackText=""
+                  />
+                )}
+
                 <h3 className="text-xl font-bold text-palestine-black mb-2 leading-tight hover:text-palestine-green transition-colors duration-200">
                   {article.title}
                 </h3>
-                
+
                 <p className="text-palestine-green font-medium text-sm">
                   بقلم: {article.author}
                 </p>
@@ -53,12 +64,13 @@ const Articles = ({ data }) => {
               
               {/* Article Preview */}
               <div className="text-gray-700 leading-relaxed mb-6">
-                {article.content && (
+                {(article.summary || article.content) && (
                   <p className="whitespace-pre-line">
-                    {article.content.length > 150 
-                      ? `${article.content.substring(0, 150).replace(/\s+/g, ' ').trim()}...`
-                      : article.content.replace(/\s+/g, ' ').trim()
-                    }
+                    {(article.summary || article.content)
+                      .replace(/\s+/g, ' ')
+                      .trim()
+                      .slice(0, 160)}
+                    {(article.summary || article.content).length > 160 ? '...' : ''}
                   </p>
                 )}
               </div>
@@ -69,7 +81,7 @@ const Articles = ({ data }) => {
                   اقرأ المقال كاملاً ←
                 </span>
                 <div className="flex items-center text-gray-500 text-sm">
-                  <span>{Math.ceil((article.content?.length || 500) / 1000)} دقائق قراءة</span>
+                  <span>{article.readingTime || Math.ceil((article.content?.length || 500) / 900)} دقائق قراءة</span>
                 </div>
               </div>
             </Link>
@@ -105,7 +117,7 @@ const Articles = ({ data }) => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to={`/articles/${data[0]._id || data[0].id}`} className="btn-primary">
+                <Link to={`/articles/${data[0].id}`} className="btn-primary">
                   اقرأ المقال كاملاً
                 </Link>
                 <button className="btn-secondary">

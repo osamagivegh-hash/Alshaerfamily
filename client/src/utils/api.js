@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { getStaticSections } from '../data'
 
 const API_BASE_URL = '/api'
 
@@ -17,7 +18,8 @@ export const fetchSectionsData = async () => {
     return response.data
   } catch (error) {
     console.error('Error fetching sections data:', error)
-    throw new Error('فشل في جلب بيانات الأقسام')
+    console.warn('Falling back to static sections data')
+    return getStaticSections()
   }
 }
 
@@ -28,7 +30,9 @@ export const fetchSectionData = async (section) => {
     return response.data
   } catch (error) {
     console.error(`Error fetching ${section} data:`, error)
-    throw new Error(`فشل في جلب بيانات ${section}`)
+    console.warn(`Falling back to static ${section} data`)
+    const staticSections = getStaticSections()
+    return staticSections[section] ?? null
   }
 }
 
