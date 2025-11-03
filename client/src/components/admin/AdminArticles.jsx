@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { adminArticles } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../LoadingSpinner'
+import ImageUpload from './ImageUpload'
 
 const AdminArticles = () => {
   const [articles, setArticles] = useState([])
@@ -13,7 +14,12 @@ const AdminArticles = () => {
     title: '',
     author: '',
     content: '',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    image: '',
+    summary: '',
+    tags: [],
+    authorRole: '',
+    authorImage: ''
   })
 
   useEffect(() => {
@@ -38,7 +44,8 @@ const AdminArticles = () => {
 
     try {
       if (editingArticle) {
-        await adminArticles.update(editingArticle.id, formData)
+        const articleId = editingArticle.id || editingArticle._id
+        await adminArticles.update(articleId, formData)
         toast.success('تم تحديث المقال بنجاح')
       } else {
         await adminArticles.create(formData)
@@ -51,7 +58,12 @@ const AdminArticles = () => {
         title: '',
         author: '',
         content: '',
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        image: '',
+        summary: '',
+        tags: [],
+        authorRole: '',
+        authorImage: ''
       })
       fetchArticles()
     } catch (error) {
@@ -64,10 +76,15 @@ const AdminArticles = () => {
   const handleEdit = (article) => {
     setEditingArticle(article)
     setFormData({
-      title: article.title,
-      author: article.author,
-      content: article.content,
-      date: article.date
+      title: article.title || '',
+      author: article.author || '',
+      content: article.content || '',
+      date: article.date || new Date().toISOString().split('T')[0],
+      image: article.image || '',
+      summary: article.summary || '',
+      tags: Array.isArray(article.tags) ? article.tags : [],
+      authorRole: article.authorRole || '',
+      authorImage: article.authorImage || ''
     })
     setShowForm(true)
   }
@@ -76,7 +93,8 @@ const AdminArticles = () => {
     if (!confirm('هل أنت متأكد من حذف هذا المقال؟')) return
 
     try {
-      await adminArticles.delete(id)
+      const articleId = typeof id === 'object' ? (id.id || id._id) : id
+      await adminArticles.delete(articleId)
       toast.success('تم حذف المقال بنجاح')
       fetchArticles()
     } catch (error) {
@@ -136,7 +154,12 @@ const AdminArticles = () => {
                 title: '',
                 author: '',
                 content: '',
-                date: new Date().toISOString().split('T')[0]
+                date: new Date().toISOString().split('T')[0],
+                image: '',
+                summary: '',
+                tags: [],
+                authorRole: '',
+                authorImage: ''
               })
             }}
             className="btn-primary"
@@ -149,7 +172,7 @@ const AdminArticles = () => {
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-4xl w-full max-h-96 overflow-y-auto p-6">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-palestine-black">
                 {editingArticle ? 'تعديل المقال' : 'إضافة مقال جديد'}
@@ -174,6 +197,26 @@ const AdminArticles = () => {
                   required
                   className="form-input"
                   placeholder="أدخل عنوان المقال"
+                />
+              </div>
+
+              {/* Image Upload */}
+              <ImageUpload
+                label="صورة المقال"
+                value={formData.image}
+                onChange={(url) => setFormData({...formData, image: url})}
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-palestine-black mb-2">
+                  ملخص المقال
+                </label>
+                <textarea
+                  value={formData.summary}
+                  onChange={(e) => setFormData({...formData, summary: e.target.value})}
+                  rows={3}
+                  className="form-textarea"
+                  placeholder="ملخص قصير للمقال"
                 />
               </div>
 
@@ -306,7 +349,7 @@ const AdminArticles = () => {
                       تعديل
                     </button>
                     <button
-                      onClick={() => handleDelete(article.id)}
+                      onClick={() => handleDelete(article.id || article._id)}
                       className="bg-palestine-red text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors duration-200"
                     >
                       حذف

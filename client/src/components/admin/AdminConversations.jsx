@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { adminConversations } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../LoadingSpinner'
+import ImageUpload from './ImageUpload'
 
 const AdminConversations = () => {
   const [conversations, setConversations] = useState([])
@@ -13,7 +14,13 @@ const AdminConversations = () => {
     title: '',
     participants: '',
     content: '',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    image: '',
+    summary: '',
+    moderator: '',
+    moderatorRole: '',
+    moderatorImage: '',
+    tags: []
   })
 
   useEffect(() => {
@@ -56,7 +63,13 @@ const AdminConversations = () => {
         title: '',
         participants: '',
         content: '',
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        image: '',
+        summary: '',
+        moderator: '',
+        moderatorRole: '',
+        moderatorImage: '',
+        tags: []
       })
       fetchConversations()
     } catch (error) {
@@ -69,12 +82,18 @@ const AdminConversations = () => {
   const handleEdit = (conversation) => {
     setEditingConversation(conversation)
     setFormData({
-      title: conversation.title,
+      title: conversation.title || '',
       participants: Array.isArray(conversation.participants) 
         ? conversation.participants.join(', ') 
         : conversation.participants || '',
-      content: conversation.content,
-      date: conversation.date
+      content: conversation.content || '',
+      date: conversation.date || new Date().toISOString().split('T')[0],
+      image: conversation.image || '',
+      summary: conversation.summary || '',
+      moderator: conversation.moderator || '',
+      moderatorRole: conversation.moderatorRole || '',
+      moderatorImage: conversation.moderatorImage || '',
+      tags: Array.isArray(conversation.tags) ? conversation.tags : []
     })
     setShowForm(true)
   }
@@ -143,7 +162,13 @@ const AdminConversations = () => {
                 title: '',
                 participants: '',
                 content: '',
-                date: new Date().toISOString().split('T')[0]
+                date: new Date().toISOString().split('T')[0],
+                image: '',
+                summary: '',
+                moderator: '',
+                moderatorRole: '',
+                moderatorImage: '',
+                tags: []
               })
             }}
             className="btn-primary"
@@ -156,7 +181,7 @@ const AdminConversations = () => {
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto p-6">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-palestine-black">
                 {editingConversation ? 'تعديل الحوار' : 'إضافة حوار جديد'}
@@ -184,6 +209,26 @@ const AdminConversations = () => {
                 />
               </div>
 
+              {/* Image Upload */}
+              <ImageUpload
+                label="صورة الحوار"
+                value={formData.image}
+                onChange={(url) => setFormData({...formData, image: url})}
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-palestine-black mb-2">
+                  ملخص الحوار
+                </label>
+                <textarea
+                  value={formData.summary}
+                  onChange={(e) => setFormData({...formData, summary: e.target.value})}
+                  rows={3}
+                  className="form-textarea"
+                  placeholder="ملخص قصير للحوار"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-palestine-black mb-2">
                   المشاركون *
@@ -198,6 +243,33 @@ const AdminConversations = () => {
                 />
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-palestine-black mb-2">
+                    مُيسّر الحوار
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.moderator}
+                    onChange={(e) => setFormData({...formData, moderator: e.target.value})}
+                    className="form-input"
+                    placeholder="اسم مُيسّر الحوار"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-palestine-black mb-2">
+                    دور المُيسّر
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.moderatorRole}
+                    onChange={(e) => setFormData({...formData, moderatorRole: e.target.value})}
+                    className="form-input"
+                    placeholder="مثال: مُيسّر الحوار"
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-palestine-black mb-2">
                   محتوى الحوار *
@@ -206,7 +278,7 @@ const AdminConversations = () => {
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
                   required
-                  rows={5}
+                  rows={8}
                   className="form-textarea"
                   placeholder="اكتب محتوى الحوار"
                 />

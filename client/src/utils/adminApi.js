@@ -1,17 +1,8 @@
 import axios from 'axios'
 
-// Determine the base URL based on environment
-const getBaseURL = () => {
-  if (import.meta.env.PROD) {
-    // Production - use relative URLs
-    return '/api/admin'
-  } else {
-    // Development - use full URL
-    return 'http://localhost:5000/api/admin'
-  }
-}
-
-const ADMIN_API_BASE_URL = getBaseURL()
+// Use relative URLs for both dev and production
+// Vite proxy handles development routing
+const ADMIN_API_BASE_URL = '/api/admin'
 
 // Create axios instance for admin API
 const adminApi = axios.create({
@@ -19,8 +10,7 @@ const adminApi = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000, // 30 second timeout
-  withCredentials: false // Set to false for production CORS
+  timeout: 30000 // 30 second timeout
 })
 
 // Request interceptor to add auth token
@@ -29,6 +19,10 @@ adminApi.interceptors.request.use(
     const token = localStorage.getItem('adminToken')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
+    }
+    // Don't override Content-Type for FormData (file uploads)
+    if (config.data instanceof FormData) {
+      delete config.headers['Content-Type']
     }
     return config
   },

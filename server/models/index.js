@@ -28,9 +28,17 @@ const adminSchema = new mongoose.Schema({
 // News Schema
 const newsSchema = new mongoose.Schema({
   title: { type: String, required: true },
+  headline: { type: String },
   content: { type: String, required: true },
-  author: { type: String, required: true },
+  summary: { type: String },
+  author: { type: String },
+  reporter: { type: String },
+  image: { type: String },
+  coverImage: { type: String },
   date: { type: Date, required: true },
+  tags: [{ type: String }],
+  category: { type: String },
+  gallery: [{ type: String }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
@@ -40,7 +48,16 @@ const conversationsSchema = new mongoose.Schema({
   title: { type: String, required: true },
   participants: [{ type: String, required: true }],
   content: { type: String, required: true },
+  summary: { type: String },
+  image: { type: String },
+  coverImage: { type: String },
+  moderator: { type: String },
+  moderatorRole: { type: String },
+  moderatorImage: { type: String },
   date: { type: Date, required: true },
+  tags: [{ type: String }],
+  gallery: [{ type: String }],
+  readingTime: { type: Number },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
@@ -50,7 +67,15 @@ const articlesSchema = new mongoose.Schema({
   title: { type: String, required: true },
   author: { type: String, required: true },
   content: { type: String, required: true },
+  summary: { type: String },
+  image: { type: String },
+  coverImage: { type: String },
+  authorRole: { type: String },
+  authorImage: { type: String },
   date: { type: Date, required: true },
+  tags: [{ type: String }],
+  gallery: [{ type: String }],
+  readingTime: { type: Number },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });

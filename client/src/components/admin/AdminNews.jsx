@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { adminNews } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../LoadingSpinner'
+import ImageUpload from './ImageUpload'
 
 const AdminNews = () => {
   const [news, setNews] = useState([])
@@ -13,7 +14,12 @@ const AdminNews = () => {
     title: '',
     content: '',
     author: '',
-    date: new Date().toISOString().split('T')[0]
+    date: new Date().toISOString().split('T')[0],
+    image: '',
+    headline: '',
+    summary: '',
+    tags: [],
+    category: ''
   })
 
   useEffect(() => {
@@ -38,7 +44,8 @@ const AdminNews = () => {
 
     try {
       if (editingNews) {
-        await adminNews.update(editingNews.id, formData)
+        const newsId = editingNews.id || editingNews._id
+        await adminNews.update(newsId, formData)
         toast.success('تم تحديث الخبر بنجاح')
       } else {
         await adminNews.create(formData)
@@ -51,7 +58,12 @@ const AdminNews = () => {
         title: '',
         content: '',
         author: '',
-        date: new Date().toISOString().split('T')[0]
+        date: new Date().toISOString().split('T')[0],
+        image: '',
+        headline: '',
+        summary: '',
+        tags: [],
+        category: ''
       })
       fetchNews()
     } catch (error) {
@@ -64,10 +76,15 @@ const AdminNews = () => {
   const handleEdit = (newsItem) => {
     setEditingNews(newsItem)
     setFormData({
-      title: newsItem.title,
-      content: newsItem.content,
-      author: newsItem.author,
-      date: newsItem.date
+      title: newsItem.title || '',
+      content: newsItem.content || '',
+      author: newsItem.author || newsItem.reporter || '',
+      date: newsItem.date || new Date().toISOString().split('T')[0],
+      image: newsItem.image || '',
+      headline: newsItem.headline || newsItem.title || '',
+      summary: newsItem.summary || '',
+      tags: Array.isArray(newsItem.tags) ? newsItem.tags : [],
+      category: newsItem.category || ''
     })
     setShowForm(true)
   }
@@ -76,7 +93,8 @@ const AdminNews = () => {
     if (!confirm('هل أنت متأكد من حذف هذا الخبر؟')) return
 
     try {
-      await adminNews.delete(id)
+      const newsId = typeof id === 'object' ? (id.id || id._id) : id
+      await adminNews.delete(newsId)
       toast.success('تم حذف الخبر بنجاح')
       fetchNews()
     } catch (error) {
@@ -106,7 +124,7 @@ const AdminNews = () => {
     if (selectedNews.length === news.length) {
       setSelectedNews([])
     } else {
-      setSelectedNews(news.map(item => item.id))
+      setSelectedNews(news.map(item => item.id || item._id))
     }
   }
 
@@ -136,7 +154,12 @@ const AdminNews = () => {
                 title: '',
                 content: '',
                 author: '',
-                date: new Date().toISOString().split('T')[0]
+                date: new Date().toISOString().split('T')[0],
+                image: '',
+                headline: '',
+                summary: '',
+                tags: [],
+                category: ''
               })
             }}
             className="btn-primary"
@@ -149,7 +172,7 @@ const AdminNews = () => {
       {/* Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto p-6">
+          <div className="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto p-6">
             <div className="flex justify-between items-center mb-6">
               <h2 className="text-xl font-bold text-palestine-black">
                 {editingNews ? 'تعديل الخبر' : 'إضافة خبر جديد'}
@@ -177,6 +200,39 @@ const AdminNews = () => {
                 />
               </div>
 
+              {/* Image Upload */}
+              <ImageUpload
+                label="صورة الخبر"
+                value={formData.image}
+                onChange={(url) => setFormData({...formData, image: url})}
+              />
+
+              <div>
+                <label className="block text-sm font-medium text-palestine-black mb-2">
+                  عنوان مختصر (Headline)
+                </label>
+                <input
+                  type="text"
+                  value={formData.headline}
+                  onChange={(e) => setFormData({...formData, headline: e.target.value})}
+                  className="form-input"
+                  placeholder="عنوان مختصر للعرض في القائمة"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-palestine-black mb-2">
+                  ملخص الخبر
+                </label>
+                <textarea
+                  value={formData.summary}
+                  onChange={(e) => setFormData({...formData, summary: e.target.value})}
+                  rows={3}
+                  className="form-textarea"
+                  placeholder="ملخص قصير للخبر"
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-palestine-black mb-2">
                   محتوى الخبر *
@@ -185,7 +241,7 @@ const AdminNews = () => {
                   value={formData.content}
                   onChange={(e) => setFormData({...formData, content: e.target.value})}
                   required
-                  rows={5}
+                  rows={8}
                   className="form-textarea"
                   placeholder="اكتب محتوى الخبر"
                 />
@@ -268,30 +324,47 @@ const AdminNews = () => {
             {news.map((newsItem) => (
               <div key={newsItem.id} className="p-4 hover:bg-gray-50">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-4 flex-1">
                     <input
                       type="checkbox"
-                      checked={selectedNews.includes(newsItem.id)}
+                      checked={selectedNews.includes(newsItem.id || newsItem._id)}
                       onChange={(e) => {
+                        const itemId = newsItem.id || newsItem._id
                         if (e.target.checked) {
-                          setSelectedNews([...selectedNews, newsItem.id])
+                          setSelectedNews([...selectedNews, itemId])
                         } else {
-                          setSelectedNews(selectedNews.filter(id => id !== newsItem.id))
+                          setSelectedNews(selectedNews.filter(id => id !== itemId))
                         }
                       }}
                       className="ml-3"
                     />
-                    <div>
+                    {(newsItem.image || newsItem.coverImage) && (
+                      <img
+                        src={newsItem.image || newsItem.coverImage}
+                        alt={newsItem.title}
+                        className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                        onError={(e) => {
+                          e.target.style.display = 'none'
+                        }}
+                      />
+                    )}
+                    <div className="flex-1">
                       <h3 className="text-lg font-semibold text-palestine-black">
                         {newsItem.title}
                       </h3>
                       <p className="text-gray-600 mt-1">
-                        {newsItem.content.substring(0, 100)}...
+                        {(newsItem.summary || newsItem.content || '').substring(0, 100)}...
                       </p>
                       <div className="flex items-center mt-2 text-sm text-gray-500">
-                        <span>بواسطة: {newsItem.author}</span>
+                        <span>بواسطة: {newsItem.reporter || newsItem.author || 'غير محدد'}</span>
                         <span className="mx-2">•</span>
                         <span>{new Date(newsItem.date).toLocaleDateString('ar-SA')}</span>
+                        {(newsItem.image || newsItem.coverImage) && (
+                          <>
+                            <span className="mx-2">•</span>
+                            <span className="text-palestine-green">✓ صورة</span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -304,7 +377,7 @@ const AdminNews = () => {
                       تعديل
                     </button>
                     <button
-                      onClick={() => handleDelete(newsItem.id)}
+                      onClick={() => handleDelete(newsItem.id || newsItem._id)}
                       className="bg-palestine-red text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors duration-200"
                     >
                       حذف
