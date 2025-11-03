@@ -13,22 +13,17 @@ const {
   Contacts 
 } = require('../models');
 
+// Import Cloudinary utilities
+const cloudinaryUtils = require('../utils/cloudinary');
+
 const router = express.Router();
 const uploadsDir = path.join(__dirname, '../uploads');
 
 // Ensure uploads directory exists
 fs.ensureDirSync(uploadsDir);
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-  }
-});
+// Configure multer for file uploads (memory storage for Cloudinary)
+const storage = multer.memoryStorage();
 
 const upload = multer({ 
   storage: storage,
@@ -303,22 +298,56 @@ router.delete('/contacts/:id', authenticateToken, requireAdmin, async (req, res)
 });
 
 // File upload endpoint
-router.post('/upload', authenticateToken, requireAdmin, upload.single('image'), (req, res) => {
+router.post('/upload', authenticateToken, requireAdmin, upload.single('image'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'لم يتم اختيار ملف' });
     }
 
-    const fileUrl = `/uploads/${req.file.filename}`;
-    res.json({ 
-      message: 'تم رفع الملف بنجاح', 
-      filename: req.file.filename,
-      url: fileUrl 
-    });
+    const useCloudinary = process.env.USE_CLOUDINARY === 'true' && 
+                          process.env.CLOUDINARY_CLOUD_NAME && 
+                          process.env.CLOUDINARY_API_KEY && 
+                          process.env.CLOUDINARY_API_SECRET;
+
+    if (useCloudinary) {
+      // Upload to Cloudinary
+      try {
+        const result = await cloudinaryUtils.uploadImage(req.file.buffer, 'al-shaer-family');
+        res.json({ 
+          message: 'تم رفع الملف بنجاح إلى Cloudinary', 
+          filename: result.public_id,
+          url: result.secure_url 
+        });
+      } catch (cloudinaryError) {
+        console.error('Cloudinary upload error:', cloudinaryError);
+        // Fallback to local storage
+        await saveToLocalStorage(req, res);
+      }
+    } else {
+      // Upload to local storage
+      await saveToLocalStorage(req, res);
+    }
   } catch (error) {
     console.error('Upload error:', error);
     res.status(500).json({ message: 'خطأ في رفع الملف' });
   }
 });
+
+// Helper function for local storage upload
+const saveToLocalStorage = async (req, res) => {
+  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+  const filename = req.file.fieldname + '-' + uniqueSuffix + path.extname(req.file.originalname);
+  const filePath = path.join(uploadsDir, filename);
+  
+  // Write file to disk
+  await fs.writeFile(filePath, req.file.buffer);
+  
+  const fileUrl = `/uploads/${filename}`;
+  res.json({ 
+    message: 'تم رفع الملف بنجاح', 
+    filename: filename,
+    url: fileUrl 
+  });
+};
 
 module.exports = router;

@@ -41,10 +41,20 @@ const AdminGallery = () => {
       const response = await adminUpload.uploadImage(file)
       toast.success('تم رفع الصورة بنجاح')
       
-      // Add the uploaded image to the form data
+      // Get the full URL - handle both relative and absolute URLs
+      let imageUrl = response.url
+      if (imageUrl && !imageUrl.startsWith('http')) {
+        // If relative URL, make it absolute
+        const baseUrl = import.meta.env.PROD 
+          ? window.location.origin 
+          : 'http://localhost:5000'
+        imageUrl = `${baseUrl}${imageUrl}`
+      }
+      
+      // Add the uploaded image URL to the form data
       setFormData({
         ...formData,
-        images: [...formData.images, response.filename]
+        images: [...formData.images, imageUrl]
       })
     } catch (error) {
       toast.error(error.message)
