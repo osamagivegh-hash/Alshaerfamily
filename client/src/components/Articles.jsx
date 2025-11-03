@@ -26,10 +26,12 @@ const Articles = ({ data }) => {
         </p>
         
         <div className="grid gap-8 lg:grid-cols-2 xl:grid-cols-3">
-          {data.map((article) => (
+          {data.map((article) => {
+            const articleId = article.id || article._id?.toString() || String(article.id || article._id)
+            return (
             <Link
-              key={article.id}
-              to={`/articles/${article.id}`}
+              key={articleId}
+              to={`/articles/${articleId}`}
               className="card fade-in hover:shadow-xl transition-all duration-300 block"
             >
               {/* Article Header */}
@@ -85,7 +87,8 @@ const Articles = ({ data }) => {
                 </div>
               </div>
             </Link>
-          ))}
+            )
+          })}
         </div>
         
         {/* Featured Article */}
@@ -117,7 +120,7 @@ const Articles = ({ data }) => {
               </div>
               
               <div className="flex flex-col sm:flex-row gap-4">
-                <Link to={`/articles/${data[0].id}`} className="btn-primary">
+                <Link to={`/articles/${data[0].id || data[0]._id?.toString() || data[0].id}`} className="btn-primary">
                   اقرأ المقال كاملاً
                 </Link>
                 <button className="btn-secondary">

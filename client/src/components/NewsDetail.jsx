@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -7,11 +7,62 @@ import FullPostLayout from './common/FullPostLayout'
 import NotFound from './common/NotFound'
 import ImageWithFallback from './common/ImageWithFallback'
 import { getNewsById, getRelatedNews } from '../data'
+import { api } from '../utils/api'
 
 const NewsDetail = () => {
   const { id } = useParams()
-  const newsItem = getNewsById(id)
-  const relatedNews = useMemo(() => getRelatedNews(id), [id])
+  const [newsItem, setNewsItem] = useState(null)
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    const fetchNews = async () => {
+      try {
+        setLoading(true)
+        // Try API first
+        try {
+          const response = await api.get(`/news/${id}`)
+          const apiNews = response.data
+          // Normalize the news to have both id and _id
+          if (apiNews) {
+            apiNews.id = apiNews.id || apiNews._id?.toString() || id
+            setNewsItem(apiNews)
+            setLoading(false)
+            return
+          }
+        } catch (apiError) {
+          console.log('API fetch failed, trying static data:', apiError)
+        }
+        
+        // Fallback to static data
+        const staticNews = getNewsById(id)
+        if (staticNews) {
+          setNewsItem(staticNews)
+        }
+      } catch (error) {
+        console.error('Error fetching news:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchNews()
+  }, [id])
+  
+  const relatedNews = useMemo(() => {
+    if (!newsItem) return []
+    return getRelatedNews(newsItem.id || id)
+  }, [newsItem, id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-palestine-green mx-auto mb-4"></div>
+          <p className="text-gray-600">جاري تحميل الخبر...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!newsItem) {
     return (

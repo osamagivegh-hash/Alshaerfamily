@@ -25,10 +25,12 @@ const Conversations = ({ data }) => {
         </p>
         
         <div className="space-y-8">
-          {data.map((conversation) => (
+          {data.map((conversation) => {
+            const conversationId = conversation.id || conversation._id?.toString() || String(conversation.id || conversation._id)
+            return (
             <Link
-              key={conversation.id}
-              to={`/conversations/${conversation.id}`}
+              key={conversationId}
+              to={`/conversations/${conversationId}`}
               className="card slide-in-right block hover:shadow-xl transition-all duration-300"
             >
               <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
@@ -85,7 +87,8 @@ const Conversations = ({ data }) => {
                 </span>
               </div>
             </Link>
-          ))}
+            )
+          })}
         </div>
         
         {/* Add Conversation Button */}

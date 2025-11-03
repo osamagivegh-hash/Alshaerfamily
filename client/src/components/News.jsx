@@ -21,8 +21,10 @@ const News = ({ data }) => {
       <div className="section-container">
         <h2 className="section-title">الأخبار</h2>
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-          {data.map((newsItem) => (
-            <article key={newsItem.id} className="card fade-in hover:shadow-xl transition-shadow duration-300 overflow-hidden">
+          {data.map((newsItem) => {
+            const newsId = newsItem.id || newsItem._id?.toString() || String(newsItem.id || newsItem._id)
+            return (
+            <article key={newsId} className="card fade-in hover:shadow-xl transition-shadow duration-300 overflow-hidden">
               {newsItem.image && (
                 <ImageWithFallback
                   src={newsItem.image}
@@ -60,14 +62,15 @@ const News = ({ data }) => {
                   ))}
                 </div>
                 <Link
-                  to={`/news/${newsItem.id}`}
+                  to={`/news/${newsId}`}
                   className="text-palestine-green hover:text-olive-700 font-medium text-sm transition-colors duration-200"
                 >
                   اقرأ التفاصيل ←
                 </Link>
               </div>
             </article>
-          ))}
+            )
+          })}
         </div>
         
         {/* Load More Button */}

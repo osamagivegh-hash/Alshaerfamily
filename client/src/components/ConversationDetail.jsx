@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -7,11 +7,62 @@ import FullPostLayout from './common/FullPostLayout'
 import NotFound from './common/NotFound'
 import ImageWithFallback from './common/ImageWithFallback'
 import { getDialogueById, getRelatedDialogues } from '../data'
+import { api } from '../utils/api'
 
 const ConversationDetail = () => {
   const { id } = useParams()
-  const conversation = getDialogueById(id)
-  const relatedConversations = useMemo(() => getRelatedDialogues(id), [id])
+  const [conversation, setConversation] = useState(null)
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    const fetchConversation = async () => {
+      try {
+        setLoading(true)
+        // Try API first
+        try {
+          const response = await api.get(`/conversations/${id}`)
+          const apiConversation = response.data
+          // Normalize the conversation to have both id and _id
+          if (apiConversation) {
+            apiConversation.id = apiConversation.id || apiConversation._id?.toString() || id
+            setConversation(apiConversation)
+            setLoading(false)
+            return
+          }
+        } catch (apiError) {
+          console.log('API fetch failed, trying static data:', apiError)
+        }
+        
+        // Fallback to static data
+        const staticConversation = getDialogueById(id)
+        if (staticConversation) {
+          setConversation(staticConversation)
+        }
+      } catch (error) {
+        console.error('Error fetching conversation:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchConversation()
+  }, [id])
+  
+  const relatedConversations = useMemo(() => {
+    if (!conversation) return []
+    return getRelatedDialogues(conversation.id || id)
+  }, [conversation, id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-palestine-green mx-auto mb-4"></div>
+          <p className="text-gray-600">جاري تحميل الحوار...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!conversation) {
     return (

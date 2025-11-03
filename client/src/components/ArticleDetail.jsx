@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -7,11 +7,62 @@ import FullPostLayout from './common/FullPostLayout'
 import NotFound from './common/NotFound'
 import ImageWithFallback from './common/ImageWithFallback'
 import { getArticleById, getRelatedArticles } from '../data'
+import { api } from '../utils/api'
 
 const ArticleDetail = () => {
   const { id } = useParams()
-  const article = getArticleById(id)
-  const relatedArticles = useMemo(() => getRelatedArticles(id), [id])
+  const [article, setArticle] = useState(null)
+  const [loading, setLoading] = useState(true)
+  
+  useEffect(() => {
+    const fetchArticle = async () => {
+      try {
+        setLoading(true)
+        // Try API first
+        try {
+          const response = await api.get(`/articles/${id}`)
+          const apiArticle = response.data
+          // Normalize the article to have both id and _id
+          if (apiArticle) {
+            apiArticle.id = apiArticle.id || apiArticle._id?.toString() || id
+            setArticle(apiArticle)
+            setLoading(false)
+            return
+          }
+        } catch (apiError) {
+          console.log('API fetch failed, trying static data:', apiError)
+        }
+        
+        // Fallback to static data
+        const staticArticle = getArticleById(id)
+        if (staticArticle) {
+          setArticle(staticArticle)
+        }
+      } catch (error) {
+        console.error('Error fetching article:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+    
+    fetchArticle()
+  }, [id])
+  
+  const relatedArticles = useMemo(() => {
+    if (!article) return []
+    return getRelatedArticles(article.id || id)
+  }, [article, id])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-palestine-green mx-auto mb-4"></div>
+          <p className="text-gray-600">جاري تحميل المقال...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!article) {
     return (
