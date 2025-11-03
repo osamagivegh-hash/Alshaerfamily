@@ -14,27 +14,59 @@ const router = express.Router();
 const sampleData = {
   news: [
     {
-      id: 1,
-      title: "احتفال عائلة الشاعر بالعيد",
-      content: "احتفلت عائلة الشاعر بعيد الفطر المبارك في جو من الفرح والسرور، حيث اجتمع جميع أفراد العائلة في بيت الجد الكبير.",
-      date: "2024-04-10",
-      author: "أحمد الشاعر"
+      id: "1",
+      title: "تجمع عائلي كبير في عمان يضم أكثر من 200 فرد من عائلة الشاعر",
+      headline: "تجمع عائلي كبير في عمان",
+      reporter: "أحمد الشاعر",
+      date: "2024-01-25",
+      summary: "نظمت عائلة الشاعر تجمعاً عائلياً كبيراً في العاصمة الأردنية عمان، حضره أكثر من 200 فرد من مختلف أنحاء العالم، في أكبر لقاء عائلي منذ عقود.",
+      content: "شهدت العاصمة الأردنية عمان يوم الجمعة الماضي حدثاً تاريخياً مميزاً، حيث نظمت عائلة الشاعر أكبر تجمع عائلي في تاريخها الحديث، بحضور أكثر من 200 فرد من مختلف أنحاء العالم.",
+      image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&h=400&fit=crop",
+      tags: ["تجمع عائلي", "عمان", "فعاليات", "تراث", "وحدة"],
+      category: "أخبار العائلة"
     },
     {
-      id: 2,
-      title: "زواج محمد الشاعر",
-      content: "تم الاحتفال بزواج محمد الشاعر من كريمة عائلة النجار في حفل بهيج حضره جميع أفراد العائلة والأصدقاء.",
-      date: "2024-03-15",
-      author: "فاطمة الشاعر"
+      id: "2",
+      title: "د. سامي الشاعر يحصل على جائزة التميز الطبي في كندا",
+      headline: "جائزة التميز الطبي لد. سامي الشاعر",
+      reporter: "ليلى الشاعر",
+      date: "2024-02-18",
+      summary: "حصل د. سامي الشاعر، طبيب القلب المتخصص، على جائزة التميز الطبي من الجمعية الكندية لأطباء القلب، تقديراً لإسهاماته في علاج أمراض القلب والأوعية الدموية.",
+      content: "حصل د. سامي الشاعر، طبيب القلب والأوعية الدموية المتخصص، على جائزة التميز الطبي من الجمعية الكندية لأطباء القلب، وذلك في حفل أقيم في مدينة تورونتو مساء الجمعة الماضي.",
+      image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=400&fit=crop",
+      tags: ["طب", "جائزة", "كندا", "نجاح", "تميز"],
+      category: "إنجازات"
     }
   ],
   conversations: [
     {
-      id: 1,
-      title: "حوار مع الجد حول تاريخ العائلة",
-      participants: ["الجد عبد الله الشاعر", "أحمد الشاعر"],
-      content: "في هذا الحوار الشيق، يحكي لنا الجد عبد الله عن تاريخ عائلة الشاعر وأصولها العريقة في فلسطين.",
-      date: "2024-02-20"
+      id: "1",
+      title: "حوار مع الحاج أبو محمد حول ذكريات فلسطين",
+      moderator: "أحمد الشاعر",
+      moderatorRole: "مُيسّر الحوار",
+      moderatorImage: "https://ui-avatars.com/api/?name=أحمد+الشاعر&background=007A3D&color=fff",
+      date: "2024-01-20",
+      participants: ["الحاج أبو محمد الشاعر", "أم خليل الشاعر", "د. سامي الشاعر"],
+      summary: "حوار مؤثر مع كبار العائلة حول ذكرياتهم في فلسطين قبل النكبة، والحياة في القرى الفلسطينية، والتقاليد التي كانت سائدة.",
+      content: "حوار مؤثر مع كبار العائلة حول ذكرياتهم في فلسطين قبل النكبة، والحياة في القرى الفلسطينية، والتقاليد التي كانت سائدة.",
+      image: "https://images.unsplash.com/photo-1577563908411-5c350d0d3c56?w=800&h=400&fit=crop",
+      tags: ["ذكريات", "تراث", "فلسطين", "كبار السن", "تاريخ شفوي"],
+      readingTime: 20
+    }
+  ],
+  articles: [
+    {
+      id: "1",
+      title: "تاريخ عائلة الشاعر في فلسطين",
+      author: "أحمد الشاعر",
+      authorRole: "باحث في التاريخ الفلسطيني",
+      authorImage: "https://ui-avatars.com/api/?name=أحمد+الشاعر&background=007A3D&color=fff",
+      date: "2024-01-15",
+      summary: "نظرة شاملة على تاريخ عائلة الشاعر وجذورها العريقة في الأراضي الفلسطينية، من القرن السابع عشر وحتى اليوم.",
+      content: "تعتبر عائلة الشاعر من العائلات الفلسطينية العريقة التي لها تاريخ طويل في الأراضي الفلسطينية. تشير الوثائق التاريخية إلى أن العائلة استقرت في منطقة الخليل في القرن السابع عشر الميلادي.",
+      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop",
+      tags: ["تاريخ", "فلسطين", "تراث", "عائلة"],
+      readingTime: 8
     }
   ],
   familyTree: {
@@ -189,9 +221,20 @@ router.get('/contacts', async (req, res) => {
 // Get single article by ID
 router.get('/articles/:id', async (req, res) => {
   try {
-    const article = await Articles.findById(req.params.id);
+    const { id } = req.params;
     
+    // Try to find by MongoDB _id first, then by custom id field
+    let article = await Articles.findById(id).catch(() => null);
     if (!article) {
+      article = await Articles.findOne({ id: id });
+    }
+    
+    // If still not found, return sample data for development
+    if (!article) {
+      const sampleArticle = sampleData.articles.find(a => a.id === id);
+      if (sampleArticle) {
+        return res.json(sampleArticle);
+      }
       return res.status(404).json({ message: 'المقال غير موجود' });
     }
     
@@ -205,9 +248,20 @@ router.get('/articles/:id', async (req, res) => {
 // Get single conversation by ID
 router.get('/conversations/:id', async (req, res) => {
   try {
-    const conversation = await Conversations.findById(req.params.id);
+    const { id } = req.params;
     
+    // Try to find by MongoDB _id first, then by custom id field
+    let conversation = await Conversations.findById(id).catch(() => null);
     if (!conversation) {
+      conversation = await Conversations.findOne({ id: id });
+    }
+    
+    // If still not found, return sample data for development
+    if (!conversation) {
+      const sampleConversation = sampleData.conversations.find(c => c.id === id);
+      if (sampleConversation) {
+        return res.json(sampleConversation);
+      }
       return res.status(404).json({ message: 'الحوار غير موجود' });
     }
     
@@ -215,6 +269,33 @@ router.get('/conversations/:id', async (req, res) => {
   } catch (error) {
     console.error('Error reading conversation:', error);
     res.status(500).json({ message: 'خطأ في قراءة الحوار' });
+  }
+});
+
+// Get single news by ID
+router.get('/news/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    // Try to find by MongoDB _id first, then by custom id field
+    let news = await News.findById(id).catch(() => null);
+    if (!news) {
+      news = await News.findOne({ id: id });
+    }
+    
+    // If still not found, return sample data for development
+    if (!news) {
+      const sampleNews = sampleData.news.find(n => n.id === id);
+      if (sampleNews) {
+        return res.json(sampleNews);
+      }
+      return res.status(404).json({ message: 'الخبر غير موجود' });
+    }
+    
+    res.json(news);
+  } catch (error) {
+    console.error('Error reading news:', error);
+    res.status(500).json({ message: 'خطأ في قراءة الخبر' });
   }
 });
 
