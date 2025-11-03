@@ -52,6 +52,19 @@
    ```
    NODE_ENV=production
    PORT=10000
+   MONGODB_URI=...
+   JWT_SECRET=...
+   ADMIN_USERNAME=admin
+   ADMIN_EMAIL=admin@alshaerfamily.com
+   ADMIN_PASSWORD=YourSecurePassword123!
+   # إعداد Cloudinary (اختر إما القيم الفردية أو الرابط الكامل)
+   CLOUDINARY_CLOUD_NAME=your-cloud-name
+   CLOUDINARY_API_KEY=your-api-key
+   CLOUDINARY_API_SECRET=your-api-secret
+   # أو
+   # CLOUDINARY_URL=cloudinary://your-api-key:your-api-secret@your-cloud-name
+   CLOUDINARY_UPLOAD_FOLDER=al-shaer-family
+   USE_CLOUDINARY=true
    ```
 
 4. **إعدادات إضافية**
@@ -176,6 +189,19 @@ npm audit fix
 ```
 NODE_ENV=production
 PORT=10000
+MONGODB_URI=...
+JWT_SECRET=...
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@alshaerfamily.com
+ADMIN_PASSWORD=YourSecurePassword123!
+# Cloudinary (choose either individual keys or a connection string)
+CLOUDINARY_CLOUD_NAME=your-cloud-name
+CLOUDINARY_API_KEY=your-api-key
+CLOUDINARY_API_SECRET=your-api-secret
+# or
+# CLOUDINARY_URL=cloudinary://your-api-key:your-api-secret@your-cloud-name
+CLOUDINARY_UPLOAD_FOLDER=al-shaer-family
+USE_CLOUDINARY=true
 ```
 
 ### Troubleshooting

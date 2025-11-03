@@ -168,6 +168,29 @@ JWT_SECRET=your-very-long-and-secure-jwt-secret-key
 ADMIN_PASSWORD=YourSecurePassword123!
 ```
 
+## إعداد Cloudinary لرفع الصور
+
+1. أنشئ حساباً مجانياً في [Cloudinary](https://cloudinary.com)
+2. من لوحة التحكم انسخ القيم التالية:
+   - **Cloud Name**
+   - **API Key**
+   - **API Secret**
+3. أضف إحدى الصيغتين في ملف `.env` داخل مجلد `server`:
+   ```bash
+   # الخيار الأول: القيم الفردية
+   CLOUDINARY_CLOUD_NAME=your-cloud-name
+   CLOUDINARY_API_KEY=your-api-key
+   CLOUDINARY_API_SECRET=your-api-secret
+
+   # الخيار الثاني: رابط الاتصال الكامل من Cloudinary
+   # CLOUDINARY_URL=cloudinary://your-api-key:your-api-secret@your-cloud-name
+
+   # إعدادات اختيارية
+   CLOUDINARY_UPLOAD_FOLDER=al-shaer-family
+   # USE_CLOUDINARY=true  # إلغاء التعليق لفرض استخدام Cloudinary دائماً
+   ```
+4. في حال عدم تفعيل Cloudinary سيتم التخزين محلياً داخل مجلد `server/uploads`
+
 ### إضافة البيانات التجريبية
 ```bash
 cd server

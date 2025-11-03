@@ -14,7 +14,7 @@ const {
 } = require('../models');
 
 // Import Cloudinary utilities
-const cloudinaryUtils = require('../utils/cloudinary');
+const cloudinaryService = require('../utils/cloudinary');
 
 const router = express.Router();
 const uploadsDir = path.join(__dirname, '../uploads');
@@ -304,15 +304,12 @@ router.post('/upload', authenticateToken, requireAdmin, upload.single('image'), 
       return res.status(400).json({ message: 'لم يتم اختيار ملف' });
     }
 
-    const useCloudinary = process.env.USE_CLOUDINARY === 'true' && 
-                          process.env.CLOUDINARY_CLOUD_NAME && 
-                          process.env.CLOUDINARY_API_KEY && 
-                          process.env.CLOUDINARY_API_SECRET;
+    const useCloudinary = cloudinaryService.shouldUseCloudinary();
 
     if (useCloudinary) {
       // Upload to Cloudinary
       try {
-        const result = await cloudinaryUtils.uploadImage(req.file.buffer, 'al-shaer-family');
+        const result = await cloudinaryService.uploadImage(req.file.buffer);
         res.json({ 
           message: 'تم رفع الملف بنجاح إلى Cloudinary', 
           filename: result.public_id,

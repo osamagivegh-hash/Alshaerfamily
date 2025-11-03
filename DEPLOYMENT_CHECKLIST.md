@@ -16,6 +16,13 @@
   ADMIN_USERNAME=admin
   ADMIN_EMAIL=admin@alshaerfamily.com
   ADMIN_PASSWORD=YourSecurePassword123!
+  CLOUDINARY_CLOUD_NAME=your-cloud-name
+  CLOUDINARY_API_KEY=your-api-key
+  CLOUDINARY_API_SECRET=your-api-secret
+  # أو بديل واحد:
+  # CLOUDINARY_URL=cloudinary://your-api-key:your-api-secret@your-cloud-name
+  CLOUDINARY_UPLOAD_FOLDER=al-shaer-family
+  USE_CLOUDINARY=true
   NODE_ENV=production
   ```
 - [ ] Save Changes
