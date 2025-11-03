@@ -102,9 +102,15 @@ export const dialoguesData = [
 هذا الحوار جزء من مشروع توثيق الذاكرة الشفوية لعائلة الشاعر، بهدف الحفاظ على التراث والتاريخ الفلسطيني للأجيال القادمة.
 
 *تم تسجيل هذا الحوار في منزل العائلة في عمان، الأردن، في يناير 2024.*`,
-    image: "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=800&h=400&fit=crop",
+    image: "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=1200&h=600&fit=crop&auto=format",
     tags: ["ذكريات", "تراث", "فلسطين", "كبار السن", "تاريخ شفوي"],
-    readingTime: 20
+    readingTime: 20,
+    coverImage: "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=1200&h=600&fit=crop&auto=format",
+    gallery: [
+      "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&h=600&fit=crop&auto=format"
+    ]
   },
   {
     id: "2", 
@@ -209,9 +215,15 @@ export const dialoguesData = [
 هذا الحوار يظهر أن أبناء عائلة الشاعر، مثل كثير من الفلسطينيين، حولوا التحديات إلى فرص للنجاح والإبداع. التعليم كان ولا يزال السلاح الأقوى في مواجهة الصعوبات.
 
 *تم تسجيل هذا الحوار عبر تقنية الفيديو كونفرنس، مع مشاركين من أربع قارات مختلفة، في فبراير 2024.*`,
-    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=400&fit=crop",
+    image: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=600&fit=crop&auto=format",
     tags: ["تعليم", "نجاح", "شتات", "مهن", "إنجازات"],
-    readingTime: 25
+    readingTime: 25,
+    coverImage: "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=1200&h=600&fit=crop&auto=format",
+    gallery: [
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=800&h=600&fit=crop&auto=format"
+    ]
   },
   {
     id: "3",
@@ -328,9 +340,15 @@ export const dialoguesData = [
 هذا الحوار يعكس التحديات والفرص التي تواجه العائلات الفلسطينية في الشتات. رغم الاختلافات بين الأجيال، يبقى الحب للوطن والعائلة هو الرابط الأقوى.
 
 *تم تسجيل هذا الحوار في منزل العائلة في تورونتو، كندا، خلال تجمع عائلي في مارس 2024.*`,
-    image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=400&fit=crop",
+    image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=600&fit=crop&auto=format",
     tags: ["أجيال", "هوية", "ثقافة", "تغيير", "عائلة"],
-    readingTime: 30
+    readingTime: 30,
+    coverImage: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=600&fit=crop&auto=format",
+    gallery: [
+      "https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format"
+    ]
   }
 ]
 

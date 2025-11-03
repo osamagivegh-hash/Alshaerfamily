@@ -110,9 +110,16 @@ export const newsData = [
 ---
 
 *للمزيد من الصور والفيديوهات من التجمع، زوروا الموقع الإلكتروني للعائلة أو تابعونا على وسائل التواصل الاجتماعي.*`,
-    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&h=400&fit=crop",
+    image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1200&h=600&fit=crop&auto=format",
     tags: ["تجمع عائلي", "عمان", "فعاليات", "تراث", "وحدة"],
-    category: "أخبار العائلة"
+    category: "أخبار العائلة",
+    coverImage: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1200&h=600&fit=crop&auto=format",
+    gallery: [
+      "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1507679799987-c73779587ccf?w=800&h=600&fit=crop&auto=format"
+    ]
   },
   {
     id: "2",
@@ -242,9 +249,15 @@ export const newsData = [
 ---
 
 *تهانينا الحارة لد. سامي الشاعر، ونتمنى له المزيد من النجاح والتميز في خدمة الإنسانية.*`,
-    image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=400&fit=crop",
+    image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1200&h=600&fit=crop&auto=format",
     tags: ["طب", "جائزة", "كندا", "نجاح", "تميز"],
-    category: "إنجازات"
+    category: "إنجازات",
+    coverImage: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=1200&h=600&fit=crop&auto=format",
+    gallery: [
+      "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1582719471384-894fbb16e074?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1631815588090-d4bfec5b1ccb?w=800&h=600&fit=crop&auto=format"
+    ]
   },
   {
     id: "3",
@@ -421,9 +434,16 @@ export const newsData = [
 ---
 
 *للمزيد من المعلومات حول المركز وأنشطته، زوروا الموقع الإلكتروني: www.alshaerculturalcenter.org*`,
-    image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=400&fit=crop",
+    image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&h=600&fit=crop&auto=format",
     tags: ["مركز ثقافي", "ديترويت", "افتتاح", "ثقافة", "مجتمع"],
-    category: "مشاريع"
+    category: "مشاريع",
+    coverImage: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=1200&h=600&fit=crop&auto=format",
+    gallery: [
+      "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=800&h=600&fit=crop&auto=format"
+    ]
   }
 ]
 

@@ -6,6 +6,7 @@ import rehypeRaw from 'rehype-raw'
 import FullPostLayout from './common/FullPostLayout'
 import NotFound from './common/NotFound'
 import ImageWithFallback from './common/ImageWithFallback'
+import Comments from './common/Comments'
 import { getArticleById, getRelatedArticles } from '../data'
 import { api } from '../utils/api'
 
@@ -78,29 +79,36 @@ const ArticleDetail = () => {
 
   const readingTime = article.readingTime || Math.max(3, Math.ceil(article.content.split(/\s+/).length / 200))
 
-  const relatedSection = relatedArticles.length > 0 && (
-    <section className="mt-12 bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-2xl font-bold text-palestine-black mb-6">مقالات ذات صلة</h2>
-      <div className="grid gap-6 md:grid-cols-2">
-        {relatedArticles.map((relatedArticle) => (
-          <Link
-            key={relatedArticle.id}
-            to={`/articles/${relatedArticle.id}`}
-            className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 block"
-          >
-            <h3 className="font-bold text-palestine-black mb-2 line-clamp-2">
-              {relatedArticle.title}
-            </h3>
-            <p className="text-sm text-gray-500 mb-2">
-              {new Date(relatedArticle.date).toLocaleDateString('ar-SA')}
-            </p>
-            <p className="text-gray-700 text-sm line-clamp-3">
-              {(relatedArticle.summary || relatedArticle.content || '').slice(0, 120)}...
-            </p>
-          </Link>
-        ))}
-      </div>
-    </section>
+  const articleId = article.id || article._id?.toString() || id
+
+  const relatedSection = (
+    <>
+      {relatedArticles.length > 0 && (
+        <section className="mt-12 bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-palestine-black mb-6">مقالات ذات صلة</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            {relatedArticles.map((relatedArticle) => (
+              <Link
+                key={relatedArticle.id}
+                to={`/articles/${relatedArticle.id}`}
+                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 block"
+              >
+                <h3 className="font-bold text-palestine-black mb-2 line-clamp-2">
+                  {relatedArticle.title}
+                </h3>
+                <p className="text-sm text-gray-500 mb-2">
+                  {new Date(relatedArticle.date).toLocaleDateString('ar-SA')}
+                </p>
+                <p className="text-gray-700 text-sm line-clamp-3">
+                  {(relatedArticle.summary || relatedArticle.content || '').slice(0, 120)}...
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+      <Comments contentType="article" contentId={articleId} />
+    </>
   )
 
   return (

@@ -6,7 +6,8 @@ const {
   Palestine, 
   Gallery, 
   FamilyTree, 
-  Contacts 
+  Contacts,
+  Comments
 } = require('../models');
 const router = express.Router();
 
@@ -296,6 +297,87 @@ router.get('/news/:id', async (req, res) => {
   } catch (error) {
     console.error('Error reading news:', error);
     res.status(500).json({ message: 'خطأ في قراءة الخبر' });
+  }
+});
+
+// ==================== COMMENTS ROUTES ====================
+
+// Get comments for a specific content item
+router.get('/comments/:contentType/:contentId', async (req, res) => {
+  try {
+    const { contentType, contentId } = req.params;
+    
+    // Validate contentType
+    if (!['article', 'news', 'conversation'].includes(contentType)) {
+      return res.status(400).json({ message: 'نوع المحتوى غير صحيح' });
+    }
+    
+    const comments = await Comments.find({
+      contentType,
+      contentId,
+      approved: true // Only return approved comments
+    }).sort({ createdAt: -1 });
+    
+    res.json(comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).json({ message: 'خطأ في جلب التعليقات' });
+  }
+});
+
+// Create a new comment
+router.post('/comments', async (req, res) => {
+  try {
+    const { contentType, contentId, name, email, comment } = req.body;
+    
+    // Validation
+    if (!contentType || !contentId || !name || !comment) {
+      return res.status(400).json({ message: 'الرجاء إدخال جميع الحقول المطلوبة' });
+    }
+    
+    if (!['article', 'news', 'conversation'].includes(contentType)) {
+      return res.status(400).json({ message: 'نوع المحتوى غير صحيح' });
+    }
+    
+    // Create new comment (default: not approved, needs admin approval)
+    const newComment = new Comments({
+      contentType,
+      contentId: contentId.toString(),
+      name: name.trim(),
+      email: email ? email.trim() : '',
+      comment: comment.trim(),
+      approved: false
+    });
+    
+    const savedComment = await newComment.save();
+    
+    res.status(201).json({
+      ...savedComment.toObject(),
+      id: savedComment._id.toString(),
+      _id: savedComment._id.toString()
+    });
+  } catch (error) {
+    console.error('Error creating comment:', error);
+    res.status(500).json({ message: 'خطأ في إضافة التعليق' });
+  }
+});
+
+// Get comment count for content (for admin purposes)
+router.get('/comments/:contentType/:contentId/count', async (req, res) => {
+  try {
+    const { contentType, contentId } = req.params;
+    
+    const totalCount = await Comments.countDocuments({ contentType, contentId });
+    const approvedCount = await Comments.countDocuments({ 
+      contentType, 
+      contentId, 
+      approved: true 
+    });
+    
+    res.json({ total: totalCount, approved: approvedCount });
+  } catch (error) {
+    console.error('Error counting comments:', error);
+    res.status(500).json({ message: 'خطأ في حساب التعليقات' });
   }
 });
 

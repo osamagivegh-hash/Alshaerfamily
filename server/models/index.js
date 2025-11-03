@@ -97,6 +97,22 @@ const contactsSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Comments Schema
+const commentsSchema = new mongoose.Schema({
+  contentType: { 
+    type: String, 
+    required: true,
+    enum: ['article', 'news', 'conversation'] 
+  },
+  contentId: { type: String, required: true },
+  name: { type: String, required: true },
+  email: { type: String },
+  comment: { type: String, required: true },
+  approved: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
 // Create Models
 const Admin = mongoose.model('Admin', adminSchema);
 const News = mongoose.model('News', newsSchema);
@@ -106,6 +122,7 @@ const Palestine = mongoose.model('Palestine', palestineSchema);
 const Gallery = mongoose.model('Gallery', gallerySchema);
 const FamilyTree = mongoose.model('FamilyTree', familyTreeSchema);
 const Contacts = mongoose.model('Contacts', contactsSchema);
+const Comments = mongoose.model('Comments', commentsSchema);
 
 module.exports = {
   connectDB,
@@ -116,5 +133,6 @@ module.exports = {
   Palestine,
   Gallery,
   FamilyTree,
-  Contacts
+  Contacts,
+  Comments
 };

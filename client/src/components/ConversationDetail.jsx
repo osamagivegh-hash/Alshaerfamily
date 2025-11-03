@@ -6,6 +6,7 @@ import rehypeRaw from 'rehype-raw'
 import FullPostLayout from './common/FullPostLayout'
 import NotFound from './common/NotFound'
 import ImageWithFallback from './common/ImageWithFallback'
+import Comments from './common/Comments'
 import { getDialogueById, getRelatedDialogues } from '../data'
 import { api } from '../utils/api'
 
@@ -78,6 +79,8 @@ const ConversationDetail = () => {
 
   const readingTime = Math.max(4, Math.ceil((conversation.content || '').split(/\s+/).length / 180))
 
+  const conversationId = conversation.id || conversation._id?.toString() || id
+
   const participantsSection = (
     <section className="mt-12 bg-white rounded-lg shadow-lg p-6">
       <h3 className="text-lg font-semibold text-palestine-green mb-3">المشاركون في الحوار</h3>
@@ -91,33 +94,38 @@ const ConversationDetail = () => {
     </section>
   )
 
-  const relatedSection = relatedConversations.length > 0 && (
-    <section className="mt-12 bg-white rounded-lg shadow-lg p-6">
-      <h2 className="text-2xl font-bold text-palestine-black mb-6">حوارات ذات صلة</h2>
-      <div className="grid gap-6 md:grid-cols-2">
-        {relatedConversations.map((relatedConversation) => (
-          <Link
-            key={relatedConversation.id}
-            to={`/conversations/${relatedConversation.id}`}
-            className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 block"
-          >
-            <h3 className="font-bold text-palestine-black mb-2 line-clamp-2">
-              {relatedConversation.title}
-            </h3>
-            <div className="flex flex-wrap gap-1 text-xs text-gray-500 mb-2">
-              {relatedConversation.participants?.slice(0, 3).map((participant) => (
-                <span key={participant} className="bg-gray-100 px-2 py-1 rounded">
-                  {participant}
-                </span>
-              ))}
-            </div>
-            <p className="text-gray-700 text-sm line-clamp-3">
-              {(relatedConversation.summary || relatedConversation.content || '').slice(0, 120)}...
-            </p>
-          </Link>
-        ))}
-      </div>
-    </section>
+  const relatedSection = (
+    <>
+      {relatedConversations.length > 0 && (
+        <section className="mt-12 bg-white rounded-lg shadow-lg p-6">
+          <h2 className="text-2xl font-bold text-palestine-black mb-6">حوارات ذات صلة</h2>
+          <div className="grid gap-6 md:grid-cols-2">
+            {relatedConversations.map((relatedConversation) => (
+              <Link
+                key={relatedConversation.id}
+                to={`/conversations/${relatedConversation.id}`}
+                className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 block"
+              >
+                <h3 className="font-bold text-palestine-black mb-2 line-clamp-2">
+                  {relatedConversation.title}
+                </h3>
+                <div className="flex flex-wrap gap-1 text-xs text-gray-500 mb-2">
+                  {relatedConversation.participants?.slice(0, 3).map((participant) => (
+                    <span key={participant} className="bg-gray-100 px-2 py-1 rounded">
+                      {participant}
+                    </span>
+                  ))}
+                </div>
+                <p className="text-gray-700 text-sm line-clamp-3">
+                  {(relatedConversation.summary || relatedConversation.content || '').slice(0, 120)}...
+                </p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
+      <Comments contentType="conversation" contentId={conversationId} />
+    </>
   )
 
   return (

@@ -62,9 +62,15 @@ export const articlesData = [
 ---
 
 *هذا المقال جزء من مشروع توثيق تاريخ العائلات الفلسطينية للحفاظ على التراث والهوية.*`,
-    image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop",
+    image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=600&fit=crop&auto=format",
     tags: ["تاريخ", "فلسطين", "تراث", "عائلة"],
-    readingTime: 8
+    readingTime: 8,
+    coverImage: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&h=600&fit=crop&auto=format",
+    gallery: [
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1509641498745-13c26fd1ed89?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=800&h=600&fit=crop&auto=format"
+    ]
   },
   {
     id: "2",
@@ -162,9 +168,15 @@ export const articlesData = [
 ---
 
 *"التراث ليس ماضياً نتذكره، بل حاضر نعيشه ومستقبل نورثه لأطفالنا"*`,
-    image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&h=400&fit=crop",
+    image: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1200&h=600&fit=crop&auto=format",
     tags: ["تراث", "ثقافة", "فلسطين", "طعام", "حرف"],
-    readingTime: 12
+    readingTime: 12,
+    coverImage: "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=1200&h=600&fit=crop&auto=format",
+    gallery: [
+      "https://images.unsplash.com/photo-1544735716-392fe2489ffa?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1577563908411-5077b6dc7624?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1509440159596-0249088772ff?w=800&h=600&fit=crop&auto=format"
+    ]
   },
   {
     id: "3",
@@ -304,9 +316,15 @@ export const articlesData = [
 ---
 
 *"الوطن ليس المكان الذي نولد فيه فقط، بل المكان الذي نحمله في قلوبنا أينما ذهبنا"*`,
-    image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=400&fit=crop",
+    image: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&h=600&fit=crop&auto=format",
     tags: ["شتات", "هجرة", "فلسطين", "هوية", "نجاح"],
-    readingTime: 15
+    readingTime: 15,
+    coverImage: "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=1200&h=600&fit=crop&auto=format",
+    gallery: [
+      "https://images.unsplash.com/photo-1488646953014-85cb44e25828?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=800&h=600&fit=crop&auto=format"
+    ]
   }
 ]
 
