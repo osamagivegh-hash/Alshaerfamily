@@ -100,7 +100,7 @@ const gallerySchema = new mongoose.Schema({
 
 // Family Tree Schema
 const familyTreeSchema = new mongoose.Schema({
-  patriarch: { type: String, required: true },
+  patriarch: { type: String, default: '' },
   generations: [{
     generation: { type: Number, required: true },
     members: [{ type: String, required: true }]
