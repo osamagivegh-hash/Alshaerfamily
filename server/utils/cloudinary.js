@@ -1,12 +1,54 @@
 const cloudinary = require('cloudinary').v2;
 require('dotenv').config();
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET
-});
+const DEFAULT_UPLOAD_FOLDER = process.env.CLOUDINARY_UPLOAD_FOLDER || 'al-shaer-family';
+
+const hasExplicitUrl = !!process.env.CLOUDINARY_URL;
+const hasDiscreteCreds = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET']
+  .every((key) => !!process.env[key]);
+
+let warnedMissingConfig = false;
+
+if (hasExplicitUrl) {
+  cloudinary.config(process.env.CLOUDINARY_URL);
+  cloudinary.config({ secure: true });
+} else if (hasDiscreteCreds) {
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
+    secure: true
+  });
+}
+
+const getCloudinaryConfig = () => cloudinary.config();
+
+const isConfigured = () => {
+  const config = getCloudinaryConfig();
+  return Boolean(config?.cloud_name && config?.api_key && config?.api_secret);
+};
+
+const shouldUseCloudinary = () => {
+  const preference = (process.env.USE_CLOUDINARY || '').trim().toLowerCase();
+  if (preference === 'true') {
+    if (!isConfigured()) {
+      if (!warnedMissingConfig) {
+        console.warn('[Cloudinary] USE_CLOUDINARY=true but credentials are missing; falling back to local storage.');
+        warnedMissingConfig = true;
+      }
+      return false;
+    }
+    return true;
+  }
+  if (preference === 'false') return false;
+  return isConfigured();
+};
+
+const ensureConfigured = () => {
+  if (!isConfigured()) {
+    throw new Error('Cloudinary is not configured. Check environment variables.');
+  }
+};
 
 /**
  * Upload image to Cloudinary
@@ -14,7 +56,8 @@ cloudinary.config({
  * @param {String} folder - Folder name in Cloudinary (optional)
  * @returns {Promise<Object>} Upload result with URL
  */
-const uploadImage = async (imageBuffer, folder = 'al-shaer-family') => {
+const uploadImage = async (imageBuffer, folder = DEFAULT_UPLOAD_FOLDER) => {
+  ensureConfigured();
   return new Promise((resolve, reject) => {
     const uploadOptions = {
       folder: folder,
@@ -44,8 +87,9 @@ const uploadImage = async (imageBuffer, folder = 'al-shaer-family') => {
  * @param {String} folder - Folder name in Cloudinary (optional)
  * @returns {Promise<Object>} Upload result with URL
  */
-const uploadImageFromPath = async (filePath, folder = 'al-shaer-family') => {
+const uploadImageFromPath = async (filePath, folder = DEFAULT_UPLOAD_FOLDER) => {
   try {
+    ensureConfigured();
     const result = await cloudinary.uploader.upload(filePath, {
       folder: folder,
       resource_type: 'auto',
@@ -67,6 +111,7 @@ const uploadImageFromPath = async (filePath, folder = 'al-shaer-family') => {
  */
 const deleteImage = async (publicId) => {
   try {
+    ensureConfigured();
     const result = await cloudinary.uploader.destroy(publicId);
     return result;
   } catch (error) {
@@ -99,6 +144,9 @@ module.exports = {
   uploadImage,
   uploadImageFromPath,
   deleteImage,
-  getPublicIdFromUrl
+  getPublicIdFromUrl,
+  isConfigured,
+  shouldUseCloudinary,
+  DEFAULT_UPLOAD_FOLDER
 };
 
