@@ -7,7 +7,8 @@ const {
   Gallery, 
   FamilyTree, 
   Contacts,
-  Comments
+  Comments,
+  FamilyTickerNews
 } = require('../models');
 const router = express.Router();
 
@@ -391,6 +392,40 @@ router.get('/comments/:contentType/:contentId/count', async (req, res) => {
   } catch (error) {
     console.error('Error counting comments:', error);
     res.status(500).json({ message: 'خطأ في حساب التعليقات' });
+  }
+});
+
+// ==================== TICKER NEWS ENDPOINTS ====================
+
+// GET active family ticker news headlines
+router.get('/ticker/family-news', async (req, res) => {
+  try {
+    const items = await FamilyTickerNews.find({ active: true })
+      .sort({ order: 1, createdAt: -1 })
+      .select('headline');
+    
+    const headlines = items.map(item => item.headline);
+    
+    // Fallback to default headlines if database is empty
+    if (headlines.length === 0) {
+      const defaultHeadlines = [
+        "تهنئة لنجاح الطالبة ليان الشاعر بالثانوية العامة 🎓",
+        "اجتماع العائلة السنوي يوم الجمعة القادم في نابلس 🕌",
+        "صدور كتاب جديد للدكتور محمد الشاعر 📘"
+      ];
+      return res.json(defaultHeadlines);
+    }
+    
+    res.json(headlines);
+  } catch (error) {
+    console.error('Error fetching family ticker news:', error);
+    // Fallback to default headlines on error
+    const defaultHeadlines = [
+      "تهنئة لنجاح الطالبة ليان الشاعر بالثانوية العامة 🎓",
+      "اجتماع العائلة السنوي يوم الجمعة القادم في نابلس 🕌",
+      "صدور كتاب جديد للدكتور محمد الشاعر 📘"
+    ];
+    res.json(defaultHeadlines);
   }
 });
 

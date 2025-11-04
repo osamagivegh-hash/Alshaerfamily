@@ -138,6 +138,28 @@ const commentsSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Family Ticker News Schema
+const familyTickerNewsSchema = new mongoose.Schema({
+  headline: { type: String, required: true },
+  active: { type: Boolean, default: true },
+  order: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Ticker Settings Schema (for Palestine news ticker configuration)
+const tickerSettingsSchema = new mongoose.Schema({
+  palestineTickerEnabled: { type: Boolean, default: true },
+  autoUpdateInterval: { type: Number, default: 60000 }, // in milliseconds
+  maxHeadlines: { type: Number, default: 10 },
+  newsApiProvider: { 
+    type: String, 
+    enum: ['gnews', 'newsapi'], 
+    default: 'gnews' 
+  },
+  updatedAt: { type: Date, default: Date.now }
+});
+
 // Create Models
 const Admin = mongoose.model('Admin', adminSchema);
 const News = mongoose.model('News', newsSchema);
@@ -148,6 +170,8 @@ const Gallery = mongoose.model('Gallery', gallerySchema);
 const FamilyTree = mongoose.model('FamilyTree', familyTreeSchema);
 const Contacts = mongoose.model('Contacts', contactsSchema);
 const Comments = mongoose.model('Comments', commentsSchema);
+const FamilyTickerNews = mongoose.model('FamilyTickerNews', familyTickerNewsSchema);
+const TickerSettings = mongoose.model('TickerSettings', tickerSettingsSchema);
 
 module.exports = {
   connectDB,
@@ -159,5 +183,7 @@ module.exports = {
   Gallery,
   FamilyTree,
   Contacts,
-  Comments
+  Comments,
+  FamilyTickerNews,
+  TickerSettings
 };

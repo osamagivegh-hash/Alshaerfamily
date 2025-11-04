@@ -23,6 +23,7 @@ import AdminGallery from './components/admin/AdminGallery'
 import AdminFamilyTree from './components/admin/AdminFamilyTree'
 import AdminContacts from './components/admin/AdminContacts'
 import AdminSettings from './components/admin/AdminSettings'
+import AdminTickers from './components/admin/AdminTickers'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
               <Route path="gallery" element={<AdminGallery />} />
               <Route path="family-tree" element={<AdminFamilyTree />} />
               <Route path="contacts" element={<AdminContacts />} />
+              <Route path="tickers" element={<AdminTickers />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
             <Route path="*" element={<NotFound />} />

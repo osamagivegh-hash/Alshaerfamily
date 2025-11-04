@@ -9,7 +9,9 @@ const {
   Palestine, 
   Gallery, 
   FamilyTree, 
-  Contacts 
+  Contacts,
+  FamilyTickerNews,
+  TickerSettings
 } = require('../models');
 
 // Import storage configuration
@@ -355,5 +357,159 @@ const saveToLocalStorage = async (req, res) => {
     url: fileUrl 
   });
 };
+
+// ==================== FAMILY TICKER NEWS CRUD ====================
+
+// GET all family ticker news items
+router.get('/family-ticker-news', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const items = await FamilyTickerNews.find().sort({ order: 1, createdAt: -1 });
+    res.json(normalizeDocument(items));
+  } catch (error) {
+    console.error('Get family ticker news error:', error);
+    res.status(500).json({ message: 'خطأ في جلب أخبار الشريط العائلي' });
+  }
+});
+
+// GET active family ticker news items (for public API)
+router.get('/family-ticker-news/active', async (req, res) => {
+  try {
+    const items = await FamilyTickerNews.find({ active: true })
+      .sort({ order: 1, createdAt: -1 })
+      .select('headline');
+    
+    const headlines = items.map(item => item.headline);
+    res.json(headlines);
+  } catch (error) {
+    console.error('Get active family ticker news error:', error);
+    res.status(500).json({ message: 'خطأ في جلب أخبار الشريط العائلي' });
+  }
+});
+
+// GET single family ticker news item
+router.get('/family-ticker-news/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await FamilyTickerNews.findById(id);
+    
+    if (!item) {
+      return res.status(404).json({ message: 'عنصر الشريط غير موجود' });
+    }
+    
+    res.json(normalizeDocument(item));
+  } catch (error) {
+    console.error('Get family ticker news item error:', error);
+    res.status(500).json({ message: 'خطأ في جلب عنصر الشريط' });
+  }
+});
+
+// POST create new family ticker news item
+router.post('/family-ticker-news', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { headline, active, order } = req.body;
+    
+    if (!headline || headline.trim() === '') {
+      return res.status(400).json({ message: 'العنوان مطلوب' });
+    }
+    
+    const newItem = new FamilyTickerNews({
+      headline: headline.trim(),
+      active: active !== undefined ? active : true,
+      order: order || 0
+    });
+    
+    const savedItem = await newItem.save();
+    res.status(201).json(normalizeDocument(savedItem));
+  } catch (error) {
+    console.error('Create family ticker news error:', error);
+    res.status(500).json({ message: 'خطأ في إضافة عنصر الشريط' });
+  }
+});
+
+// PUT update family ticker news item
+router.put('/family-ticker-news/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { headline, active, order } = req.body;
+    
+    const item = await FamilyTickerNews.findById(id);
+    if (!item) {
+      return res.status(404).json({ message: 'عنصر الشريط غير موجود' });
+    }
+    
+    if (headline !== undefined) item.headline = headline.trim();
+    if (active !== undefined) item.active = active;
+    if (order !== undefined) item.order = order;
+    item.updatedAt = new Date();
+    
+    const updatedItem = await item.save();
+    res.json(normalizeDocument(updatedItem));
+  } catch (error) {
+    console.error('Update family ticker news error:', error);
+    res.status(500).json({ message: 'خطأ في تحديث عنصر الشريط' });
+  }
+});
+
+// DELETE family ticker news item
+router.delete('/family-ticker-news/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await FamilyTickerNews.findByIdAndDelete(id);
+    
+    if (!item) {
+      return res.status(404).json({ message: 'عنصر الشريط غير موجود' });
+    }
+    
+    res.json({ message: 'تم حذف عنصر الشريط بنجاح' });
+  } catch (error) {
+    console.error('Delete family ticker news error:', error);
+    res.status(500).json({ message: 'خطأ في حذف عنصر الشريط' });
+  }
+});
+
+// ==================== TICKER SETTINGS ====================
+
+// GET ticker settings
+router.get('/ticker-settings', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    let settings = await TickerSettings.findOne();
+    
+    if (!settings) {
+      // Create default settings if none exist
+      settings = new TickerSettings();
+      await settings.save();
+    }
+    
+    res.json(normalizeDocument(settings));
+  } catch (error) {
+    console.error('Get ticker settings error:', error);
+    res.status(500).json({ message: 'خطأ في جلب إعدادات الشريط' });
+  }
+});
+
+// PUT update ticker settings
+router.put('/ticker-settings', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { palestineTickerEnabled, autoUpdateInterval, maxHeadlines, newsApiProvider } = req.body;
+    
+    let settings = await TickerSettings.findOne();
+    
+    if (!settings) {
+      settings = new TickerSettings();
+    }
+    
+    if (palestineTickerEnabled !== undefined) settings.palestineTickerEnabled = palestineTickerEnabled;
+    if (autoUpdateInterval !== undefined) settings.autoUpdateInterval = autoUpdateInterval;
+    if (maxHeadlines !== undefined) settings.maxHeadlines = maxHeadlines;
+    if (newsApiProvider !== undefined) settings.newsApiProvider = newsApiProvider;
+    settings.updatedAt = new Date();
+    
+    const updatedSettings = await settings.save();
+    res.json(normalizeDocument(updatedSettings));
+  } catch (error) {
+    console.error('Update ticker settings error:', error);
+    res.status(500).json({ message: 'خطأ في تحديث إعدادات الشريط' });
+  }
+});
 
 module.exports = router;

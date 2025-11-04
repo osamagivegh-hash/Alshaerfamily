@@ -243,4 +243,73 @@ export const adminUpload = {
   }
 }
 
+// Family Ticker News API
+export const adminFamilyTickerNews = {
+  getAll: async () => {
+    try {
+      const response = await adminApi.get('/family-ticker-news')
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب أخبار الشريط العائلي')
+    }
+  },
+
+  getById: async (id) => {
+    try {
+      const response = await adminApi.get(`/family-ticker-news/${id}`)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب عنصر الشريط')
+    }
+  },
+
+  create: async (data) => {
+    try {
+      const response = await adminApi.post('/family-ticker-news', data)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في إضافة عنصر الشريط')
+    }
+  },
+
+  update: async (id, data) => {
+    try {
+      const response = await adminApi.put(`/family-ticker-news/${id}`, data)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في تحديث عنصر الشريط')
+    }
+  },
+
+  delete: async (id) => {
+    try {
+      const response = await adminApi.delete(`/family-ticker-news/${id}`)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في حذف عنصر الشريط')
+    }
+  }
+}
+
+// Ticker Settings API
+export const adminTickerSettings = {
+  get: async () => {
+    try {
+      const response = await adminApi.get('/ticker-settings')
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب إعدادات الشريط')
+    }
+  },
+
+  update: async (data) => {
+    try {
+      const response = await adminApi.put('/ticker-settings', data)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في تحديث إعدادات الشريط')
+    }
+  }
+}
+
 export default adminApi

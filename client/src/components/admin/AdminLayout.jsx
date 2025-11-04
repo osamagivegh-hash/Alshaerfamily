@@ -17,6 +17,7 @@ const AdminLayout = () => {
     { id: 'articles', label: 'المقالات', path: '/admin/articles', icon: '📝' },
     { id: 'gallery', label: 'معرض الصور', path: '/admin/gallery', icon: '🖼️' },
     { id: 'contacts', label: 'الرسائل', path: '/admin/contacts', icon: '📧' },
+    { id: 'tickers', label: 'شريط الأخبار', path: '/admin/tickers', icon: '📺' },
     { id: 'settings', label: 'الإعدادات', path: '/admin/settings', icon: '⚙️' },
   ]
 
