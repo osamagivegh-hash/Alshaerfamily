@@ -1,4 +1,6 @@
 import React, { useState } from 'react'
+import ImageWithFallback from './common/ImageWithFallback'
+import { normalizeImageUrl } from '../utils/imageUtils'
 
 const Gallery = ({ data }) => {
   const [selectedImage, setSelectedImage] = useState(null)
@@ -34,23 +36,14 @@ const Gallery = ({ data }) => {
               onClick={() => setSelectedGallery(gallery)}
             >
               {gallery.images && gallery.images.length > 0 ? (
-                <div className="w-full h-48 rounded-lg mb-4 overflow-hidden">
-                  <img
-                    src={gallery.images[0]}
-                    alt={gallery.title}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.style.display = 'none'
-                      e.target.nextSibling.style.display = 'flex'
-                    }}
-                  />
-                  <div className="w-full h-48 bg-gradient-to-br from-olive-200 to-olive-300 rounded-lg hidden items-center justify-center">
-                    <div className="text-center text-olive-700">
-                      <div className="text-4xl mb-2">🖼️</div>
-                      <p className="text-sm">{gallery.images?.length || 0} صورة</p>
-                    </div>
-                  </div>
-                </div>
+                <ImageWithFallback
+                  src={normalizeImageUrl(gallery.images[0])}
+                  alt={gallery.title}
+                  containerClassName="w-full h-48 rounded-lg mb-4 overflow-hidden"
+                  imgClassName="w-full h-full object-cover"
+                  fallbackIcon="🖼️"
+                  fallbackText={`${gallery.images?.length || 0} صورة`}
+                />
               ) : (
                 <div className="w-full h-48 bg-gradient-to-br from-olive-200 to-olive-300 rounded-lg mb-4 flex items-center justify-center">
                   <div className="text-center text-olive-700">
@@ -103,14 +96,12 @@ const Gallery = ({ data }) => {
                         onClick={() => setSelectedImage({ url: image, gallery: selectedGallery, index })}
                       >
                         <div className="aspect-square overflow-hidden rounded-lg">
-                          <img
-                            src={image}
+                          <ImageWithFallback
+                            src={normalizeImageUrl(image)}
                             alt={`${selectedGallery.title} - ${index + 1}`}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            onError={(e) => {
-                              e.target.style.display = 'none'
-                              e.target.parentElement.innerHTML = '<div class="w-full h-full bg-gray-200 flex items-center justify-center"><div class="text-4xl text-gray-400">📷</div></div>'
-                            }}
+                            containerClassName="w-full h-full"
+                            imgClassName="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            fallbackIcon="📷"
                           />
                         </div>
                         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300 flex items-center justify-center">
@@ -145,15 +136,13 @@ const Gallery = ({ data }) => {
               </button>
               
               <div className="bg-transparent rounded-lg overflow-hidden">
-                <img
-                  src={selectedImage.url}
+                <ImageWithFallback
+                  src={normalizeImageUrl(selectedImage.url)}
                   alt={selectedImage.gallery?.title}
-                  className="w-full h-auto max-h-[80vh] object-contain mx-auto"
-                  onError={(e) => {
-                    e.target.src = ''
-                    e.target.style.display = 'none'
-                    e.target.parentElement.innerHTML = '<div class="w-full h-96 bg-gray-800 flex items-center justify-center"><div class="text-white text-center"><div class="text-6xl mb-4">❌</div><p class="text-xl">فشل تحميل الصورة</p></div></div>'
-                  }}
+                  containerClassName="w-full"
+                  imgClassName="w-full h-auto max-h-[80vh] object-contain mx-auto"
+                  fallbackIcon="❌"
+                  fallbackText="فشل تحميل الصورة"
                 />
                 
                 {selectedImage.gallery && (
