@@ -110,11 +110,15 @@ const FullPostLayout = ({
             </div>
 
             {coverImage && (
-              <div className="mt-6">
+              <div className={`mt-6 ${type === 'dialogue' ? 'max-w-2xl mx-auto' : ''}`}>
                 <ImageWithFallback
                   src={coverImage}
                   alt={coverAlt || title}
-                  containerClassName="w-full aspect-video rounded-lg overflow-hidden shadow"
+                  containerClassName={`w-full rounded-lg overflow-hidden shadow ${
+                    type === 'dialogue' 
+                      ? 'aspect-[21/9] max-h-96' 
+                      : 'aspect-video'
+                  }`}
                   imgClassName="w-full h-full object-cover"
                   fallbackText=""
                 />
