@@ -20,6 +20,19 @@ const cloudinaryUtils = require('../utils/cloudinary');
 
 const router = express.Router();
 
+// Helper function to normalize MongoDB documents (convert _id to id)
+const normalizeDocument = (doc) => {
+  if (!doc) return null;
+  if (Array.isArray(doc)) {
+    return doc.map(item => normalizeDocument(item));
+  }
+  const normalized = doc.toObject ? doc.toObject() : { ...doc };
+  if (normalized._id) {
+    normalized.id = normalized._id.toString();
+  }
+  return normalized;
+};
+
 // Auth routes
 router.post('/login', login);
 router.post('/change-password', authenticateToken, requireAdmin, changePassword);
@@ -70,7 +83,7 @@ const createCRUDRoutes = (sectionName, Model) => {
   router.get(`/${sectionName}`, authenticateToken, requireAdmin, async (req, res) => {
     try {
       const data = await Model.find().sort({ createdAt: -1 });
-      res.json(data);
+      res.json(normalizeDocument(data));
     } catch (error) {
       console.error(`Get ${sectionName} error:`, error);
       res.status(500).json({ message: `خطأ في جلب ${sectionName}` });
@@ -84,7 +97,7 @@ const createCRUDRoutes = (sectionName, Model) => {
       const item = await Model.findById(id);
       
       if (item) {
-        res.json(item);
+        res.json(normalizeDocument(item));
       } else {
         res.status(404).json({ message: 'العنصر غير موجود' });
       }
@@ -102,7 +115,7 @@ const createCRUDRoutes = (sectionName, Model) => {
       
       res.status(201).json({ 
         message: 'تم إضافة العنصر بنجاح', 
-        item: savedItem 
+        item: normalizeDocument(savedItem) 
       });
     } catch (error) {
       console.error(`Create ${sectionName} error:`, error);
@@ -123,7 +136,7 @@ const createCRUDRoutes = (sectionName, Model) => {
       if (updatedItem) {
         res.json({ 
           message: 'تم تحديث العنصر بنجاح', 
-          item: updatedItem 
+          item: normalizeDocument(updatedItem) 
         });
       } else {
         res.status(404).json({ message: 'العنصر غير موجود' });
@@ -191,7 +204,7 @@ router.get('/family-tree', authenticateToken, requireAdmin, async (req, res) => 
       familyTree = new FamilyTree({ patriarch: '', generations: [] });
       await familyTree.save();
     }
-    res.json(familyTree);
+    res.json(normalizeDocument(familyTree));
   } catch (error) {
     console.error('Get family tree error:', error);
     res.status(500).json({ message: 'خطأ في جلب شجرة العائلة' });
@@ -217,7 +230,7 @@ router.put('/family-tree', authenticateToken, requireAdmin, async (req, res) => 
     
     res.json({ 
       message: 'تم تحديث شجرة العائلة بنجاح', 
-      data: familyTree 
+      data: normalizeDocument(familyTree) 
     });
   } catch (error) {
     console.error('Update family tree error:', error);
@@ -229,7 +242,7 @@ router.put('/family-tree', authenticateToken, requireAdmin, async (req, res) => 
 router.get('/contacts', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const contacts = await Contacts.find().sort({ date: -1 });
-    res.json(contacts);
+    res.json(normalizeDocument(contacts));
   } catch (error) {
     console.error('Get contacts error:', error);
     res.status(500).json({ message: 'خطأ في جلب الرسائل' });

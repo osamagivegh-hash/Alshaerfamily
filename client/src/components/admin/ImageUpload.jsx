@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import adminApi from '../../utils/adminApi'
+import adminApi, { adminUpload } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
+import { normalizeImageUrl } from '../../utils/imageUtils'
 
 const ImageUpload = ({ 
   value = '', 
@@ -32,31 +33,16 @@ const ImageUpload = ({
 
     setUploading(true)
     try {
-      // Create FormData for file upload
-      const formData = new FormData()
-      formData.append('image', file)
+      // Upload image using adminUpload utility
+      const response = await adminUpload.uploadImage(file)
 
-      // Upload image
-      const response = await adminApi.post('/upload', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-
-      // Get the full URL - handle both relative and absolute URLs
-      let imageUrl = response.data.url
-      if (imageUrl && !imageUrl.startsWith('http')) {
-        // If relative URL, make it absolute
-        const baseUrl = import.meta.env.PROD 
-          ? window.location.origin 
-          : 'http://localhost:5000'
-        imageUrl = `${baseUrl}${imageUrl}`
-      }
+      // Normalize the image URL
+      const imageUrl = normalizeImageUrl(response.url)
 
       // Set preview
       setPreview(imageUrl)
       
-      // Call onChange with the image URL
+      // Call onChange with the normalized image URL
       if (onChange) {
         onChange(imageUrl)
       }
@@ -64,7 +50,7 @@ const ImageUpload = ({
       toast.success('تم رفع الصورة بنجاح')
     } catch (error) {
       console.error('Upload error:', error)
-      toast.error(error.response?.data?.message || 'فشل رفع الصورة')
+      toast.error(error.response?.data?.message || error.message || 'فشل رفع الصورة')
     } finally {
       setUploading(false)
     }
@@ -142,7 +128,7 @@ const ImageUpload = ({
         <div className="mt-4 relative">
           <div className="w-full h-48 rounded-lg overflow-hidden border border-gray-200 shadow-sm">
             <img
-              src={preview}
+              src={normalizeImageUrl(preview)}
               alt="معاينة الصورة"
               className="w-full h-full object-cover"
               onError={() => {

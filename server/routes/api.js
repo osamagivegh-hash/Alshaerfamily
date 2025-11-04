@@ -123,21 +123,34 @@ const sampleData = {
 // Note: Sample data is now handled by MongoDB initialization script
 // Run: cd server && node scripts/initializeData.js to populate sample data
 
+// Helper function to normalize MongoDB documents (convert _id to id)
+const normalizeDocument = (doc) => {
+  if (!doc) return null;
+  if (Array.isArray(doc)) {
+    return doc.map(item => normalizeDocument(item));
+  }
+  const normalized = doc.toObject ? doc.toObject() : { ...doc };
+  if (normalized._id) {
+    normalized.id = normalized._id.toString();
+  }
+  return normalized;
+};
+
 // Get all sections data
 router.get('/sections', async (req, res) => {
   try {
     const sections = {};
     
     // Fetch data from MongoDB collections
-    sections.news = await News.find().sort({ date: -1 }).limit(10);
-    sections.conversations = await Conversations.find().sort({ date: -1 }).limit(10);
-    sections.articles = await Articles.find().sort({ date: -1 }).limit(10);
-    sections.palestine = await Palestine.find().sort({ createdAt: -1 });
-    sections.gallery = await Gallery.find().sort({ createdAt: -1 });
+    sections.news = normalizeDocument(await News.find().sort({ date: -1 }).limit(10));
+    sections.conversations = normalizeDocument(await Conversations.find().sort({ date: -1 }).limit(10));
+    sections.articles = normalizeDocument(await Articles.find().sort({ date: -1 }).limit(10));
+    sections.palestine = normalizeDocument(await Palestine.find().sort({ createdAt: -1 }));
+    sections.gallery = normalizeDocument(await Gallery.find().sort({ createdAt: -1 }));
     
     // Get family tree
     const familyTree = await FamilyTree.findOne();
-    sections.familyTree = familyTree || { patriarch: '', generations: [] };
+    sections.familyTree = normalizeDocument(familyTree) || { patriarch: '', generations: [] };
     
     res.json(sections);
   } catch (error) {
@@ -154,23 +167,23 @@ router.get('/sections/:section', async (req, res) => {
     
     switch (section) {
       case 'news':
-        data = await News.find().sort({ date: -1 }).limit(10);
+        data = normalizeDocument(await News.find().sort({ date: -1 }).limit(10));
         break;
       case 'conversations':
-        data = await Conversations.find().sort({ date: -1 }).limit(10);
+        data = normalizeDocument(await Conversations.find().sort({ date: -1 }).limit(10));
         break;
       case 'articles':
-        data = await Articles.find().sort({ date: -1 }).limit(10);
+        data = normalizeDocument(await Articles.find().sort({ date: -1 }).limit(10));
         break;
       case 'palestine':
-        data = await Palestine.find().sort({ createdAt: -1 });
+        data = normalizeDocument(await Palestine.find().sort({ createdAt: -1 }));
         break;
       case 'gallery':
-        data = await Gallery.find().sort({ createdAt: -1 });
+        data = normalizeDocument(await Gallery.find().sort({ createdAt: -1 }));
         break;
       case 'familyTree':
         const familyTree = await FamilyTree.findOne();
-        data = familyTree || { patriarch: '', generations: [] };
+        data = normalizeDocument(familyTree) || { patriarch: '', generations: [] };
         break;
       default:
         return res.status(404).json({ message: 'القسم غير موجود' });
@@ -239,7 +252,7 @@ router.get('/articles/:id', async (req, res) => {
       return res.status(404).json({ message: 'المقال غير موجود' });
     }
     
-    res.json(article);
+    res.json(normalizeDocument(article));
   } catch (error) {
     console.error('Error reading article:', error);
     res.status(500).json({ message: 'خطأ في قراءة المقال' });
@@ -266,7 +279,7 @@ router.get('/conversations/:id', async (req, res) => {
       return res.status(404).json({ message: 'الحوار غير موجود' });
     }
     
-    res.json(conversation);
+    res.json(normalizeDocument(conversation));
   } catch (error) {
     console.error('Error reading conversation:', error);
     res.status(500).json({ message: 'خطأ في قراءة الحوار' });
@@ -293,7 +306,7 @@ router.get('/news/:id', async (req, res) => {
       return res.status(404).json({ message: 'الخبر غير موجود' });
     }
     
-    res.json(news);
+    res.json(normalizeDocument(news));
   } catch (error) {
     console.error('Error reading news:', error);
     res.status(500).json({ message: 'خطأ في قراءة الخبر' });

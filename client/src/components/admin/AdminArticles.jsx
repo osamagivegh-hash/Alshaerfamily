@@ -3,6 +3,8 @@ import { adminArticles } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../LoadingSpinner'
 import ImageUpload from './ImageUpload'
+import ImageWithFallback from '../common/ImageWithFallback'
+import { normalizeImageUrl } from '../../utils/imageUtils'
 
 const AdminArticles = () => {
   const [articles, setArticles] = useState([])
@@ -124,7 +126,7 @@ const AdminArticles = () => {
     if (selectedArticles.length === articles.length) {
       setSelectedArticles([])
     } else {
-      setSelectedArticles(articles.map(item => item.id))
+      setSelectedArticles(articles.map(item => item.id || item._id))
     }
   }
 
@@ -308,35 +310,48 @@ const AdminArticles = () => {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {articles.map((article) => (
-              <div key={article.id} className="p-4 hover:bg-gray-50">
+            {articles.map((article) => {
+              const articleId = article.id || article._id
+              return (
+              <div key={articleId} className="p-4 hover:bg-gray-50">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center">
+                  <div className="flex items-center gap-4 flex-1">
                     <input
                       type="checkbox"
-                      checked={selectedArticles.includes(article.id)}
+                      checked={selectedArticles.includes(articleId)}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setSelectedArticles([...selectedArticles, article.id])
+                          setSelectedArticles([...selectedArticles, articleId])
                         } else {
-                          setSelectedArticles(selectedArticles.filter(id => id !== article.id))
+                          setSelectedArticles(selectedArticles.filter(id => id !== articleId))
                         }
                       }}
                       className="ml-3"
                     />
-                    <div>
+                    {article.image && (
+                      <div className="w-20 h-20 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200">
+                        <ImageWithFallback
+                          src={normalizeImageUrl(article.image)}
+                          alt={article.title}
+                          containerClassName="w-full h-full"
+                          imgClassName="w-full h-full object-cover"
+                          fallbackIcon="📄"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-1">
                       <h3 className="text-lg font-semibold text-palestine-black">
                         {article.title}
                       </h3>
                       <p className="text-gray-600 mt-1">
-                        {article.content.substring(0, 150)}...
+                        {article.content?.substring(0, 150)}...
                       </p>
                       <div className="flex items-center mt-2 text-sm text-gray-500">
                         <span>بواسطة: {article.author}</span>
                         <span className="mx-2">•</span>
                         <span>{new Date(article.date).toLocaleDateString('ar-SA')}</span>
                         <span className="mx-2">•</span>
-                        <span>{article.content.length} حرف</span>
+                        <span>{article.content?.length || 0} حرف</span>
                       </div>
                     </div>
                   </div>
@@ -349,7 +364,7 @@ const AdminArticles = () => {
                       تعديل
                     </button>
                     <button
-                      onClick={() => handleDelete(article.id || article._id)}
+                      onClick={() => handleDelete(articleId)}
                       className="bg-palestine-red text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors duration-200"
                     >
                       حذف
@@ -357,7 +372,7 @@ const AdminArticles = () => {
                   </div>
                 </div>
               </div>
-            ))}
+            )})}
           </div>
         )}
       </div>
