@@ -1,5 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react'
 import Header from './Header'
+import NewsTickers from './NewsTickers'
 import Hero from './Hero'
 import LoadingSpinner from './LoadingSpinner'
 import LazySection from './common/LazySection'
@@ -69,7 +70,8 @@ const PublicApp = () => {
   return (
     <>
       <Header />
-      <main>
+      <NewsTickers />
+      <main style={{ paddingTop: '144px' }} className="md:pt-40">
         <Hero />
         
         <LazySection>

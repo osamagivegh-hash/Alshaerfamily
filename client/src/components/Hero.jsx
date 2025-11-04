@@ -3,7 +3,7 @@ import OliveTree from './OliveTree'
 
 const Hero = () => {
   return (
-    <section id="hero" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-palestine-white to-olive-50 pt-16">
+    <section id="hero" className="min-h-screen flex items-center justify-center bg-gradient-to-b from-palestine-white to-olive-50">
       <div className="section-container text-center">
         <div className="fade-in">
           {/* Olive Tree Illustration */}
