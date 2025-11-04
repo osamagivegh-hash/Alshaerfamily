@@ -1,7 +1,6 @@
 const express = require('express');
 const fs = require('fs-extra');
 const path = require('path');
-const multer = require('multer');
 const { authenticateToken, requireAdmin, login, changePassword } = require('../middleware/auth');
 const { 
   News, 
@@ -13,32 +12,13 @@ const {
   Contacts 
 } = require('../models');
 
+// Import storage configuration
+const { upload, isCloudinaryConfigured, cloudinaryFolder, uploadsDir } = require('../config/storage');
+
 // Import Cloudinary utilities
 const cloudinaryUtils = require('../utils/cloudinary');
 
 const router = express.Router();
-const uploadsDir = path.join(__dirname, '../uploads');
-
-// Ensure uploads directory exists
-fs.ensureDirSync(uploadsDir);
-
-// Configure multer for file uploads (memory storage for Cloudinary)
-const storage = multer.memoryStorage();
-
-const upload = multer({ 
-  storage: storage,
-  limits: {
-    fileSize: parseInt(process.env.MAX_FILE_SIZE) || 5 * 1024 * 1024 // 5MB limit
-  },
-  fileFilter: (req, file, cb) => {
-    const allowedTypes = process.env.ALLOWED_FILE_TYPES?.split(',') || ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-    if (allowedTypes.includes(file.mimetype)) {
-      cb(null, true);
-    } else {
-      cb(new Error('فقط الصور مسموحة'), false);
-    }
-  }
-});
 
 // Auth routes
 router.post('/login', login);
@@ -304,15 +284,10 @@ router.post('/upload', authenticateToken, requireAdmin, upload.single('image'), 
       return res.status(400).json({ message: 'لم يتم اختيار ملف' });
     }
 
-    const useCloudinary = process.env.USE_CLOUDINARY === 'true' && 
-                          process.env.CLOUDINARY_CLOUD_NAME && 
-                          process.env.CLOUDINARY_API_KEY && 
-                          process.env.CLOUDINARY_API_SECRET;
-
-    if (useCloudinary) {
+    if (isCloudinaryConfigured) {
       // Upload to Cloudinary
       try {
-        const result = await cloudinaryUtils.uploadImage(req.file.buffer, 'al-shaer-family');
+        const result = await cloudinaryUtils.uploadImage(req.file.buffer, cloudinaryFolder);
         res.json({ 
           message: 'تم رفع الملف بنجاح إلى Cloudinary', 
           filename: result.public_id,

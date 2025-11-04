@@ -113,6 +113,20 @@ app.get('/api/debug/admin', async (req, res) => {
   }
 });
 
+// Storage status (for quick runtime checks)
+app.get('/api/storage/status', (req, res) => {
+  try {
+    const { isCloudinaryConfigured } = require('./config/storage');
+    res.json({
+      storage: isCloudinaryConfigured ? 'cloudinary' : 'local',
+      cloud_name: isCloudinaryConfigured ? process.env.CLOUDINARY_CLOUD_NAME : null
+    });
+  } catch (e) {
+    res.status(500).json({ error: 'storage status error', details: String(e) });
+  }
+});
+
+
 // Manual admin creation endpoint (remove in production)
 app.post('/api/debug/create-admin', async (req, res) => {
   try {
@@ -199,3 +213,13 @@ app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`خادم عائلة الشاعر يعمل على المنفذ ${PORT}`);
 });
+
+// Log storage mode
+      try {
+        const { isCloudinaryConfigured } = require('./config/storage');
+        console.log(`Storage mode: ${isCloudinaryConfigured ? 'Cloudinary' : 'Local (dev only)'}`);
+      } catch (e) {
+        console.warn('Storage status check failed:', e);
+      }
+      
+      
