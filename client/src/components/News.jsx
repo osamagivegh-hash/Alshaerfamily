@@ -73,13 +73,6 @@ const News = ({ data }) => {
             )
           })}
         </div>
-        
-        {/* Load More Button */}
-        <div className="text-center mt-12">
-          <button className="btn-primary">
-            عرض المزيد من الأخبار
-          </button>
-        </div>
       </div>
     </section>
   )

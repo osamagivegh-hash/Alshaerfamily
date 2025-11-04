@@ -141,8 +141,8 @@ router.get('/sections', async (req, res) => {
   try {
     const sections = {};
     
-    // Fetch data from MongoDB collections
-    sections.news = normalizeDocument(await News.find().sort({ date: -1 }).limit(10));
+    // Fetch data from MongoDB collections - removed limit to show all items
+    sections.news = normalizeDocument(await News.find().sort({ date: -1 }));
     sections.conversations = normalizeDocument(await Conversations.find().sort({ date: -1 }).limit(10));
     sections.articles = normalizeDocument(await Articles.find().sort({ date: -1 }).limit(10));
     sections.palestine = normalizeDocument(await Palestine.find().sort({ createdAt: -1 }));
@@ -167,7 +167,7 @@ router.get('/sections/:section', async (req, res) => {
     
     switch (section) {
       case 'news':
-        data = normalizeDocument(await News.find().sort({ date: -1 }).limit(10));
+        data = normalizeDocument(await News.find().sort({ date: -1 }));
         break;
       case 'conversations':
         data = normalizeDocument(await Conversations.find().sort({ date: -1 }).limit(10));

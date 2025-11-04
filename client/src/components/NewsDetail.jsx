@@ -14,6 +14,7 @@ import { api } from '../utils/api'
 const NewsDetail = () => {
   const { id } = useParams()
   const [newsItem, setNewsItem] = useState(null)
+  const [relatedNews, setRelatedNews] = useState([])
   const [loading, setLoading] = useState(true)
   
   useEffect(() => {
@@ -28,6 +29,26 @@ const NewsDetail = () => {
           if (apiNews) {
             apiNews.id = apiNews.id || apiNews._id?.toString() || id
             setNewsItem(apiNews)
+            
+            // Fetch all news to get related items
+            try {
+              const allNewsResponse = await api.get('/sections/news')
+              const allNews = Array.isArray(allNewsResponse.data) ? allNewsResponse.data : []
+              // Filter out current news and get up to 3 related items
+              const related = allNews
+                .filter(item => {
+                  const itemId = item.id || item._id?.toString()
+                  return itemId !== id && itemId !== apiNews.id
+                })
+                .slice(0, 3)
+              setRelatedNews(related)
+            } catch (relatedError) {
+              console.log('Failed to fetch related news from API, using static data:', relatedError)
+              // Fallback to static data for related news
+              const staticRelated = getRelatedNews(apiNews.id || id)
+              setRelatedNews(staticRelated)
+            }
+            
             setLoading(false)
             return
           }
@@ -39,6 +60,8 @@ const NewsDetail = () => {
         const staticNews = getNewsById(id)
         if (staticNews) {
           setNewsItem(staticNews)
+          const staticRelated = getRelatedNews(id)
+          setRelatedNews(staticRelated)
         }
       } catch (error) {
         console.error('Error fetching news:', error)
@@ -49,11 +72,6 @@ const NewsDetail = () => {
     
     fetchNews()
   }, [id])
-  
-  const relatedNews = useMemo(() => {
-    if (!newsItem) return []
-    return getRelatedNews(newsItem.id || id)
-  }, [newsItem, id])
 
   if (loading) {
     return (
@@ -87,11 +105,13 @@ const NewsDetail = () => {
       {relatedNews.length > 0 && (
         <section className="mt-12 bg-white rounded-lg shadow-lg p-6">
           <h2 className="text-2xl font-bold text-palestine-black mb-6">أخبار مشابهة</h2>
-          <div className="grid gap-6 md:grid-cols-2">
-            {relatedNews.map((item) => (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {relatedNews.map((item) => {
+              const itemId = item.id || item._id?.toString()
+              return (
               <Link
-                key={item.id}
-                to={`/news/${item.id}`}
+                key={itemId}
+                to={`/news/${itemId}`}
                 className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow overflow-hidden"
               >
                 {item.image && (
@@ -113,7 +133,8 @@ const NewsDetail = () => {
                   </p>
                 </div>
               </Link>
-            ))}
+              )
+            })}
           </div>
         </section>
       )}
