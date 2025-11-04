@@ -6,6 +6,7 @@ import rehypeRaw from 'rehype-raw'
 import FullPostLayout from './common/FullPostLayout'
 import NotFound from './common/NotFound'
 import ImageWithFallback from './common/ImageWithFallback'
+import { normalizeImageUrl } from '../utils/imageUtils'
 import Comments from './common/Comments'
 import { getArticleById, getRelatedArticles } from '../data'
 import { api } from '../utils/api'
@@ -123,12 +124,12 @@ const ArticleDetail = () => {
       authorRole={article.authorRole}
       authorImage={article.authorImage}
       readingTime={readingTime}
-      coverImage={article.image}
+      coverImage={normalizeImageUrl(article.image)}
       coverAlt={article.title}
       tags={article.tags}
       metaTitle={`${article.title} | مقالات عائلة الشاعر`}
       metaDescription={article.summary}
-      metaImage={article.image}
+      metaImage={normalizeImageUrl(article.image)}
       afterArticle={relatedSection}
     >
       <ReactMarkdown
@@ -137,7 +138,7 @@ const ArticleDetail = () => {
         components={{
           img: ({ src, alt }) => (
             <ImageWithFallback
-              src={src}
+              src={normalizeImageUrl(src)}
               alt={alt || 'صورة'}
               containerClassName="my-4"
               imgClassName="w-full h-auto rounded-lg shadow-md"

@@ -6,6 +6,7 @@ import rehypeRaw from 'rehype-raw'
 import FullPostLayout from './common/FullPostLayout'
 import NotFound from './common/NotFound'
 import ImageWithFallback from './common/ImageWithFallback'
+import { normalizeImageUrl } from '../utils/imageUtils'
 import Comments from './common/Comments'
 import { getDialogueById, getRelatedDialogues } from '../data'
 import { api } from '../utils/api'
@@ -140,12 +141,12 @@ const ConversationDetail = () => {
       authorRole={conversation.moderatorRole || 'مُيسّر الحوار'}
       authorImage={conversation.moderatorImage}
       readingTime={readingTime}
-      coverImage={conversation.image}
+      coverImage={normalizeImageUrl(conversation.image)}
       coverAlt={conversation.title}
       tags={conversation.tags}
       metaTitle={`${conversation.title} | حوارات عائلة الشاعر`}
       metaDescription={conversation.summary}
-      metaImage={conversation.image}
+      metaImage={normalizeImageUrl(conversation.image)}
       afterArticle={
         <>
           {participantsSection}
@@ -160,7 +161,7 @@ const ConversationDetail = () => {
         components={{
           img: ({ src, alt }) => (
             <ImageWithFallback
-              src={src}
+              src={normalizeImageUrl(src)}
               alt={alt || 'صورة'}
               containerClassName="my-4"
               imgClassName="w-full h-auto rounded-lg shadow-md"

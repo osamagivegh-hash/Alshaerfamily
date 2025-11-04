@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { adminGallery, adminUpload } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../LoadingSpinner'
+import ImageWithFallback from '../common/ImageWithFallback'
 
 const AdminGallery = () => {
   const [galleries, setGalleries] = useState([])
@@ -263,18 +264,18 @@ const AdminGallery = () => {
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                     {formData.images.map((image, index) => (
                       <div key={index} className="relative group">
-                        <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="text-2xl mb-1">🖼️</div>
-                            <p className="text-xs text-gray-600 truncate px-2">
-                              {image}
-                            </p>
-                          </div>
-                        </div>
+                        <ImageWithFallback
+                          src={image}
+                          alt={`Uploaded image ${index + 1}`}
+                          containerClassName="aspect-square rounded-lg overflow-hidden"
+                          imgClassName="w-full h-full object-cover"
+                          fallbackIcon="🖼️"
+                          fallbackText={image.substring(0, 30)}
+                        />
                         <button
                           type="button"
                           onClick={() => removeImage(index)}
-                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
                         >
                           ×
                         </button>

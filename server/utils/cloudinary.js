@@ -19,6 +19,8 @@ const uploadImage = async (imageBuffer, folder = 'al-shaer-family') => {
     const uploadOptions = {
       folder: folder,
       resource_type: 'auto',
+      use_filename: true,
+      unique_filename: true,
       // Optimize images
       transformation: [
         { quality: 'auto' },
@@ -30,8 +32,19 @@ const uploadImage = async (imageBuffer, folder = 'al-shaer-family') => {
       uploadOptions,
       (error, result) => {
         if (error) {
+          console.error('Cloudinary upload error:', error);
           return reject(error);
         }
+        // Ensure we have a valid secure_url
+        if (!result || !result.secure_url) {
+          console.error('Cloudinary upload missing secure_url:', result);
+          return reject(new Error('Cloudinary upload failed: missing secure_url'));
+        }
+        console.log('Cloudinary upload successful:', {
+          public_id: result.public_id,
+          url: result.secure_url,
+          format: result.format
+        });
         resolve(result);
       }
     ).end(imageBuffer);

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import ImageWithFallback from './common/ImageWithFallback'
+import { normalizeImageUrl } from '../utils/imageUtils'
 
 const Articles = ({ data }) => {
 
@@ -47,7 +48,7 @@ const Articles = ({ data }) => {
 
                 {article.image && (
                   <ImageWithFallback
-                    src={article.image}
+                    src={normalizeImageUrl(article.image)}
                     alt={article.title}
                     containerClassName="w-full aspect-video rounded-lg overflow-hidden mb-4 shadow"
                     imgClassName="w-full h-full object-cover"

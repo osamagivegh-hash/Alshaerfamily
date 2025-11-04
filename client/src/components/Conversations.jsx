@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import ImageWithFallback from './common/ImageWithFallback'
+import { normalizeImageUrl } from '../utils/imageUtils'
 
 const Conversations = ({ data }) => {
   if (!data || data.length === 0) {
@@ -44,7 +45,7 @@ const Conversations = ({ data }) => {
 
               {conversation.image && (
                 <ImageWithFallback
-                  src={conversation.image}
+                  src={normalizeImageUrl(conversation.image)}
                   alt={conversation.title}
                   containerClassName="w-full aspect-video rounded-lg overflow-hidden mb-4 shadow"
                   imgClassName="w-full h-full object-cover"

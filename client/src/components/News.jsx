@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import ImageWithFallback from './common/ImageWithFallback'
+import { normalizeImageUrl } from '../utils/imageUtils'
 
 const News = ({ data }) => {
   if (!data || data.length === 0) {
@@ -27,7 +28,7 @@ const News = ({ data }) => {
             <article key={newsId} className="card fade-in hover:shadow-xl transition-shadow duration-300 overflow-hidden">
               {newsItem.image && (
                 <ImageWithFallback
-                  src={newsItem.image}
+                  src={normalizeImageUrl(newsItem.image)}
                   alt={newsItem.title}
                   containerClassName="w-full aspect-video rounded-lg overflow-hidden mb-4 shadow"
                   imgClassName="w-full h-full object-cover"

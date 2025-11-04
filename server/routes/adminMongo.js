@@ -288,10 +288,28 @@ router.post('/upload', authenticateToken, requireAdmin, upload.single('image'), 
       // Upload to Cloudinary
       try {
         const result = await cloudinaryUtils.uploadImage(req.file.buffer, cloudinaryFolder);
+        
+        // Validate the response
+        if (!result || !result.secure_url) {
+          throw new Error('Cloudinary upload returned invalid response');
+        }
+        
+        // Ensure URL is complete and valid
+        const imageUrl = result.secure_url;
+        if (!imageUrl.startsWith('http')) {
+          throw new Error(`Invalid Cloudinary URL format: ${imageUrl}`);
+        }
+        
+        console.log('Image uploaded successfully:', {
+          public_id: result.public_id,
+          url: imageUrl,
+          format: result.format
+        });
+        
         res.json({ 
           message: 'تم رفع الملف بنجاح إلى Cloudinary', 
           filename: result.public_id,
-          url: result.secure_url 
+          url: imageUrl 
         });
       } catch (cloudinaryError) {
         console.error('Cloudinary upload error:', cloudinaryError);

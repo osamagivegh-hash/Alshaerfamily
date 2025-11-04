@@ -6,6 +6,7 @@ import rehypeRaw from 'rehype-raw'
 import FullPostLayout from './common/FullPostLayout'
 import NotFound from './common/NotFound'
 import ImageWithFallback from './common/ImageWithFallback'
+import { normalizeImageUrl } from '../utils/imageUtils'
 import Comments from './common/Comments'
 import { getNewsById, getRelatedNews } from '../data'
 import { api } from '../utils/api'
@@ -95,7 +96,7 @@ const NewsDetail = () => {
               >
                 {item.image && (
                   <ImageWithFallback
-                    src={item.image}
+                    src={normalizeImageUrl(item.image)}
                     alt={item.title}
                     containerClassName="w-full aspect-video overflow-hidden"
                     imgClassName="w-full h-full object-cover"
@@ -132,12 +133,12 @@ const NewsDetail = () => {
       authorRole="فريق أخبار عائلة الشاعر"
       authorImage={`https://ui-avatars.com/api/?name=${encodeURIComponent(newsItem.reporter || 'Alshaer News')}&background=007A3D&color=fff`}
       readingTime={readingTime}
-      coverImage={newsItem.image}
+      coverImage={normalizeImageUrl(newsItem.image)}
       coverAlt={newsItem.title}
       tags={newsItem.tags}
       metaTitle={`${newsItem.title} | أخبار عائلة الشاعر`}
       metaDescription={newsItem.summary}
-      metaImage={newsItem.image}
+      metaImage={normalizeImageUrl(newsItem.image)}
       afterArticle={relatedSection}
       shareLabel="شارك هذا الخبر:"
     >
@@ -147,7 +148,7 @@ const NewsDetail = () => {
         components={{
           img: ({ src, alt }) => (
             <ImageWithFallback
-              src={src}
+              src={normalizeImageUrl(src)}
               alt={alt || 'صورة'}
               containerClassName="my-4"
               imgClassName="w-full h-auto rounded-lg shadow-md"
