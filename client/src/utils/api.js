@@ -1,5 +1,4 @@
 import axios from 'axios'
-import { getStaticSections } from '../data'
 
 const API_BASE_URL = '/api'
 
@@ -11,28 +10,25 @@ export const api = axios.create({
   },
 })
 
-// Fetch all sections data
+// Fetch all sections data from MongoDB only
 export const fetchSectionsData = async () => {
   try {
     const response = await api.get('/sections')
     return response.data
   } catch (error) {
     console.error('Error fetching sections data:', error)
-    console.warn('Falling back to static sections data')
-    return getStaticSections()
+    throw new Error('فشل في جلب البيانات من الخادم')
   }
 }
 
-// Fetch specific section data
+// Fetch specific section data from MongoDB only
 export const fetchSectionData = async (section) => {
   try {
     const response = await api.get(`/sections/${section}`)
     return response.data
   } catch (error) {
     console.error(`Error fetching ${section} data:`, error)
-    console.warn(`Falling back to static ${section} data`)
-    const staticSections = getStaticSections()
-    return staticSections[section] ?? null
+    throw new Error(`فشل في جلب بيانات ${section} من الخادم`)
   }
 }
 

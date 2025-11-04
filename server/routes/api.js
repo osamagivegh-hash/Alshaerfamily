@@ -12,118 +12,6 @@ const {
 } = require('../models');
 const router = express.Router();
 
-// Sample data for sections
-const sampleData = {
-  news: [
-    {
-      id: "1",
-      title: "تجمع عائلي كبير في عمان يضم أكثر من 200 فرد من عائلة الشاعر",
-      headline: "تجمع عائلي كبير في عمان",
-      reporter: "أحمد الشاعر",
-      date: "2024-01-25",
-      summary: "نظمت عائلة الشاعر تجمعاً عائلياً كبيراً في العاصمة الأردنية عمان، حضره أكثر من 200 فرد من مختلف أنحاء العالم، في أكبر لقاء عائلي منذ عقود.",
-      content: "شهدت العاصمة الأردنية عمان يوم الجمعة الماضي حدثاً تاريخياً مميزاً، حيث نظمت عائلة الشاعر أكبر تجمع عائلي في تاريخها الحديث، بحضور أكثر من 200 فرد من مختلف أنحاء العالم.",
-      image: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&h=400&fit=crop",
-      tags: ["تجمع عائلي", "عمان", "فعاليات", "تراث", "وحدة"],
-      category: "أخبار العائلة"
-    },
-    {
-      id: "2",
-      title: "د. سامي الشاعر يحصل على جائزة التميز الطبي في كندا",
-      headline: "جائزة التميز الطبي لد. سامي الشاعر",
-      reporter: "ليلى الشاعر",
-      date: "2024-02-18",
-      summary: "حصل د. سامي الشاعر، طبيب القلب المتخصص، على جائزة التميز الطبي من الجمعية الكندية لأطباء القلب، تقديراً لإسهاماته في علاج أمراض القلب والأوعية الدموية.",
-      content: "حصل د. سامي الشاعر، طبيب القلب والأوعية الدموية المتخصص، على جائزة التميز الطبي من الجمعية الكندية لأطباء القلب، وذلك في حفل أقيم في مدينة تورونتو مساء الجمعة الماضي.",
-      image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=400&fit=crop",
-      tags: ["طب", "جائزة", "كندا", "نجاح", "تميز"],
-      category: "إنجازات"
-    }
-  ],
-  conversations: [
-    {
-      id: "1",
-      title: "حوار مع الحاج أبو محمد حول ذكريات فلسطين",
-      moderator: "أحمد الشاعر",
-      moderatorRole: "مُيسّر الحوار",
-      moderatorImage: "https://ui-avatars.com/api/?name=أحمد+الشاعر&background=007A3D&color=fff",
-      date: "2024-01-20",
-      participants: ["الحاج أبو محمد الشاعر", "أم خليل الشاعر", "د. سامي الشاعر"],
-      summary: "حوار مؤثر مع كبار العائلة حول ذكرياتهم في فلسطين قبل النكبة، والحياة في القرى الفلسطينية، والتقاليد التي كانت سائدة.",
-      content: "حوار مؤثر مع كبار العائلة حول ذكرياتهم في فلسطين قبل النكبة، والحياة في القرى الفلسطينية، والتقاليد التي كانت سائدة.",
-      image: "https://images.unsplash.com/photo-1577563908411-5c350d0d3c56?w=800&h=400&fit=crop",
-      tags: ["ذكريات", "تراث", "فلسطين", "كبار السن", "تاريخ شفوي"],
-      readingTime: 20
-    }
-  ],
-  articles: [
-    {
-      id: "1",
-      title: "تاريخ عائلة الشاعر في فلسطين",
-      author: "أحمد الشاعر",
-      authorRole: "باحث في التاريخ الفلسطيني",
-      authorImage: "https://ui-avatars.com/api/?name=أحمد+الشاعر&background=007A3D&color=fff",
-      date: "2024-01-15",
-      summary: "نظرة شاملة على تاريخ عائلة الشاعر وجذورها العريقة في الأراضي الفلسطينية، من القرن السابع عشر وحتى اليوم.",
-      content: "تعتبر عائلة الشاعر من العائلات الفلسطينية العريقة التي لها تاريخ طويل في الأراضي الفلسطينية. تشير الوثائق التاريخية إلى أن العائلة استقرت في منطقة الخليل في القرن السابع عشر الميلادي.",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=800&h=400&fit=crop",
-      tags: ["تاريخ", "فلسطين", "تراث", "عائلة"],
-      readingTime: 8
-    }
-  ],
-  familyTree: {
-    patriarch: "عبد الله الشاعر",
-    generations: [
-      {
-        generation: 1,
-        members: ["عبد الله الشاعر", "فاطمة الشاعر (الزوجة)"]
-      },
-      {
-        generation: 2,
-        members: ["أحمد الشاعر", "محمد الشاعر", "عائشة الشاعر", "خديجة الشاعر"]
-      },
-      {
-        generation: 3,
-        members: ["علي أحمد الشاعر", "سارة محمد الشاعر", "يوسف أحمد الشاعر"]
-      }
-    ]
-  },
-  palestine: [
-    {
-      id: 1,
-      title: "جذورنا في فلسطين",
-      content: "تنتمي عائلة الشاعر إلى قرية عين كارم في القدس، حيث عاشت لأجيال عديدة قبل النكبة عام 1948.",
-      image: "palestine1.jpg"
-    },
-    {
-      id: 2,
-      title: "ذكريات الوطن",
-      content: "يحتفظ كبار العائلة بذكريات جميلة عن الحياة في فلسطين، من أشجار الزيتون إلى رائحة الياسمين.",
-      image: "palestine2.jpg"
-    }
-  ],
-  articles: [
-    {
-      id: 1,
-      title: "أهمية الحفاظ على التراث العائلي",
-      author: "د. أحمد الشاعر",
-      content: "في عصر العولمة، يصبح الحفاظ على التراث العائلي أمراً بالغ الأهمية لنقل القيم والتقاليد للأجيال القادمة.",
-      date: "2024-01-15"
-    }
-  ],
-  gallery: [
-    {
-      id: 1,
-      title: "صور العائلة التاريخية",
-      images: ["family1.jpg", "family2.jpg", "family3.jpg"],
-      description: "مجموعة من الصور التاريخية لعائلة الشاعر عبر العقود"
-    }
-  ]
-};
-
-// Note: Sample data is now handled by MongoDB initialization script
-// Run: cd server && node scripts/initializeData.js to populate sample data
-
 // Helper function to normalize MongoDB documents (convert _id to id)
 const normalizeDocument = (doc) => {
   if (!doc) return null;
@@ -244,12 +132,7 @@ router.get('/articles/:id', async (req, res) => {
       article = await Articles.findOne({ id: id });
     }
     
-    // If still not found, return sample data for development
     if (!article) {
-      const sampleArticle = sampleData.articles.find(a => a.id === id);
-      if (sampleArticle) {
-        return res.json(sampleArticle);
-      }
       return res.status(404).json({ message: 'المقال غير موجود' });
     }
     
@@ -271,12 +154,7 @@ router.get('/conversations/:id', async (req, res) => {
       conversation = await Conversations.findOne({ id: id });
     }
     
-    // If still not found, return sample data for development
     if (!conversation) {
-      const sampleConversation = sampleData.conversations.find(c => c.id === id);
-      if (sampleConversation) {
-        return res.json(sampleConversation);
-      }
       return res.status(404).json({ message: 'الحوار غير موجود' });
     }
     
@@ -298,12 +176,7 @@ router.get('/news/:id', async (req, res) => {
       news = await News.findOne({ id: id });
     }
     
-    // If still not found, return sample data for development
     if (!news) {
-      const sampleNews = sampleData.news.find(n => n.id === id);
-      if (sampleNews) {
-        return res.json(sampleNews);
-      }
       return res.status(404).json({ message: 'الخبر غير موجود' });
     }
     
