@@ -1,6 +1,6 @@
 import React from 'react'
 
-const NewsTicker = ({ items, label, bgColor = 'bg-palestine-green', textColor = 'text-white', borderColor = 'border-palestine-green' }) => {
+const NewsTicker = ({ items, label, bgColor = 'bg-palestine-green', textColor = 'text-white', borderColor = 'border-palestine-green', isThin = false }) => {
   if (!items || items.length === 0) {
     return null
   }
@@ -9,8 +9,12 @@ const NewsTicker = ({ items, label, bgColor = 'bg-palestine-green', textColor = 
   const duplicatedItems = [...items, ...items]
   const animationDuration = Math.max(items.length * 4, 20) // Minimum 20 seconds
 
+  // Use thinner padding for black ticker
+  const paddingClass = isThin ? 'py-1.5' : 'py-2.5'
+  const textSizeClass = isThin ? 'text-xs md:text-sm' : 'text-sm md:text-base'
+
   return (
-    <div className={`${bgColor} ${textColor} py-2.5 overflow-hidden border-b ${borderColor} border-opacity-30 shadow-sm`}>
+    <div className={`${bgColor} ${textColor} ${paddingClass} overflow-hidden border-b ${borderColor} border-opacity-30 shadow-sm`}>
       <div className="flex items-center h-full">
         {/* Label */}
         <div className="flex-shrink-0 px-4 md:px-6 font-bold text-xs md:text-sm whitespace-nowrap border-l border-opacity-30 ml-4 bg-black bg-opacity-10 py-1">
@@ -26,7 +30,7 @@ const NewsTicker = ({ items, label, bgColor = 'bg-palestine-green', textColor = 
             }}
           >
             {duplicatedItems.map((item, index) => (
-              <span key={index} className="px-6 md:px-8 text-sm md:text-base inline-block">
+              <span key={index} className={`px-6 md:px-8 ${textSizeClass} inline-block`}>
                 {item}
               </span>
             ))}

@@ -75,15 +75,22 @@ const NewsTickers = () => {
     return () => clearInterval(interval)
   }, [])
 
-  // Calculate total height: header (64px) + tickers (2 * ~40px = 80px) = 144px
-  const tickersHeight = palestineNews.length > 0 ? 80 : 40
+  // Static messages for black ticker
+  const staticBlackTickerMessages = [
+    "🇵🇸 فلسطين حرة 🇵🇸",
+    "من النهر إلى البحر، فلسطين ستكون حرة",
+    "فلسطين في قلبنا وروحنا"
+  ]
+
+  // Calculate total height: header (64px) + tickers (3 * ~40px = 120px) = 184px
+  const tickersHeight = palestineNews.length > 0 ? 120 : 80
 
   // Use API data if available, otherwise fallback to static data
   const displayFamilyNews = familyTickerNews.length > 0 ? familyTickerNews : familyNews
 
   return (
     <div className="fixed top-16 w-full z-40" style={{ height: `${tickersHeight}px` }}>
-      {/* Family News Ticker */}
+      {/* Family News Ticker (Palestine Flag - Green) */}
       <NewsTicker
         items={displayFamilyNews}
         label="📰 أخبار العائلة"
@@ -92,7 +99,17 @@ const NewsTickers = () => {
         borderColor="border-palestine-green"
       />
       
-      {/* Palestine News Ticker */}
+      {/* Static Black Ticker (Palestine Flag - Black) - Thin - Separator */}
+      <NewsTicker
+        items={staticBlackTickerMessages}
+        label="🇵🇸 فلسطين"
+        bgColor="bg-palestine-black"
+        textColor="text-white"
+        borderColor="border-palestine-black"
+        isThin={true}
+      />
+      
+      {/* Palestine News Ticker (Palestine Flag - Red) */}
       {!loading && palestineNews.length > 0 && (
         <NewsTicker
           items={palestineNews}
