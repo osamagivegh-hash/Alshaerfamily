@@ -25,6 +25,11 @@ const adminSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Admin Indexes
+adminSchema.index({ username: 1 });
+adminSchema.index({ email: 1 });
+adminSchema.index({ role: 1 });
+
 // News Schema
 const newsSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -42,6 +47,14 @@ const newsSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
+
+// News Indexes
+newsSchema.index({ date: -1 });
+newsSchema.index({ title: 'text', content: 'text', summary: 'text' });
+newsSchema.index({ tags: 1 });
+newsSchema.index({ category: 1 });
+newsSchema.index({ author: 1 });
+newsSchema.index({ createdAt: -1 });
 
 // Conversations Schema
 const conversationsSchema = new mongoose.Schema({
@@ -62,6 +75,13 @@ const conversationsSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Conversations Indexes
+conversationsSchema.index({ date: -1 });
+conversationsSchema.index({ title: 'text', content: 'text', summary: 'text' });
+conversationsSchema.index({ moderator: 1 });
+conversationsSchema.index({ tags: 1 });
+conversationsSchema.index({ createdAt: -1 });
+
 // Articles Schema
 const articlesSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -80,6 +100,13 @@ const articlesSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Articles Indexes
+articlesSchema.index({ date: -1 });
+articlesSchema.index({ title: 'text', content: 'text', summary: 'text' });
+articlesSchema.index({ author: 1 });
+articlesSchema.index({ tags: 1 });
+articlesSchema.index({ createdAt: -1 });
+
 // Palestine Schema
 const palestineSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -89,6 +116,10 @@ const palestineSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Palestine Indexes
+palestineSchema.index({ createdAt: -1 });
+palestineSchema.index({ title: 'text', content: 'text' });
+
 // Gallery Schema
 const gallerySchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -97,6 +128,10 @@ const gallerySchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
+
+// Gallery Indexes
+gallerySchema.index({ createdAt: -1 });
+gallerySchema.index({ title: 'text', description: 'text' });
 
 // Family Tree Schema
 const familyTreeSchema = new mongoose.Schema({
@@ -122,6 +157,11 @@ const contactsSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Contacts Indexes
+contactsSchema.index({ status: 1, date: -1 });
+contactsSchema.index({ email: 1 });
+contactsSchema.index({ createdAt: -1 });
+
 // Comments Schema
 const commentsSchema = new mongoose.Schema({
   contentType: { 
@@ -138,6 +178,12 @@ const commentsSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Comments Indexes
+commentsSchema.index({ contentType: 1, contentId: 1 });
+commentsSchema.index({ approved: 1, createdAt: -1 });
+commentsSchema.index({ createdAt: -1 });
+commentsSchema.index({ email: 1 });
+
 // Family Ticker News Schema
 const familyTickerNewsSchema = new mongoose.Schema({
   headline: { type: String, required: true },
@@ -146,6 +192,10 @@ const familyTickerNewsSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
+
+// Family Ticker News Indexes
+familyTickerNewsSchema.index({ active: 1, order: 1 });
+familyTickerNewsSchema.index({ createdAt: -1 });
 
 // Ticker Settings Schema (for Palestine news ticker configuration)
 const tickerSettingsSchema = new mongoose.Schema({

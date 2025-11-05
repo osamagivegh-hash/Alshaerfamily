@@ -7,6 +7,9 @@ const fs = require('fs-extra');
 const rateLimit = require('express-rate-limit');
 const { connectDB } = require('./models');
 const { initializeAdmin } = require('./middleware/auth');
+const { responseHandler } = require('./middleware/responseHandler');
+const { errorHandler } = require('./middleware/errorHandler');
+const logger = require('./middleware/logger');
 require('dotenv').config();
 
 const app = express();
@@ -67,6 +70,12 @@ app.use(morgan('combined'));
 app.use(limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Response handler middleware
+app.use(responseHandler);
+
+// Request logging middleware
+app.use(logger.request);
 
 // Handle preflight requests
 app.options('*', cors(corsOptions));
@@ -203,11 +212,8 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../client/dist/index.html'));
 });
 
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: 'حدث خطأ في الخادم' });
-});
+// Error handling middleware (must be last)
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
