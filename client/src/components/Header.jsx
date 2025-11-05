@@ -60,56 +60,82 @@ const Header = () => {
       {/* Country Flags - Top Right Corner */}
       <div className="absolute top-1 left-1 md:top-2 md:left-2 flex items-center gap-1.5 z-10">
         {/* Palestine Flag */}
-        <div 
-          className="w-7 h-5 md:w-9 md:h-6 border border-gray-300 shadow-sm rounded-sm relative overflow-hidden"
+        <img
+          src="https://flagcdn.com/w40/ps.png"
+          alt="فلسطين"
+          className="w-7 h-5 md:w-9 md:h-6 border border-gray-300 shadow-sm rounded-sm object-cover"
+          title="فلسطين"
+          onError={(e) => {
+            // Fallback to SVG if image fails to load
+            e.target.style.display = 'none'
+            e.target.nextSibling.style.display = 'block'
+          }}
+        />
+        <svg
+          className="w-7 h-5 md:w-9 md:h-6 border border-gray-300 shadow-sm rounded-sm"
+          viewBox="0 0 900 600"
+          style={{ display: 'none' }}
           title="فلسطين"
         >
-          {/* Black stripe */}
-          <div className="absolute top-0 left-0 right-0 h-1/3 bg-black"></div>
-          {/* White stripe */}
-          <div className="absolute top-1/3 left-0 right-0 h-1/3 bg-white"></div>
-          {/* Green stripe */}
-          <div className="absolute bottom-0 left-0 right-0 h-1/3" style={{ backgroundColor: '#007A3D' }}></div>
-          {/* Red triangle */}
-          <div className="absolute right-0 top-0 bottom-0 w-0 h-0" style={{
-            borderTop: '8px solid transparent',
-            borderBottom: '8px solid transparent',
-            borderRight: '12px solid #CE1126'
-          }}></div>
-        </div>
+          <rect width="900" height="200" fill="#000000" />
+          <rect y="200" width="900" height="200" fill="#FFFFFF" />
+          <rect y="400" width="900" height="200" fill="#007A3D" />
+          <polygon points="0,0 0,600 300,300" fill="#CE1126" />
+        </svg>
         
         {/* Egypt Flag */}
-        <div 
-          className="w-7 h-5 md:w-9 md:h-6 border border-gray-300 shadow-sm rounded-sm relative overflow-hidden"
+        <img
+          src="https://flagcdn.com/w40/eg.png"
+          alt="مصر"
+          className="w-7 h-5 md:w-9 md:h-6 border border-gray-300 shadow-sm rounded-sm object-cover"
+          title="مصر"
+          onError={(e) => {
+            e.target.style.display = 'none'
+            e.target.nextSibling.style.display = 'block'
+          }}
+        />
+        <svg
+          className="w-7 h-5 md:w-9 md:h-6 border border-gray-300 shadow-sm rounded-sm"
+          viewBox="0 0 900 600"
+          style={{ display: 'none' }}
           title="مصر"
         >
-          {/* Red stripe */}
-          <div className="absolute top-0 left-0 right-0 h-1/3" style={{ backgroundColor: '#CE1126' }}></div>
-          {/* White stripe */}
-          <div className="absolute top-1/3 left-0 right-0 h-1/3 bg-white"></div>
-          {/* Black stripe */}
-          <div className="absolute bottom-0 left-0 right-0 h-1/3 bg-black"></div>
-        </div>
+          <rect width="900" height="200" fill="#CE1126" />
+          <rect y="200" width="900" height="200" fill="#FFFFFF" />
+          <rect y="400" width="900" height="200" fill="#000000" />
+        </svg>
         
         {/* Saudi Arabia Flag */}
-        <div 
-          className="w-7 h-5 md:w-9 md:h-6 border border-gray-300 shadow-sm rounded-sm relative overflow-hidden"
+        <img
+          src="https://flagcdn.com/w40/sa.png"
+          alt="السعودية"
+          className="w-7 h-5 md:w-9 md:h-6 border border-gray-300 shadow-sm rounded-sm object-cover"
           title="السعودية"
-          style={{ backgroundColor: '#007A3D' }}
+          onError={(e) => {
+            e.target.style.display = 'none'
+            e.target.nextSibling.style.display = 'block'
+          }}
+        />
+        <svg
+          className="w-7 h-5 md:w-9 md:h-6 border border-gray-300 shadow-sm rounded-sm"
+          viewBox="0 0 900 600"
+          style={{ display: 'none' }}
+          title="السعودية"
         >
-          {/* Shahada text */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-white text-[7px] md:text-[9px] font-bold leading-tight" style={{ fontFamily: 'serif' }}>
-              لا إله إلا الله
-            </span>
-          </div>
-          {/* Sword (simplified) */}
-          <div className="absolute right-0 top-0 bottom-0 w-0 h-0" style={{
-            borderTop: '7px solid transparent',
-            borderBottom: '7px solid transparent',
-            borderRight: '10px solid #007A3D'
-          }}></div>
-        </div>
+          <rect width="900" height="600" fill="#007A3D" />
+          <text
+            x="450"
+            y="300"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fill="#FFFFFF"
+            fontSize="200"
+            fontFamily="serif"
+            fontWeight="bold"
+          >
+            لا إله إلا الله
+          </text>
+        </svg>
       </div>
       
       <nav className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
