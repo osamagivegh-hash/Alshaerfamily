@@ -305,99 +305,139 @@ router.get('/ticker/family-news', async (req, res) => {
 // GET Palestine news headlines (server-side proxy to avoid CORS)
 router.get('/ticker/palestine-news', async (req, res) => {
   try {
-    const apiKey = process.env.GNEWS_API_KEY || process.env.NEWS_API_KEY || process.env.VITE_GNEWS_API_KEY || process.env.VITE_NEWS_API_KEY;
+    const gnewsApiKey = process.env.GNEWS_API_KEY || process.env.VITE_GNEWS_API_KEY;
+    const newsApiKey = process.env.NEWS_API_KEY || process.env.VITE_NEWS_API_KEY;
     
-    if (!apiKey) {
-      console.warn('News API key not found. Returning fallback headlines.');
-      return res.json([
-        "تحديثات مباشرة من فلسطين 🇵🇸",
-        "أخبار فلسطين اليوم",
-        "فلسطين في قلبنا دائماً 🇵🇸"
-      ]);
-    }
-
-    // Try GNews.io first
-    const gnewsUrl = `https://gnews.io/api/v4/search?q=Palestine OR فلسطين OR غزة OR القدس&lang=ar&token=${apiKey}&max=15`;
-    
-    try {
-      const response = await fetch(gnewsUrl);
-      const data = await response.json();
-      
-      if (data.articles && data.articles.length > 0) {
-        // Get all headlines, no need to filter since we're already searching for Palestine
-        const headlines = data.articles
-          .map(article => article.title)
-          .filter(title => title && title.trim().length > 0 && title.length < 200) // Filter out very long titles
-          .slice(0, 10);
-        
-        if (headlines.length > 0) {
-          return res.json(headlines);
-        }
-      }
-      
-      // If no articles, try with English search
-      const gnewsUrlEn = `https://gnews.io/api/v4/search?q=Palestine&lang=en&token=${apiKey}&max=15`;
-      const responseEn = await fetch(gnewsUrlEn);
-      const dataEn = await responseEn.json();
-      
-      if (dataEn.articles && dataEn.articles.length > 0) {
-        // Filter for Palestine-related articles
-        const palestineHeadlines = dataEn.articles
-          .filter(article => 
-            article.title?.toLowerCase().includes('palestine') ||
-            article.title?.toLowerCase().includes('gaza') ||
-            article.title?.toLowerCase().includes('west bank') ||
-            article.description?.toLowerCase().includes('palestine')
-          )
-          .map(article => article.title)
-          .filter(title => title && title.trim().length > 0 && title.length < 200)
-          .slice(0, 10);
-        
-        if (palestineHeadlines.length > 0) {
-          return res.json(palestineHeadlines);
-        }
-      }
-    } catch (gnewsError) {
-      console.warn('GNews.io failed, trying NewsAPI.org...', gnewsError.message);
-      
-      // Try NewsAPI.org as fallback
+    // Try GNews.io first (better for Arabic news)
+    if (gnewsApiKey) {
       try {
-        const newsApiUrl = `https://newsapi.org/v2/everything?q=Palestine OR Gaza OR "West Bank"&language=ar&sortBy=publishedAt&pageSize=10&apiKey=${apiKey}`;
-        const newsApiResponse = await fetch(newsApiUrl);
+        // Try Arabic search first
+        const gnewsUrlAr = `https://gnews.io/api/v4/search?q=فلسطين OR غزة OR القدس OR الضفة&lang=ar&token=${gnewsApiKey}&max=20`;
+        const responseAr = await fetch(gnewsUrlAr, {
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
         
-        if (newsApiResponse.ok) {
-          const newsApiData = await newsApiResponse.json();
+        if (responseAr.ok) {
+          const dataAr = await responseAr.json();
           
-          if (newsApiData.articles && newsApiData.articles.length > 0) {
-            const headlines = newsApiData.articles
-              .map(article => article.title)
-              .filter(title => title && title.trim().length > 0 && title.length < 200)
+          if (dataAr.articles && Array.isArray(dataAr.articles) && dataAr.articles.length > 0) {
+            const headlines = dataAr.articles
+              .map(article => article.title?.trim())
+              .filter(title => title && title.length > 10 && title.length < 200)
               .slice(0, 10);
             
             if (headlines.length > 0) {
+              console.log(`✅ GNews.io (Arabic): Retrieved ${headlines.length} headlines`);
               return res.json(headlines);
             }
           }
         }
-      } catch (newsApiError) {
-        console.error('NewsAPI.org also failed:', newsApiError.message);
+        
+        // If Arabic search fails, try English search
+        const gnewsUrlEn = `https://gnews.io/api/v4/search?q=Palestine OR Gaza OR "West Bank" OR "Palestinian"&lang=en&token=${gnewsApiKey}&max=20`;
+        const responseEn = await fetch(gnewsUrlEn, {
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+        
+        if (responseEn.ok) {
+          const dataEn = await responseEn.json();
+          
+          if (dataEn.articles && Array.isArray(dataEn.articles) && dataEn.articles.length > 0) {
+            const headlines = dataEn.articles
+              .filter(article => {
+                const title = (article.title || '').toLowerCase();
+                const desc = (article.description || '').toLowerCase();
+                return title.includes('palestine') || 
+                       title.includes('gaza') || 
+                       title.includes('west bank') ||
+                       desc.includes('palestine') ||
+                       desc.includes('gaza');
+              })
+              .map(article => article.title?.trim())
+              .filter(title => title && title.length > 10 && title.length < 200)
+              .slice(0, 10);
+            
+            if (headlines.length > 0) {
+              console.log(`✅ GNews.io (English): Retrieved ${headlines.length} headlines`);
+              return res.json(headlines);
+            }
+          }
+        }
+        
+        console.warn('⚠️ GNews.io returned no articles or invalid response');
+      } catch (gnewsError) {
+        console.error('❌ GNews.io error:', gnewsError.message);
       }
     }
     
-    // If all APIs fail, return fallback
-    res.json([
-      "تحديثات مباشرة من فلسطين 🇵🇸",
-      "أخبار فلسطين اليوم",
-      "فلسطين في قلبنا دائماً 🇵🇸"
-    ]);
+    // Try NewsAPI.org as fallback
+    if (newsApiKey) {
+      try {
+        const newsApiUrl = `https://newsapi.org/v2/everything?q=Palestine OR Gaza OR "West Bank" OR "Palestinian"&language=ar&sortBy=publishedAt&pageSize=20&apiKey=${newsApiKey}`;
+        const newsApiResponse = await fetch(newsApiUrl, {
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+        
+        if (newsApiResponse.ok) {
+          const newsApiData = await newsApiResponse.json();
+          
+          if (newsApiData.articles && Array.isArray(newsApiData.articles) && newsApiData.articles.length > 0) {
+            const headlines = newsApiData.articles
+              .filter(article => {
+                const title = (article.title || '').toLowerCase();
+                const desc = (article.description || '').toLowerCase();
+                return title.includes('palestine') || 
+                       title.includes('gaza') || 
+                       title.includes('west bank') ||
+                       title.includes('فلسطين') ||
+                       desc.includes('palestine') ||
+                       desc.includes('gaza');
+              })
+              .map(article => article.title?.trim())
+              .filter(title => title && title.length > 10 && title.length < 200)
+              .slice(0, 10);
+            
+            if (headlines.length > 0) {
+              console.log(`✅ NewsAPI.org: Retrieved ${headlines.length} headlines`);
+              return res.json(headlines);
+            }
+          }
+        } else {
+          const errorData = await newsApiResponse.json().catch(() => ({}));
+          console.error('❌ NewsAPI.org error:', newsApiResponse.status, errorData);
+        }
+      } catch (newsApiError) {
+        console.error('❌ NewsAPI.org error:', newsApiError.message);
+      }
+    }
+    
+    // If no API keys or all APIs failed
+    if (!gnewsApiKey && !newsApiKey) {
+      console.error('❌ No news API keys found. Please add GNEWS_API_KEY or NEWS_API_KEY to .env file');
+      return res.status(500).json({ 
+        error: 'No API key configured',
+        message: 'يرجى إضافة مفتاح API للأخبار في ملف .env'
+      });
+    }
+    
+    // Return empty array instead of fallback - force real news only
+    console.warn('⚠️ No real news retrieved from any API source');
+    return res.json([]);
+    
   } catch (error) {
-    console.error('Error fetching Palestine news:', error);
-    res.json([
-      "تحديثات مباشرة من فلسطين 🇵🇸",
-      "أخبار فلسطين اليوم",
-      "فلسطين في قلبنا دائماً 🇵🇸"
-    ]);
+    console.error('❌ Error fetching Palestine news:', error);
+    return res.status(500).json({ 
+      error: 'Failed to fetch news',
+      message: 'فشل في جلب الأخبار'
+    });
   }
 });
 
 module.exports = router;
+

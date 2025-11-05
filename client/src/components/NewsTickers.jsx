@@ -31,25 +31,18 @@ const NewsTickers = () => {
     const fetchPalestine = async () => {
       try {
         const news = await fetchPalestineNews()
-        if (news && news.length > 0) {
+        if (news && Array.isArray(news) && news.length > 0) {
           setPalestineNews(news)
+          setError(null)
         } else {
-          // Fallback headlines if API fails
-          setPalestineNews([
-            "تحديثات مباشرة من فلسطين 🇵🇸",
-            "أخبار فلسطين اليوم",
-            "فلسطين في قلبنا دائماً 🇵🇸"
-          ])
+          // No real news available - show empty state
+          setPalestineNews([])
+          setError('لا توجد أخبار متاحة حالياً')
         }
       } catch (err) {
         console.error('Error fetching Palestine news:', err)
-        setError(err.message)
-        // Fallback headlines
-        setPalestineNews([
-          "تحديثات مباشرة من فلسطين 🇵🇸",
-          "أخبار فلسطين اليوم",
-          "فلسطين في قلبنا دائماً 🇵🇸"
-        ])
+        setError(err.message || 'فشل في جلب أخبار فلسطين')
+        setPalestineNews([])
       } finally {
         setLoading(false)
       }
@@ -63,12 +56,18 @@ const NewsTickers = () => {
     const interval = setInterval(() => {
       fetchPalestineNews()
         .then(news => {
-          if (news && news.length > 0) {
+          if (news && Array.isArray(news) && news.length > 0) {
             setPalestineNews(news)
+            setError(null)
+          } else {
+            setPalestineNews([])
+            setError('لا توجد أخبار متاحة حالياً')
           }
         })
         .catch(err => {
           console.error('Error updating Palestine news:', err)
+          setError(err.message || 'فشل في تحديث الأخبار')
+          setPalestineNews([])
         })
     }, 60000) // 60 seconds
 
@@ -123,6 +122,12 @@ const NewsTickers = () => {
       {loading && (
         <div className="bg-palestine-red text-white py-2.5 px-4 text-sm text-center animate-pulse">
           <span>🇵🇸 جاري تحميل أخبار فلسطين...</span>
+        </div>
+      )}
+      
+      {!loading && error && palestineNews.length === 0 && (
+        <div className="bg-yellow-100 text-yellow-800 py-2.5 px-4 text-sm text-center border-b border-yellow-300">
+          <span>⚠️ {error}</span>
         </div>
       )}
     </div>
