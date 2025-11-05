@@ -23,7 +23,8 @@ const ArticleDetail = () => {
         // Try API first
         try {
           const response = await api.get(`/articles/${id}`)
-          const apiArticle = response.data
+          // Extract data from nested response structure: { success, message, data, timestamp }
+          const apiArticle = response.data?.data || response.data
           // Normalize the article to have both id and _id
           if (apiArticle) {
             apiArticle.id = apiArticle.id || apiArticle._id?.toString() || id

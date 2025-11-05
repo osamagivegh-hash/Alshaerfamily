@@ -18,7 +18,9 @@ const Comments = ({ contentType, contentId }) => {
     const fetchComments = async () => {
       try {
         const response = await api.get(`/comments/${contentType}/${contentId}`)
-        setComments(response.data || [])
+        // Extract data from nested response structure: { success, message, data, timestamp }
+        const commentsData = response.data?.data || response.data || []
+        setComments(Array.isArray(commentsData) ? commentsData : [])
       } catch (error) {
         console.error('Error fetching comments:', error)
         // Fallback to empty array if API fails

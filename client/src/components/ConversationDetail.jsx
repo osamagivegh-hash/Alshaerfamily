@@ -23,7 +23,8 @@ const ConversationDetail = () => {
         // Try API first
         try {
           const response = await api.get(`/conversations/${id}`)
-          const apiConversation = response.data
+          // Extract data from nested response structure: { success, message, data, timestamp }
+          const apiConversation = response.data?.data || response.data
           // Normalize the conversation to have both id and _id
           if (apiConversation) {
             apiConversation.id = apiConversation.id || apiConversation._id?.toString() || id

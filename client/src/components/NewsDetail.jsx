@@ -24,7 +24,8 @@ const NewsDetail = () => {
         // Try API first
         try {
           const response = await api.get(`/news/${id}`)
-          const apiNews = response.data
+          // Extract data from nested response structure: { success, message, data, timestamp }
+          const apiNews = response.data?.data || response.data
           // Normalize the news to have both id and _id
           if (apiNews) {
             apiNews.id = apiNews.id || apiNews._id?.toString() || id
@@ -33,7 +34,9 @@ const NewsDetail = () => {
             // Fetch all news to get related items
             try {
               const allNewsResponse = await api.get('/sections/news')
-              const allNews = Array.isArray(allNewsResponse.data) ? allNewsResponse.data : []
+              // Extract data from nested response structure
+              const allNewsData = allNewsResponse.data?.data || allNewsResponse.data || []
+              const allNews = Array.isArray(allNewsData) ? allNewsData : []
               // Filter out current news and get up to 3 related items
               const related = allNews
                 .filter(item => {

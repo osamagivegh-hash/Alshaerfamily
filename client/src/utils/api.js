@@ -14,7 +14,8 @@ export const api = axios.create({
 export const fetchSectionsData = async () => {
   try {
     const response = await api.get('/sections')
-    return response.data
+    // Extract data from nested response structure: { success, message, data, timestamp }
+    return response.data?.data || response.data || {}
   } catch (error) {
     console.error('Error fetching sections data:', error)
     throw new Error('فشل في جلب البيانات من الخادم')
@@ -25,7 +26,8 @@ export const fetchSectionsData = async () => {
 export const fetchSectionData = async (section) => {
   try {
     const response = await api.get(`/sections/${section}`)
-    return response.data
+    // Extract data from nested response structure: { success, message, data, timestamp }
+    return response.data?.data || response.data || []
   } catch (error) {
     console.error(`Error fetching ${section} data:`, error)
     throw new Error(`فشل في جلب بيانات ${section} من الخادم`)
@@ -36,7 +38,8 @@ export const fetchSectionData = async (section) => {
 export const submitContactForm = async (formData) => {
   try {
     const response = await api.post('/contact', formData)
-    return response.data
+    // Extract data from nested response structure: { success, message, data, timestamp }
+    return response.data?.data || response.data || {}
   } catch (error) {
     console.error('Error submitting contact form:', error)
     if (error.response?.data?.message) {
@@ -50,7 +53,8 @@ export const submitContactForm = async (formData) => {
 export const fetchContactMessages = async () => {
   try {
     const response = await api.get('/contacts')
-    return response.data
+    // Extract data from nested response structure: { success, message, data, timestamp }
+    return response.data?.data || response.data || []
   } catch (error) {
     console.error('Error fetching contact messages:', error)
     throw new Error('فشل في جلب الرسائل')
@@ -63,8 +67,11 @@ export const fetchPalestineNews = async () => {
     // Use server-side endpoint to avoid CORS issues
     const response = await api.get('/ticker/palestine-news')
     
-    if (response.data && Array.isArray(response.data) && response.data.length > 0) {
-      return response.data
+    // Extract data from nested response structure: { success, message, data, timestamp }
+    const headlines = response.data?.data || response.data || []
+    
+    if (Array.isArray(headlines) && headlines.length > 0) {
+      return headlines
     }
     
     // Fallback headlines

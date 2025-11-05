@@ -14,8 +14,10 @@ const NewsTickers = () => {
     const fetchFamilyNews = async () => {
       try {
         const response = await api.get('/ticker/family-news')
-        if (response.data && response.data.length > 0) {
-          setFamilyTickerNews(response.data)
+        // Extract data from nested response structure: { success, message, data, timestamp }
+        const headlines = response.data?.data || response.data || []
+        if (Array.isArray(headlines) && headlines.length > 0) {
+          setFamilyTickerNews(headlines)
         } else {
           // Fallback to static data
           setFamilyTickerNews(familyNews)
