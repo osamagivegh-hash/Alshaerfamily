@@ -356,13 +356,13 @@ router.get('/ticker/palestine-news', asyncHandler(async (req, res) => {
     }
   }
   
-  // If no API keys or all APIs failed
+  // If no API keys, return empty array (graceful degradation)
   if (!gnewsApiKey && !newsApiKey) {
-    logger.error('No news API keys found. Please add GNEWS_API_KEY or NEWS_API_KEY to .env file');
-    return res.error(500, 'يرجى إضافة مفتاح API للأخبار في ملف .env');
+    logger.warn('No news API keys found. Please add GNEWS_API_KEY or NEWS_API_KEY to .env file');
+    return res.success(200, 'لا توجد أخبار متاحة حالياً', []);
   }
   
-  // Return empty array instead of fallback - force real news only
+  // Return empty array if all APIs failed
   logger.warn('No real news retrieved from any API source');
   return res.success(200, 'لا توجد أخبار متاحة حالياً', []);
 }));
