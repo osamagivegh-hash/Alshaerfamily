@@ -244,8 +244,8 @@ router.get('/ticker/family-news', asyncHandler(async (req, res) => {
 
 // GET Palestine news headlines (server-side proxy to avoid CORS)
 router.get('/ticker/palestine-news', asyncHandler(async (req, res) => {
-  const gnewsApiKey = process.env.GNEWS_API_KEY || process.env.VITE_GNEWS_API_KEY;
-  const newsApiKey = process.env.NEWS_API_KEY || process.env.VITE_NEWS_API_KEY;
+  const gnewsApiKey = (process.env.GNEWS_API_KEY || process.env.VITE_GNEWS_API_KEY)?.trim();
+  const newsApiKey = (process.env.NEWS_API_KEY || process.env.VITE_NEWS_API_KEY)?.trim();
   
   // Try GNews.io first (better for Arabic news)
   if (gnewsApiKey) {
@@ -315,55 +315,117 @@ router.get('/ticker/palestine-news', asyncHandler(async (req, res) => {
   
   // Try NewsAPI.org as fallback
   if (newsApiKey) {
-    try {
-      const newsApiUrl = `https://newsapi.org/v2/everything?q=Palestine OR Gaza OR "West Bank" OR "Palestinian"&language=ar&sortBy=publishedAt&pageSize=20&apiKey=${newsApiKey}`;
-      const newsApiResponse = await fetch(newsApiUrl, {
-        headers: {
-          'Accept': 'application/json',
-        }
-      });
-      
-      if (newsApiResponse.ok) {
-        const newsApiData = await newsApiResponse.json();
+    // Validate API key format (should be a string, not empty, typical length check)
+    if (!newsApiKey || newsApiKey.length < 10) {
+      logger.warn('NewsAPI.org: API key appears to be invalid (too short or empty). Please check NEWS_API_KEY.');
+    } else {
+      try {
+        let headlines = [];
+        let apiKeyInvalid = false;
         
-        if (newsApiData.articles && Array.isArray(newsApiData.articles) && newsApiData.articles.length > 0) {
-          const headlines = newsApiData.articles
-            .filter(article => {
-              const title = (article.title || '').toLowerCase();
-              const desc = (article.description || '').toLowerCase();
-              return title.includes('palestine') || 
-                     title.includes('gaza') || 
-                     title.includes('west bank') ||
-                     title.includes('فلسطين') ||
-                     desc.includes('palestine') ||
-                     desc.includes('gaza');
-            })
-            .map(article => article.title?.trim())
-            .filter(title => title && title.length > 10 && title.length < 200)
-            .slice(0, 10);
+        // Strategy 1: Try /everything endpoint (works in development, may work with paid tier in production)
+        // This is the best option if available
+        const everythingUrl = `https://newsapi.org/v2/everything?q=Palestine OR Gaza OR "West Bank" OR "Palestinian"&language=ar&sortBy=publishedAt&pageSize=20&apiKey=${newsApiKey}`;
+        const everythingResponse = await fetch(everythingUrl, {
+          headers: {
+            'Accept': 'application/json',
+          }
+        });
+        
+        if (everythingResponse.ok) {
+          const everythingData = await everythingResponse.json();
           
-          if (headlines.length > 0) {
-            logger.info(`NewsAPI.org: Retrieved ${headlines.length} headlines`);
-            return res.success(200, 'تم جلب أخبار فلسطين بنجاح', headlines);
+          if (everythingData.articles && Array.isArray(everythingData.articles) && everythingData.articles.length > 0) {
+            headlines = everythingData.articles
+              .filter(article => {
+                const title = (article.title || '').toLowerCase();
+                const desc = (article.description || '').toLowerCase();
+                return title.includes('palestine') || 
+                       title.includes('gaza') || 
+                       title.includes('west bank') ||
+                       title.includes('palestinian') ||
+                       title.includes('فلسطين') ||
+                       desc.includes('palestine') ||
+                       desc.includes('gaza');
+              })
+              .map(article => article.title?.trim())
+              .filter(title => title && title.length > 10 && title.length < 200)
+              .slice(0, 10);
+          }
+        } else {
+          // Check if it's an authentication error
+          const errorData = await everythingResponse.json().catch(() => ({}));
+          if (everythingResponse.status === 401) {
+            apiKeyInvalid = true;
+            logger.error('NewsAPI.org: Invalid API key (401 Unauthorized). Please verify your NEWS_API_KEY in Render environment variables. Make sure: 1) The key is correct, 2) No extra spaces, 3) Variable name is exactly NEWS_API_KEY');
+            // Don't try fallback if API key is invalid
+          } else if (everythingResponse.status === 429) {
+            logger.warn('NewsAPI.org: Rate limit exceeded. Please upgrade your plan or wait.');
+          } else {
+            // If /everything fails (free tier limitation), try top-headlines from multiple countries
+            logger.info('NewsAPI.org /everything endpoint not available, trying top-headlines fallback');
+            const countries = ['us', 'gb', 'ae', 'sa', 'eg']; // Try US, UK, UAE, Saudi Arabia, Egypt
+            for (const country of countries) {
+              if (headlines.length >= 10 || apiKeyInvalid) break;
+              
+              const topHeadlinesUrl = `https://newsapi.org/v2/top-headlines?country=${country}&pageSize=20&apiKey=${newsApiKey}`;
+              const topHeadlinesResponse = await fetch(topHeadlinesUrl, {
+                headers: {
+                  'Accept': 'application/json',
+                }
+              });
+              
+              if (topHeadlinesResponse.ok) {
+                const topHeadlinesData = await topHeadlinesResponse.json();
+                
+                if (topHeadlinesData.articles && Array.isArray(topHeadlinesData.articles) && topHeadlinesData.articles.length > 0) {
+                  const countryHeadlines = topHeadlinesData.articles
+                    .filter(article => {
+                      const title = (article.title || '').toLowerCase();
+                      const desc = (article.description || '').toLowerCase();
+                      return title.includes('palestine') || 
+                             title.includes('gaza') || 
+                             title.includes('west bank') ||
+                             title.includes('palestinian') ||
+                             title.includes('فلسطين') ||
+                             desc.includes('palestine') ||
+                             desc.includes('gaza');
+                    })
+                    .map(article => article.title?.trim())
+                    .filter(title => title && title.length > 10 && title.length < 200);
+                  
+                  headlines = [...headlines, ...countryHeadlines].slice(0, 10);
+                }
+              } else if (topHeadlinesResponse.status === 401) {
+                apiKeyInvalid = true;
+                logger.error('NewsAPI.org: Invalid API key detected in top-headlines request.');
+                break; // Stop trying if API key is invalid
+              }
+            }
           }
         }
-      } else {
-        const errorData = await newsApiResponse.json().catch(() => ({}));
-        logger.error('NewsAPI.org error:', { status: newsApiResponse.status, errorData });
+        
+        if (headlines.length > 0) {
+          logger.info(`NewsAPI.org: Retrieved ${headlines.length} headlines`);
+          return res.success(200, 'تم جلب أخبار فلسطين بنجاح', headlines);
+        } else if (!apiKeyInvalid) {
+          logger.warn('NewsAPI.org returned no Palestine-related headlines');
+        }
+      } catch (newsApiError) {
+        // Only log error details, not the full error object which might contain the API key
+        logger.error('NewsAPI.org request failed:', newsApiError.message || 'Unknown error');
       }
-    } catch (newsApiError) {
-      logger.error('NewsAPI.org error:', newsApiError);
     }
   }
   
   // If no API keys, return empty array (graceful degradation)
   if (!gnewsApiKey && !newsApiKey) {
-    logger.warn('No news API keys found. Please add GNEWS_API_KEY or NEWS_API_KEY to .env file');
+    logger.warn('No news API keys found. Please add GNEWS_API_KEY or NEWS_API_KEY to environment variables.');
     return res.success(200, 'لا توجد أخبار متاحة حالياً', []);
   }
   
   // Return empty array if all APIs failed
-  logger.warn('No real news retrieved from any API source');
+  logger.warn('No real news retrieved from any API source. This may be due to: invalid API keys, rate limits, or no Palestine news available.');
   return res.success(200, 'لا توجد أخبار متاحة حالياً', []);
 }));
 
