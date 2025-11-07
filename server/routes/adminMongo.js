@@ -11,6 +11,7 @@ const {
   FamilyTree, 
   Contacts,
   FamilyTickerNews,
+  PalestineTickerNews,
   TickerSettings
 } = require('../models');
 
@@ -463,6 +464,126 @@ router.delete('/family-ticker-news/:id', authenticateToken, requireAdmin, async 
     res.json({ message: 'تم حذف عنصر الشريط بنجاح' });
   } catch (error) {
     console.error('Delete family ticker news error:', error);
+    res.status(500).json({ message: 'خطأ في حذف عنصر الشريط' });
+  }
+});
+
+// ==================== PALESTINE TICKER NEWS CRUD ====================
+
+// GET all Palestine ticker news items
+router.get('/palestine-ticker-news', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const items = await PalestineTickerNews.find().sort({ order: 1, createdAt: -1 });
+    res.json(normalizeDocument(items));
+  } catch (error) {
+    console.error('Get Palestine ticker news error:', error);
+    res.status(500).json({ message: 'خطأ في جلب أخبار شريط فلسطين' });
+  }
+});
+
+// GET active Palestine ticker news items (for public API)
+router.get('/palestine-ticker-news/active', async (req, res) => {
+  try {
+    const items = await PalestineTickerNews.find({ active: true })
+      .sort({ order: 1, createdAt: -1 })
+      .select('headline');
+
+    const headlines = items.map(item => item.headline);
+    res.json(headlines);
+  } catch (error) {
+    console.error('Get active Palestine ticker news error:', error);
+    res.status(500).json({ message: 'خطأ في جلب أخبار شريط فلسطين' });
+  }
+});
+
+// GET single Palestine ticker news item
+router.get('/palestine-ticker-news/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await PalestineTickerNews.findById(id);
+
+    if (!item) {
+      return res.status(404).json({ message: 'عنصر الشريط غير موجود' });
+    }
+
+    res.json(normalizeDocument(item));
+  } catch (error) {
+    console.error('Get Palestine ticker news item error:', error);
+    res.status(500).json({ message: 'خطأ في جلب عنصر الشريط' });
+  }
+});
+
+// POST create new Palestine ticker news item
+router.post('/palestine-ticker-news', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { headline, source, url, active, order } = req.body;
+
+    const normalizedHeadline = (headline || '').toString().trim();
+    if (!normalizedHeadline) {
+      return res.status(400).json({ message: 'العنوان مطلوب' });
+    }
+
+    const newItem = new PalestineTickerNews({
+      headline: normalizedHeadline,
+      source: (source || '').toString().trim(),
+      url: (url || '').toString().trim(),
+      active: active !== undefined ? active : true,
+      order: order || 0
+    });
+
+    const savedItem = await newItem.save();
+    res.status(201).json(normalizeDocument(savedItem));
+  } catch (error) {
+    console.error('Create Palestine ticker news error:', error);
+    res.status(500).json({ message: 'خطأ في إضافة عنصر الشريط' });
+  }
+});
+
+// PUT update Palestine ticker news item
+router.put('/palestine-ticker-news/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { headline, source, url, active, order } = req.body;
+
+    const item = await PalestineTickerNews.findById(id);
+    if (!item) {
+      return res.status(404).json({ message: 'عنصر الشريط غير موجود' });
+    }
+
+    if (headline !== undefined) {
+      const normalizedHeadline = (headline || '').toString().trim();
+      if (!normalizedHeadline) {
+        return res.status(400).json({ message: 'العنوان مطلوب' });
+      }
+      item.headline = normalizedHeadline;
+    }
+    if (source !== undefined) item.source = (source || '').toString().trim();
+    if (url !== undefined) item.url = (url || '').toString().trim();
+    if (active !== undefined) item.active = active;
+    if (order !== undefined) item.order = order;
+    item.updatedAt = new Date();
+
+    const updatedItem = await item.save();
+    res.json(normalizeDocument(updatedItem));
+  } catch (error) {
+    console.error('Update Palestine ticker news error:', error);
+    res.status(500).json({ message: 'خطأ في تحديث عنصر الشريط' });
+  }
+});
+
+// DELETE Palestine ticker news item
+router.delete('/palestine-ticker-news/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const item = await PalestineTickerNews.findByIdAndDelete(id);
+
+    if (!item) {
+      return res.status(404).json({ message: 'عنصر الشريط غير موجود' });
+    }
+
+    res.json({ message: 'تم حذف عنصر الشريط بنجاح' });
+  } catch (error) {
+    console.error('Delete Palestine ticker news error:', error);
     res.status(500).json({ message: 'خطأ في حذف عنصر الشريط' });
   }
 });

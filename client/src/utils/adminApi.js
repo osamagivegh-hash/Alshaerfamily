@@ -291,6 +291,54 @@ export const adminFamilyTickerNews = {
   }
 }
 
+// Palestine Ticker News API
+export const adminPalestineTickerNews = {
+  getAll: async () => {
+    try {
+      const response = await adminApi.get('/palestine-ticker-news')
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب أخبار شريط فلسطين')
+    }
+  },
+
+  getById: async (id) => {
+    try {
+      const response = await adminApi.get(`/palestine-ticker-news/${id}`)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب عنصر الشريط')
+    }
+  },
+
+  create: async (data) => {
+    try {
+      const response = await adminApi.post('/palestine-ticker-news', data)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في إضافة عنصر الشريط')
+    }
+  },
+
+  update: async (id, data) => {
+    try {
+      const response = await adminApi.put(`/palestine-ticker-news/${id}`, data)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في تحديث عنصر الشريط')
+    }
+  },
+
+  delete: async (id) => {
+    try {
+      const response = await adminApi.delete(`/palestine-ticker-news/${id}`)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في حذف عنصر الشريط')
+    }
+  }
+}
+
 // Ticker Settings API
 export const adminTickerSettings = {
   get: async () => {

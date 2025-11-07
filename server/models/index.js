@@ -197,6 +197,21 @@ const familyTickerNewsSchema = new mongoose.Schema({
 familyTickerNewsSchema.index({ active: 1, order: 1 });
 familyTickerNewsSchema.index({ createdAt: -1 });
 
+// Palestine Ticker News Schema (manually curated headlines)
+const palestineTickerNewsSchema = new mongoose.Schema({
+  headline: { type: String, required: true },
+  source: { type: String },
+  url: { type: String },
+  active: { type: Boolean, default: true },
+  order: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Palestine Ticker News Indexes
+palestineTickerNewsSchema.index({ active: 1, order: 1 });
+palestineTickerNewsSchema.index({ createdAt: -1 });
+
 // Ticker Settings Schema (for Palestine news ticker configuration)
 const tickerSettingsSchema = new mongoose.Schema({
   palestineTickerEnabled: { type: Boolean, default: true },
@@ -221,6 +236,7 @@ const FamilyTree = mongoose.model('FamilyTree', familyTreeSchema);
 const Contacts = mongoose.model('Contacts', contactsSchema);
 const Comments = mongoose.model('Comments', commentsSchema);
 const FamilyTickerNews = mongoose.model('FamilyTickerNews', familyTickerNewsSchema);
+const PalestineTickerNews = mongoose.model('PalestineTickerNews', palestineTickerNewsSchema);
 const TickerSettings = mongoose.model('TickerSettings', tickerSettingsSchema);
 
 module.exports = {
@@ -235,5 +251,6 @@ module.exports = {
   Contacts,
   Comments,
   FamilyTickerNews,
+  PalestineTickerNews,
   TickerSettings
 };

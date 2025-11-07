@@ -1,35 +1,65 @@
 import React, { useState, useEffect } from 'react'
-import { adminFamilyTickerNews, adminTickerSettings } from '../../utils/adminApi'
+import { adminFamilyTickerNews, adminPalestineTickerNews, adminTickerSettings } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../LoadingSpinner'
 
 const AdminTickers = () => {
-  const [tickerNews, setTickerNews] = useState([])
+  const [familyTickerNews, setFamilyTickerNews] = useState([])
+  const [palestineTickerNews, setPalestineTickerNews] = useState([])
   const [loading, setLoading] = useState(true)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [showForm, setShowForm] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
+  const [activeTickerType, setActiveTickerType] = useState('family')
   const [formData, setFormData] = useState({
     headline: '',
+    source: '',
+    url: '',
     active: true,
     order: 0
   })
   const [settings, setSettings] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
 
+  const tickerLabels = {
+    family: 'الشريط العائلي',
+    palestine: 'شريط فلسطين'
+  }
+
   useEffect(() => {
-    fetchTickerNews()
-    fetchSettings()
+    const loadData = async () => {
+      try {
+        setLoading(true)
+        await Promise.all([
+          fetchFamilyTickerData(),
+          fetchPalestineTickerData(),
+          fetchSettings()
+        ])
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadData()
   }, [])
 
-  const fetchTickerNews = async () => {
+  const fetchFamilyTickerData = async () => {
     try {
       const data = await adminFamilyTickerNews.getAll()
-      setTickerNews(Array.isArray(data) ? data : [])
+      setFamilyTickerNews(Array.isArray(data) ? data : [])
     } catch (error) {
       toast.error(error.message)
-      setTickerNews([])
-    } finally {
-      setLoading(false)
+      setFamilyTickerNews([])
+    }
+  }
+
+  const fetchPalestineTickerData = async () => {
+    try {
+      const data = await adminPalestineTickerNews.getAll()
+      setPalestineTickerNews(Array.isArray(data) ? data : [])
+    } catch (error) {
+      toast.error(error.message)
+      setPalestineTickerNews([])
     }
   }
 
@@ -44,15 +74,30 @@ const AdminTickers = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
+    setIsSubmitting(true)
+
+    const api = activeTickerType === 'family' ? adminFamilyTickerNews : adminPalestineTickerNews
+    const payload = activeTickerType === 'family'
+      ? {
+          headline: formData.headline,
+          active: formData.active,
+          order: Number(formData.order) || 0
+        }
+      : {
+          headline: formData.headline,
+          source: formData.source,
+          url: formData.url,
+          active: formData.active,
+          order: Number(formData.order) || 0
+        }
 
     try {
       if (editingItem) {
         const itemId = editingItem.id || editingItem._id
-        await adminFamilyTickerNews.update(itemId, formData)
+        await api.update(itemId, payload)
         toast.success('تم تحديث عنصر الشريط بنجاح')
       } else {
-        await adminFamilyTickerNews.create(formData)
+        await api.create(payload)
         toast.success('تم إضافة عنصر الشريط بنجاح')
       }
       
@@ -60,46 +105,66 @@ const AdminTickers = () => {
       setEditingItem(null)
       setFormData({
         headline: '',
+        source: '',
+        url: '',
         active: true,
         order: 0
       })
-      fetchTickerNews()
+
+      if (activeTickerType === 'family') {
+        await fetchFamilyTickerData()
+      } else {
+        await fetchPalestineTickerData()
+      }
     } catch (error) {
       toast.error(error.message)
     } finally {
-      setLoading(false)
+      setIsSubmitting(false)
     }
   }
 
-  const handleEdit = (item) => {
-    setEditingItem(item)
+  const handleEdit = (item, type) => {
+    setActiveTickerType(type)
+    setEditingItem({ ...item, tickerType: type })
     setFormData({
       headline: item.headline || '',
+      source: type === 'palestine' ? item.source || '' : '',
+      url: type === 'palestine' ? item.url || '' : '',
       active: item.active !== undefined ? item.active : true,
       order: item.order || 0
     })
     setShowForm(true)
   }
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, type) => {
     if (!confirm('هل أنت متأكد من حذف هذا العنصر؟')) return
 
     try {
       const itemId = typeof id === 'object' ? (id.id || id._id) : id
-      await adminFamilyTickerNews.delete(itemId)
+      const api = type === 'family' ? adminFamilyTickerNews : adminPalestineTickerNews
+      await api.delete(itemId)
       toast.success('تم حذف العنصر بنجاح')
-      fetchTickerNews()
+      if (type === 'family') {
+        await fetchFamilyTickerData()
+      } else {
+        await fetchPalestineTickerData()
+      }
     } catch (error) {
       toast.error(error.message)
     }
   }
 
-  const handleToggleActive = async (item) => {
+  const handleToggleActive = async (item, type) => {
     try {
       const itemId = item.id || item._id
-      await adminFamilyTickerNews.update(itemId, { active: !item.active })
+      const api = type === 'family' ? adminFamilyTickerNews : adminPalestineTickerNews
+      await api.update(itemId, { active: !item.active })
       toast.success(`تم ${item.active ? 'إيقاف' : 'تفعيل'} العنصر بنجاح`)
-      fetchTickerNews()
+      if (type === 'family') {
+        await fetchFamilyTickerData()
+      } else {
+        await fetchPalestineTickerData()
+      }
     } catch (error) {
       toast.error(error.message)
     }
@@ -107,32 +172,37 @@ const AdminTickers = () => {
 
   const handleSettingsSubmit = async (e) => {
     e.preventDefault()
-    setLoading(true)
+    setIsSubmitting(true)
 
     try {
       await adminTickerSettings.update(settings)
       toast.success('تم تحديث الإعدادات بنجاح')
       setShowSettings(false)
-      fetchSettings()
+      await fetchSettings()
     } catch (error) {
       toast.error(error.message)
     } finally {
-      setLoading(false)
+      setIsSubmitting(false)
     }
   }
 
-  const handleMoveOrder = async (item, direction) => {
+  const handleMoveOrder = async (item, direction, type) => {
     try {
       const itemId = item.id || item._id
       const newOrder = direction === 'up' ? item.order - 1 : item.order + 1
-      await adminFamilyTickerNews.update(itemId, { order: newOrder })
-      fetchTickerNews()
+      const api = type === 'family' ? adminFamilyTickerNews : adminPalestineTickerNews
+      await api.update(itemId, { order: newOrder })
+      if (type === 'family') {
+        await fetchFamilyTickerData()
+      } else {
+        await fetchPalestineTickerData()
+      }
     } catch (error) {
       toast.error(error.message)
     }
   }
 
-  if (loading && tickerNews.length === 0) {
+  if (loading && familyTickerNews.length === 0 && palestineTickerNews.length === 0) {
     return <LoadingSpinner />
   }
 
@@ -142,7 +212,7 @@ const AdminTickers = () => {
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold text-palestine-black">إدارة شريط الأخبار</h2>
-          <p className="text-gray-600 mt-1">إدارة أخبار الشريط العائلي وإعدادات شريط أخبار فلسطين</p>
+          <p className="text-gray-600 mt-1">إدارة أخبار الشريط العائلي وأخبار فلسطين المباشرة</p>
         </div>
         <div className="flex gap-3">
           <button
@@ -151,33 +221,38 @@ const AdminTickers = () => {
           >
             ⚙️ الإعدادات
           </button>
-          <button
-            onClick={() => {
-              setShowForm(true)
-              setEditingItem(null)
-              setFormData({
-                headline: '',
-                active: true,
-                order: tickerNews.length
-              })
-            }}
-            className="btn-primary"
-          >
-            + إضافة عنصر جديد
-          </button>
         </div>
       </div>
 
       {/* Family Ticker News Section */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-bold text-palestine-black mb-4">
-          📰 أخبار الشريط العائلي
-        </h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-xl font-bold text-palestine-black">
+            📰 أخبار الشريط العائلي
+          </h3>
+          <button
+            onClick={() => {
+              setActiveTickerType('family')
+              setShowForm(true)
+              setEditingItem(null)
+              setFormData({
+                headline: '',
+                source: '',
+                url: '',
+                active: true,
+                order: familyTickerNews.length
+              })
+            }}
+            className="btn-primary"
+          >
+            + إضافة خبر عائلي
+          </button>
+        </div>
         
-        {tickerNews.length === 0 ? (
+        {familyTickerNews.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <p className="text-lg mb-2">لا توجد عناصر في الشريط العائلي</p>
-            <p className="text-sm">اضغط على "إضافة عنصر جديد" لإضافة أول عنصر</p>
+            <p className="text-sm">اضغط على "إضافة خبر عائلي" لإضافة أول عنصر</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -191,14 +266,14 @@ const AdminTickers = () => {
                 </tr>
               </thead>
               <tbody>
-                {tickerNews
+                {familyTickerNews
                   .sort((a, b) => (a.order || 0) - (b.order || 0))
                   .map((item, index) => (
                     <tr key={item.id || item._id} className="border-b border-gray-100 hover:bg-gray-50">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           <button
-                            onClick={() => handleMoveOrder(item, 'up')}
+                            onClick={() => handleMoveOrder(item, 'up', 'family')}
                             disabled={index === 0}
                             className={`p-1 ${index === 0 ? 'text-gray-300' : 'text-palestine-green hover:text-olive-700'}`}
                             title="نقل للأعلى"
@@ -207,9 +282,9 @@ const AdminTickers = () => {
                           </button>
                           <span className="font-medium">{item.order || 0}</span>
                           <button
-                            onClick={() => handleMoveOrder(item, 'down')}
-                            disabled={index === tickerNews.length - 1}
-                            className={`p-1 ${index === tickerNews.length - 1 ? 'text-gray-300' : 'text-palestine-green hover:text-olive-700'}`}
+                            onClick={() => handleMoveOrder(item, 'down', 'family')}
+                            disabled={index === familyTickerNews.length - 1}
+                            className={`p-1 ${index === familyTickerNews.length - 1 ? 'text-gray-300' : 'text-palestine-green hover:text-olive-700'}`}
                             title="نقل للأسفل"
                           >
                             ↓
@@ -223,7 +298,7 @@ const AdminTickers = () => {
                       </td>
                       <td className="py-3 px-4 text-center">
                         <button
-                          onClick={() => handleToggleActive(item)}
+                          onClick={() => handleToggleActive(item, 'family')}
                           className={`px-3 py-1 rounded-full text-sm font-medium ${
                             item.active
                               ? 'bg-green-100 text-green-800'
@@ -236,14 +311,14 @@ const AdminTickers = () => {
                       <td className="py-3 px-4">
                         <div className="flex items-center justify-center gap-2">
                           <button
-                            onClick={() => handleEdit(item)}
+                            onClick={() => handleEdit(item, 'family')}
                             className="text-palestine-green hover:text-olive-700 px-3 py-1 rounded transition-colors"
                             title="تعديل"
                           >
                             ✏️
                           </button>
                           <button
-                            onClick={() => handleDelete(item.id || item._id)}
+                            onClick={() => handleDelete(item.id || item._id, 'family')}
                             className="text-palestine-red hover:text-red-700 px-3 py-1 rounded transition-colors"
                             title="حذف"
                           >
@@ -259,19 +334,142 @@ const AdminTickers = () => {
         )}
       </div>
 
-      {/* Palestine Ticker Info */}
+      {/* Palestine Ticker News Section */}
       <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-xl font-bold text-palestine-black mb-4">
-          🇵🇸 شريط أخبار فلسطين المباشرة
-        </h3>
-        <div className="bg-blue-50 border-r-4 border-blue-500 p-4 rounded">
-          <p className="text-gray-700 mb-2">
-            <strong>ملاحظة:</strong> أخبار فلسطين يتم جلبها تلقائياً من API خارجي (GNews.io أو NewsAPI.org).
-          </p>
-          <p className="text-sm text-gray-600">
-            يمكنك التحكم في إعدادات الشريط من خلال زر "الإعدادات" أعلاه.
-          </p>
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-xl font-bold text-palestine-black">
+              🇵🇸 أخبار فلسطين المباشرة (مُدارة يدوياً)
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              أضف عناوين الأخبار يدوياً وسيتم عرضها فوراً في شريط أخبار فلسطين. عند عدم وجود عناوين، سيتم الاعتماد على مصادر الأخبار الخارجية (إن وُجدت المفاتيح).
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setActiveTickerType('palestine')
+              setShowForm(true)
+              setEditingItem(null)
+              setFormData({
+                headline: '',
+                source: '',
+                url: '',
+                active: true,
+                order: palestineTickerNews.length
+              })
+            }}
+            className="btn-primary"
+          >
+            + إضافة خبر فلسطين
+          </button>
         </div>
+
+        {palestineTickerNews.length === 0 ? (
+          <div className="bg-blue-50 border-r-4 border-blue-500 p-4 rounded">
+            <p className="text-gray-700 mb-2">
+              لم يتم إضافة أي أخبار يدوية لشريط فلسطين بعد.
+            </p>
+            <p className="text-sm text-gray-600">
+              أضف الأخبار هنا للتحكم الكامل في محتوى الشريط. في حال عدم وجود أخبار، سيقوم النظام بمحاولة جلب الأخبار من مزود الـ API المُحدد في الإعدادات.
+            </p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="text-right py-3 px-4 font-semibold text-palestine-black">الترتيب</th>
+                  <th className="text-right py-3 px-4 font-semibold text-palestine-black">العنوان</th>
+                  <th className="text-right py-3 px-4 font-semibold text-palestine-black">المصدر</th>
+                  <th className="text-center py-3 px-4 font-semibold text-palestine-black">الرابط</th>
+                  <th className="text-center py-3 px-4 font-semibold text-palestine-black">الحالة</th>
+                  <th className="text-center py-3 px-4 font-semibold text-palestine-black">الإجراءات</th>
+                </tr>
+              </thead>
+              <tbody>
+                {palestineTickerNews
+                  .sort((a, b) => (a.order || 0) - (b.order || 0))
+                  .map((item, index) => (
+                    <tr key={item.id || item._id} className="border-b border-gray-100 hover:bg-gray-50">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleMoveOrder(item, 'up', 'palestine')}
+                            disabled={index === 0}
+                            className={`p-1 ${index === 0 ? 'text-gray-300' : 'text-palestine-green hover:text-olive-700'}`}
+                            title="نقل للأعلى"
+                          >
+                            ↑
+                          </button>
+                          <span className="font-medium">{item.order || 0}</span>
+                          <button
+                            onClick={() => handleMoveOrder(item, 'down', 'palestine')}
+                            disabled={index === palestineTickerNews.length - 1}
+                            className={`p-1 ${index === palestineTickerNews.length - 1 ? 'text-gray-300' : 'text-palestine-green hover:text-olive-700'}`}
+                            title="نقل للأسفل"
+                          >
+                            ↓
+                          </button>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="max-w-md">
+                          <p className="text-palestine-black font-medium">{item.headline}</p>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className="text-sm text-gray-600">{item.source || '—'}</span>
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {item.url ? (
+                          <a
+                            href={item.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-palestine-green hover:text-olive-700 underline"
+                          >
+                            فتح الرابط
+                          </a>
+                        ) : (
+                          <span className="text-gray-400 text-sm">لا يوجد</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        <button
+                          onClick={() => handleToggleActive(item, 'palestine')}
+                          className={`px-3 py-1 rounded-full text-sm font-medium ${
+                            item.active
+                              ? 'bg-green-100 text-green-800'
+                              : 'bg-gray-100 text-gray-600'
+                          }`}
+                        >
+                          {item.active ? '✓ نشط' : '✗ غير نشط'}
+                        </button>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <button
+                            onClick={() => handleEdit(item, 'palestine')}
+                            className="text-palestine-green hover:text-olive-700 px-3 py-1 rounded transition-colors"
+                            title="تعديل"
+                          >
+                            ✏️
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.id || item._id, 'palestine')}
+                            className="text-palestine-red hover:text-red-700 px-3 py-1 rounded transition-colors"
+                            title="حذف"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Form Modal */}
@@ -281,7 +479,9 @@ const AdminTickers = () => {
             <div className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-xl font-bold text-palestine-black">
-                  {editingItem ? 'تعديل عنصر الشريط' : 'إضافة عنصر جديد'}
+                  {editingItem
+                    ? `تعديل عنصر ${tickerLabels[activeTickerType]}`
+                    : `إضافة خبر لـ ${tickerLabels[activeTickerType]}`}
                 </h3>
                 <button
                   onClick={() => {
@@ -289,6 +489,8 @@ const AdminTickers = () => {
                     setEditingItem(null)
                     setFormData({
                       headline: '',
+                      source: '',
+                      url: '',
                       active: true,
                       order: 0
                     })
@@ -313,6 +515,36 @@ const AdminTickers = () => {
                     required
                   />
                 </div>
+
+              {activeTickerType === 'palestine' && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-palestine-black mb-2">
+                      المصدر (اختياري)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.source}
+                      onChange={(e) => setFormData({ ...formData, source: e.target.value })}
+                      className="form-input"
+                      placeholder="مثال: وكالة الأنباء الفلسطينية"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-palestine-black mb-2">
+                      رابط الخبر (اختياري)
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.url}
+                      onChange={(e) => setFormData({ ...formData, url: e.target.value })}
+                      className="form-input"
+                      placeholder="https://example.com/article"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">سيتم فتح الرابط في نافذة جديدة عند الضغط عليه من الشريط.</p>
+                  </div>
+                </div>
+              )}
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
@@ -352,6 +584,8 @@ const AdminTickers = () => {
                       setEditingItem(null)
                       setFormData({
                         headline: '',
+                        source: '',
+                        url: '',
                         active: true,
                         order: 0
                       })
@@ -362,10 +596,10 @@ const AdminTickers = () => {
                   </button>
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isSubmitting}
                     className="btn-primary"
                   >
-                    {loading ? 'جاري الحفظ...' : editingItem ? 'تحديث' : 'إضافة'}
+                    {isSubmitting ? 'جاري الحفظ...' : editingItem ? 'تحديث' : 'إضافة'}
                   </button>
                 </div>
               </form>
@@ -461,10 +695,10 @@ const AdminTickers = () => {
                   </button>
                   <button
                     type="submit"
-                    disabled={loading}
+                    disabled={isSubmitting}
                     className="btn-primary"
                   >
-                    {loading ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
+                    {isSubmitting ? 'جاري الحفظ...' : 'حفظ الإعدادات'}
                   </button>
                 </div>
               </form>
