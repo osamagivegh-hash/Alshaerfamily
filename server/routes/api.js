@@ -21,6 +21,15 @@ const {
 } = require('../middleware/validation');
 const logger = require('../middleware/logger');
 const router = express.Router();
+const multer = require('multer');
+const path = require('path');
+
+const upload = multer({
+  storage: multer.diskStorage({
+    destination: (req, file, cb) => cb(null, 'uploads/'),
+    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
+  })
+});
 
 // Helper function to normalize MongoDB documents (convert _id to id)
 const normalizeDocument = (doc) => {
@@ -470,6 +479,18 @@ router.get('/ticker/palestine-news', asyncHandler(async (req, res) => {
   logger.warn('No real news retrieved from any API source. This may be due to: invalid API keys, rate limits, or no Palestine news available.');
   return res.success(200, 'لا توجد أخبار متاحة حالياً', []);
 }));
+
+router.post('/upload/single-image', upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'لم يتم رفع صورة' });
+  const url = `/uploads/${req.file.filename}`;
+  res.json({ url });
+});
+
+router.post('/upload/editor-image', upload.single('image'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'لم يتم رفع صورة' });
+  const url = `/uploads/${req.file.filename}`;
+  res.json({ url });
+});
 
 module.exports = router;
 

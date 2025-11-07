@@ -5,6 +5,9 @@ import LoadingSpinner from '../LoadingSpinner'
 import ImageUpload from './ImageUpload'
 import ImageWithFallback from '../common/ImageWithFallback'
 import { normalizeImageUrl } from '../../utils/imageUtils'
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
+import { uploadEditorImage } from './EditorImageUploader';
 
 const AdminArticles = () => {
   const [articles, setArticles] = useState([])
@@ -134,6 +137,29 @@ const AdminArticles = () => {
     return <LoadingSpinner />
   }
 
+  const modules = {
+    toolbar: {
+      container: [[{ header: [1, 2, false] }], ['bold', 'italic'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'image'], ['clean']],
+      handlers: {
+        image: function() {
+          const input = document.createElement('input');
+          input.setAttribute('type', 'file');
+          input.setAttribute('accept', 'image/*');
+          input.click();
+          input.onchange = async () => {
+            const file = input.files[0];
+            if (file) {
+              const url = await uploadEditorImage(file);
+              const quill = this.quill;
+              const range = quill.getSelection();
+              quill.insertEmbed(range.index, 'image', url);
+            }
+          };
+        }
+      }
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -252,17 +278,14 @@ const AdminArticles = () => {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-palestine-black mb-2">
-                  محتوى المقال *
-                </label>
-                <textarea
+                <label className="block text-sm font-medium text-palestine-black mb-2">محتوى المقال *</label>
+                <ReactQuill
                   value={formData.content}
-                  onChange={(e) => setFormData({...formData, content: e.target.value})}
-                  required
-                  rows={8}
-                  className="form-textarea"
-                  placeholder="اكتب محتوى المقال"
+                  onChange={content => setFormData({...formData, content})}
+                  modules={modules}
+                  theme="snow"
                 />
+                <div className="text-xs mt-1">يمكنك إدراج حتى 20 صورة داخل المحتوى.</div>
               </div>
 
               <div className="flex justify-end gap-4 pt-4">

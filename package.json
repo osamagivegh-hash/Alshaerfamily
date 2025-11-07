@@ -12,10 +12,18 @@
     "start": "cd server && npm start",
     "install:all": "npm install && cd client && npm install && cd ../server && npm install"
   },
-  "keywords": ["family", "arabic", "palestinian", "website"],
+  "keywords": [
+    "family",
+    "arabic",
+    "palestinian",
+    "website"
+  ],
   "author": "Al-Sha'er Family",
   "license": "MIT",
   "devDependencies": {
     "concurrently": "^8.2.2"
+  },
+  "dependencies": {
+    "react-quill": "^2.0.0"
   }
 }
