@@ -15,11 +15,10 @@ const useCloudinaryEnv = trimEnv(process.env.USE_CLOUDINARY);
 const cloudinaryFolder = trimEnv(process.env.CLOUDINARY_FOLDER) || 'al-shaer-family';
 
 // Check if Cloudinary is configured
-const isCloudinaryConfigured = 
-  useCloudinaryEnv === 'true' &&
-  !!cloudinaryCloudName && 
-  !!cloudinaryApiKey && 
-  !!cloudinaryApiSecret;
+const hasCloudinaryCredentials = !!cloudinaryCloudName && !!cloudinaryApiKey && !!cloudinaryApiSecret;
+const isCloudinaryConfigured =
+  hasCloudinaryCredentials &&
+  useCloudinaryEnv !== 'false';
 
 // Configure Cloudinary if available
 if (isCloudinaryConfigured) {
@@ -36,11 +35,13 @@ if (isCloudinaryConfigured) {
     folder: cloudinaryFolder,
   });
 } else {
-  console.log('⚠️ Cloudinary not configured — using local uploads');
-  if (!cloudinaryCloudName || !cloudinaryApiKey || !cloudinaryApiSecret) {
-    console.log('Missing Cloudinary environment variables');
-  } else if (useCloudinaryEnv !== 'true') {
-    console.log('USE_CLOUDINARY is not set to "true"');
+  console.log('⚠️ Cloudinary disabled — using local uploads');
+  if (!hasCloudinaryCredentials) {
+    console.log('Reason: missing Cloudinary environment variables (CLOUDINARY_CLOUD_NAME / API_KEY / API_SECRET).');
+  } else if (useCloudinaryEnv === 'false') {
+    console.log('Reason: USE_CLOUDINARY is explicitly set to "false".');
+  } else {
+    console.log('Reason: Cloudinary credentials missing or not fully defined.');
   }
 }
 
