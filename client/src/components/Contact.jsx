@@ -162,7 +162,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4 className="font-semibold text-palestine-black mb-1">العنوان</h4>
-                    <p className="text-gray-600">فلسطين - القدس</p>
+                    <p className="text-gray-600">فلسطين - غزة</p>
                   </div>
                 </div>
               </div>

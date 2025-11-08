@@ -110,7 +110,7 @@ const Footer = () => {
               </p>
               <p className="flex items-center">
                 <span className="ml-2">📍</span>
-                فلسطين - القدس
+                فلسطين - غزة
               </p>
             </div>
           </div>
