@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { adminConversations } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../LoadingSpinner'
@@ -34,6 +34,8 @@ const AdminConversations = () => {
     moderatorImage: '',
     tags: []
   })
+
+  const editorRef = useRef(null)
 
   useEffect(() => {
     fetchConversations()
@@ -148,6 +150,17 @@ const AdminConversations = () => {
     }
   }
 
+  const scrollEditorIntoView = () => {
+    const quillInstance = editorRef.current?.getEditor?.()
+    if (!quillInstance) return
+
+    requestAnimationFrame(() => {
+      const editorWrapper = quillInstance.root.closest('.rich-text-editor')
+      editorWrapper?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      quillInstance.focus()
+    })
+  }
+
   if (loading && !showForm) {
     return <LoadingSpinner />
   }
@@ -179,6 +192,7 @@ const AdminConversations = () => {
                 const index = selection ? selection.index : quill.getLength()
                 quill.insertEmbed(index, 'image', url)
                 quill.setSelection(index + 1)
+                scrollEditorIntoView()
               } catch (error) {
                 console.error('Image upload failed:', error)
                 toast.error('فشل رفع الصورة. حاول مرة أخرى.')
@@ -325,6 +339,7 @@ const AdminConversations = () => {
                   محتوى الحوار *
                 </label>
                 <ReactQuill
+                  ref={editorRef}
                   className="rich-text-editor"
                   value={formData.content}
                   onChange={content => setFormData({...formData, content})}

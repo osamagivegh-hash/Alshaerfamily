@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { adminPalestine } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../LoadingSpinner'
@@ -17,6 +17,8 @@ const AdminPalestine = () => {
     content: '',
     image: ''
   })
+
+  const editorRef = useRef(null)
 
   useEffect(() => {
     fetchPalestineItems()
@@ -110,6 +112,17 @@ const AdminPalestine = () => {
     }
   }
 
+  const scrollEditorIntoView = () => {
+    const quillInstance = editorRef.current?.getEditor?.()
+    if (!quillInstance) return
+
+    requestAnimationFrame(() => {
+      const editorWrapper = quillInstance.root.closest('.rich-text-editor')
+      editorWrapper?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+      quillInstance.focus()
+    })
+  }
+
   if (loading && !showForm) {
     return <LoadingSpinner />
   }
@@ -141,6 +154,7 @@ const AdminPalestine = () => {
                 const index = selection ? selection.index : quill.getLength()
                 quill.insertEmbed(index, 'image', url)
                 quill.setSelection(index + 1)
+                scrollEditorIntoView()
               } catch (error) {
                 console.error('Image upload failed:', error)
                 toast.error('فشل رفع الصورة. حاول مرة أخرى.')
@@ -220,6 +234,7 @@ const AdminPalestine = () => {
               <div>
                 <label className="block text-sm font-medium text-palestine-black mb-2">المحتوى *</label>
                 <ReactQuill
+                  ref={editorRef}
                   className="rich-text-editor"
                   value={formData.content}
                   onChange={content => setFormData({...formData, content})}
