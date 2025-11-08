@@ -25,43 +25,6 @@ export const getStaticSections = () => {
     articles: articlesData,
     conversations: dialoguesData,
     news: newsData,
-    familyTree: {
-      name: "عائلة الشاعر",
-      description: "شجرة عائلة الشاعر الفلسطينية العريقة",
-      generations: [
-        {
-          level: 1,
-          members: [
-            {
-              name: "الحاج محمد الشاعر",
-              role: "جد العائلة",
-              birthYear: "1920",
-              location: "الخليل، فلسطين",
-              children: 8
-            }
-          ]
-        },
-        {
-          level: 2,
-          members: [
-            {
-              name: "أحمد محمد الشاعر",
-              role: "الابن الأكبر",
-              birthYear: "1945",
-              location: "عمان، الأردن",
-              children: 6
-            },
-            {
-              name: "فاطمة محمد الشاعر",
-              role: "الابنة الكبرى",
-              birthYear: "1947",
-              location: "دمشق، سوريا",
-              children: 4
-            }
-          ]
-        }
-      ]
-    },
     palestine: [
       {
         id: "1",

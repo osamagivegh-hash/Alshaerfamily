@@ -12,7 +12,7 @@ const Header = () => {
       setIsScrolled(window.scrollY > 50)
       
       // Update active section based on scroll position
-      const sections = ['hero', 'news', 'conversations', 'family-tree', 'palestine', 'articles', 'gallery', 'contact']
+      const sections = ['hero', 'news', 'conversations', 'palestine', 'articles', 'gallery', 'contact']
       const scrollPosition = window.scrollY + 100
 
       for (const section of sections) {
@@ -42,7 +42,6 @@ const Header = () => {
     { id: 'hero', label: 'الرئيسية' },
     { id: 'news', label: 'الأخبار' },
     { id: 'conversations', label: 'حوارات' },
-    { id: 'family-tree', label: 'شجرة العائلة' },
     { id: 'palestine', label: 'فلسطين' },
     { id: 'articles', label: 'مقالات' },
     { id: 'gallery', label: 'معرض الصور' },

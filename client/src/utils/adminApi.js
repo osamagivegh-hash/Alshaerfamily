@@ -173,27 +173,6 @@ export const adminArticles = createCRUDFunctions('articles')
 export const adminPalestine = createCRUDFunctions('palestine')
 export const adminGallery = createCRUDFunctions('gallery')
 
-// Family Tree API (special case)
-export const adminFamilyTree = {
-  get: async () => {
-    try {
-      const response = await adminApi.get('/family-tree')
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'خطأ في جلب شجرة العائلة')
-    }
-  },
-
-  update: async (data) => {
-    try {
-      const response = await adminApi.put('/family-tree', data)
-      return response.data
-    } catch (error) {
-      throw new Error(error.response?.data?.message || 'خطأ في تحديث شجرة العائلة')
-    }
-  }
-}
-
 // Contacts API
 export const adminContacts = {
   getAll: async () => {

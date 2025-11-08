@@ -5,7 +5,6 @@ const {
   Articles, 
   Palestine, 
   Gallery, 
-  FamilyTree, 
   Contacts,
   Comments,
   FamilyTickerNews,
@@ -55,10 +54,6 @@ router.get('/sections', asyncHandler(async (req, res) => {
   sections.palestine = normalizeDocument(await Palestine.find().sort({ createdAt: -1 }));
   sections.gallery = normalizeDocument(await Gallery.find().sort({ createdAt: -1 }));
   
-  // Get family tree
-  const familyTree = await FamilyTree.findOne();
-  sections.familyTree = normalizeDocument(familyTree) || { patriarch: '', generations: [] };
-  
   logger.info('Fetched all sections data');
   res.success(200, 'تم جلب البيانات بنجاح', sections);
 }));
@@ -83,10 +78,6 @@ router.get('/sections/:section', asyncHandler(async (req, res) => {
       break;
     case 'gallery':
       data = normalizeDocument(await Gallery.find().sort({ createdAt: -1 }));
-      break;
-    case 'familyTree':
-      const familyTree = await FamilyTree.findOne();
-      data = normalizeDocument(familyTree) || { patriarch: '', generations: [] };
       break;
     default:
       return res.error(404, 'القسم غير موجود');

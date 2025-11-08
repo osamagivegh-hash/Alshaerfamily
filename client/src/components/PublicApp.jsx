@@ -9,7 +9,6 @@ import { fetchSectionsData } from '../utils/api'
 // Lazy load components
 const News = lazy(() => import('./News'))
 const Conversations = lazy(() => import('./Conversations'))
-const FamilyTree = lazy(() => import('./FamilyTree'))
 const Palestine = lazy(() => import('./Palestine'))
 const Articles = lazy(() => import('./Articles'))
 const Gallery = lazy(() => import('./Gallery'))
@@ -83,12 +82,6 @@ const PublicApp = () => {
         <LazySection>
           <Suspense fallback={<SectionFallback name="الحوارات" />}>
             <Conversations data={sectionsData?.conversations || []} />
-          </Suspense>
-        </LazySection>
-
-        <LazySection>
-          <Suspense fallback={<SectionFallback name="شجرة العائلة" />}>
-            <FamilyTree data={sectionsData?.familyTree || {}} />
           </Suspense>
         </LazySection>
 

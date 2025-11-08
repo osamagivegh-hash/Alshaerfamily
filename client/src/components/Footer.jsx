@@ -48,18 +48,10 @@ const Footer = () => {
               </li>
               <li>
                 <button 
-                  onClick={() => document.getElementById('family-tree').scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => document.getElementById('articles').scrollIntoView({ behavior: 'smooth' })}
                   className="text-gray-300 hover:text-palestine-green transition-colors duration-200"
                 >
-                  شجرة العائلة
-                </button>
-              </li>
-              <li>
-                <button 
-                  onClick={() => document.getElementById('palestine').scrollIntoView({ behavior: 'smooth' })}
-                  className="text-gray-300 hover:text-palestine-green transition-colors duration-200"
-                >
-                  فلسطين
+                  مقالات
                 </button>
               </li>
             </ul>

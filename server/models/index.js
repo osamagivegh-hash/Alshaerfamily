@@ -133,16 +133,6 @@ const gallerySchema = new mongoose.Schema({
 gallerySchema.index({ createdAt: -1 });
 gallerySchema.index({ title: 'text', description: 'text' });
 
-// Family Tree Schema
-const familyTreeSchema = new mongoose.Schema({
-  patriarch: { type: String, default: '' },
-  generations: [{
-    generation: { type: Number, required: true },
-    members: [{ type: String, required: true }]
-  }],
-  updatedAt: { type: Date, default: Date.now }
-});
-
 // Contacts Schema
 const contactsSchema = new mongoose.Schema({
   name: { type: String, required: true },
@@ -232,7 +222,6 @@ const Conversations = mongoose.model('Conversations', conversationsSchema);
 const Articles = mongoose.model('Articles', articlesSchema);
 const Palestine = mongoose.model('Palestine', palestineSchema);
 const Gallery = mongoose.model('Gallery', gallerySchema);
-const FamilyTree = mongoose.model('FamilyTree', familyTreeSchema);
 const Contacts = mongoose.model('Contacts', contactsSchema);
 const Comments = mongoose.model('Comments', commentsSchema);
 const FamilyTickerNews = mongoose.model('FamilyTickerNews', familyTickerNewsSchema);
@@ -247,7 +236,6 @@ module.exports = {
   Articles,
   Palestine,
   Gallery,
-  FamilyTree,
   Contacts,
   Comments,
   FamilyTickerNews,

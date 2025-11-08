@@ -8,7 +8,6 @@ const {
   Articles, 
   Palestine, 
   Gallery, 
-  FamilyTree, 
   Contacts,
   FamilyTickerNews,
   PalestineTickerNews,
@@ -63,15 +62,6 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
     // Count contacts
     stats.contacts = await Contacts.countDocuments();
     stats.unreadContacts = await Contacts.countDocuments({ status: 'new' });
-
-    // Count family tree members
-    const familyTree = await FamilyTree.findOne();
-    if (familyTree && familyTree.generations) {
-      stats.familyMembers = familyTree.generations.reduce((total, gen) => 
-        total + (gen.members ? gen.members.length : 0), 0);
-    } else {
-      stats.familyMembers = 0;
-    }
 
     res.json(stats);
   } catch (error) {
@@ -198,48 +188,6 @@ createCRUDRoutes('conversations', Conversations);
 createCRUDRoutes('articles', Articles);
 createCRUDRoutes('palestine', Palestine);
 createCRUDRoutes('gallery', Gallery);
-
-// Special route for family tree (single document)
-router.get('/family-tree', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    let familyTree = await FamilyTree.findOne();
-    if (!familyTree) {
-      familyTree = new FamilyTree({ patriarch: '', generations: [] });
-      await familyTree.save();
-    }
-    res.json(normalizeDocument(familyTree));
-  } catch (error) {
-    console.error('Get family tree error:', error);
-    res.status(500).json({ message: 'خطأ في جلب شجرة العائلة' });
-  }
-});
-
-router.put('/family-tree', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    let familyTree = await FamilyTree.findOne();
-    
-    if (familyTree) {
-      familyTree.patriarch = req.body.patriarch;
-      familyTree.generations = req.body.generations;
-      familyTree.updatedAt = new Date();
-      await familyTree.save();
-    } else {
-      familyTree = new FamilyTree({
-        ...req.body,
-        updatedAt: new Date()
-      });
-      await familyTree.save();
-    }
-    
-    res.json({ 
-      message: 'تم تحديث شجرة العائلة بنجاح', 
-      data: normalizeDocument(familyTree) 
-    });
-  } catch (error) {
-    console.error('Update family tree error:', error);
-    res.status(500).json({ message: 'خطأ في تحديث شجرة العائلة' });
-  }
-});
 
 // Contact management
 router.get('/contacts', authenticateToken, requireAdmin, async (req, res) => {

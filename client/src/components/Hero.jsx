@@ -25,7 +25,7 @@ const Hero = () => {
           <div className="max-w-4xl mx-auto mb-12">
             <p className="text-lg md:text-xl text-gray-700 leading-relaxed mb-6">
               مرحباً بكم في موقع عائلة الشاعر، حيث نحتفظ بذكرياتنا ونروي قصصنا ونحافظ على تراثنا الفلسطيني الأصيل. 
-              هنا تجدون أخبار العائلة، حواراتنا، شجرة عائلتنا، وكل ما يربطنا بجذورنا في فلسطين الحبيبة.
+              هنا تجدون أخبار العائلة، حواراتنا، وكل ما يربطنا بجذورنا في فلسطين الحبيبة.
             </p>
           </div>
 
@@ -38,10 +38,10 @@ const Hero = () => {
               استكشف أخبار العائلة
             </button>
             <button 
-              onClick={() => document.getElementById('family-tree').scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => document.getElementById('palestine').scrollIntoView({ behavior: 'smooth' })}
               className="btn-secondary text-lg px-8 py-4 w-full sm:w-auto"
             >
-              شاهد شجرة العائلة
+              تعرف على تراث فلسطين
             </button>
           </div>
 

@@ -9,7 +9,6 @@ const {
   Articles, 
   Palestine, 
   Gallery, 
-  FamilyTree, 
   Contacts 
 } = require('../models');
 
@@ -71,15 +70,6 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
     // Count contacts
     stats.contacts = await Contacts.countDocuments();
     stats.unreadContacts = await Contacts.countDocuments({ status: 'new' });
-
-    // Count family tree members
-    const familyTree = await FamilyTree.findOne();
-    if (familyTree && familyTree.generations) {
-      stats.familyMembers = familyTree.generations.reduce((total, gen) => 
-        total + (gen.members ? gen.members.length : 0), 0);
-    } else {
-      stats.familyMembers = 0;
-    }
 
     res.json(stats);
   } catch (error) {
@@ -221,37 +211,6 @@ const createCRUDRoutes = (sectionName) => {
 // Create CRUD routes for all sections
 ['news', 'conversations', 'articles', 'palestine', 'gallery'].forEach(section => {
   createCRUDRoutes(section);
-});
-
-// Special route for family tree (not array-based)
-router.get('/family-tree', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const filePath = path.join(dataDir, 'familyTree.json');
-    if (await fs.pathExists(filePath)) {
-      const data = await fs.readJson(filePath);
-      res.json(data);
-    } else {
-      res.json({ patriarch: '', generations: [] });
-    }
-  } catch (error) {
-    res.status(500).json({ message: 'خطأ في جلب شجرة العائلة' });
-  }
-});
-
-router.put('/family-tree', authenticateToken, requireAdmin, async (req, res) => {
-  try {
-    const filePath = path.join(dataDir, 'familyTree.json');
-    const updatedData = {
-      ...req.body,
-      updatedAt: new Date().toISOString()
-    };
-    
-    await fs.writeJson(filePath, updatedData);
-    res.json({ message: 'تم تحديث شجرة العائلة بنجاح', data: updatedData });
-  } catch (error) {
-    console.error('Update family tree error:', error);
-    res.status(500).json({ message: 'خطأ في تحديث شجرة العائلة' });
-  }
 });
 
 // Contact management

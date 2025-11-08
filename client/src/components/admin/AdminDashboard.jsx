@@ -65,13 +65,6 @@ const AdminDashboard = () => {
       path: '/admin/gallery'
     },
     {
-      title: 'أفراد العائلة',
-      value: stats?.familyMembers || 0,
-      icon: '👥',
-      color: 'bg-indigo-500',
-      path: '/admin/family-tree'
-    },
-    {
       title: 'الرسائل',
       value: stats?.contacts || 0,
       icon: '📧',
@@ -101,13 +94,6 @@ const AdminDashboard = () => {
       icon: '📝',
       color: 'bg-palestine-red',
       action: () => navigate('/admin/articles/new')
-    },
-    {
-      title: 'إدارة شجرة العائلة',
-      description: 'تحديث معلومات أفراد العائلة',
-      icon: '🌳',
-      color: 'bg-olive-600',
-      action: () => navigate('/admin/family-tree')
     },
     {
       title: 'رفع صور جديدة',
@@ -218,13 +204,6 @@ const AdminDashboard = () => {
               <span className="text-gray-600">الرسائل الجديدة</span>
               <span className="text-2xl font-bold text-palestine-red">
                 {stats?.unreadContacts || 0}
-              </span>
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <span className="text-gray-600">أفراد العائلة</span>
-              <span className="text-2xl font-bold text-olive-600">
-                {stats?.familyMembers || 0}
               </span>
             </div>
           </div>

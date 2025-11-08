@@ -1,4 +1,4 @@
-const { connectDB, News, Conversations, Articles, Palestine, Gallery, FamilyTree } = require('../models');
+const { connectDB, News, Conversations, Articles, Palestine, Gallery } = require('../models');
 require('dotenv').config();
 
 const initializeData = async () => {
@@ -122,29 +122,6 @@ const initializeData = async () => {
     await Gallery.insertMany(galleryData);
     console.log('✓ تم إضافة معرض الصور');
 
-    // Sample Family Tree Data
-    const familyTreeData = {
-      patriarch: "عبد الله الشاعر",
-      generations: [
-        {
-          generation: 1,
-          members: ["عبد الله الشاعر", "فاطمة الشاعر (الزوجة)"]
-        },
-        {
-          generation: 2,
-          members: ["أحمد الشاعر", "محمد الشاعر", "عائشة الشاعر", "خديجة الشاعر"]
-        },
-        {
-          generation: 3,
-          members: ["علي أحمد الشاعر", "سارة محمد الشاعر", "يوسف أحمد الشاعر", "مريم أحمد الشاعر"]
-        }
-      ]
-    };
-
-    const familyTree = new FamilyTree(familyTreeData);
-    await familyTree.save();
-    console.log('✓ تم إضافة شجرة العائلة');
-
     console.log('🎉 تم إضافة جميع البيانات التجريبية بنجاح!');
     console.log('📊 الإحصائيات:');
     console.log(`   - الأخبار: ${await News.countDocuments()}`);
@@ -152,7 +129,6 @@ const initializeData = async () => {
     console.log(`   - المقالات: ${await Articles.countDocuments()}`);
     console.log(`   - محتوى فلسطين: ${await Palestine.countDocuments()}`);
     console.log(`   - معرض الصور: ${await Gallery.countDocuments()}`);
-    console.log(`   - شجرة العائلة: ${await FamilyTree.countDocuments()}`);
 
   } catch (error) {
     console.error('❌ خطأ في إضافة البيانات:', error);

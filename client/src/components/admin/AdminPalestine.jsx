@@ -114,22 +114,35 @@ const AdminPalestine = () => {
     return <LoadingSpinner />
   }
 
+  const contentImageCount = (formData.content.match(/<img/gi) || []).length;
+  const imageLimit = 20;
+
   const modules = {
     toolbar: {
       container: [[{ header: [1, 2, false] }], ['bold', 'italic'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'image'], ['clean']],
       handlers: {
         image: function() {
+          if (contentImageCount >= imageLimit) {
+            toast.error('لا يمكن إضافة أكثر من 20 صورة داخل المحتوى.');
+            return;
+          }
+
           const input = document.createElement('input');
           input.setAttribute('type', 'file');
           input.setAttribute('accept', 'image/*');
           input.click();
           input.onchange = async () => {
-            const file = input.files[0];
+            const file = input.files && input.files[0];
             if (file) {
-              const url = await uploadEditorImage(file);
-              const quill = this.quill;
-              const range = quill.getSelection();
-              quill.insertEmbed(range.index, 'image', url);
+              try {
+                const url = await uploadEditorImage(file);
+                const quill = this.quill;
+                const range = quill.getSelection(true);
+                quill.insertEmbed(range ? range.index : quill.getLength(), 'image', url);
+              } catch (error) {
+                console.error('Image upload failed:', error);
+                toast.error('فشل رفع الصورة. حاول مرة أخرى.');
+              }
             }
           };
         }
@@ -210,7 +223,7 @@ const AdminPalestine = () => {
                   modules={modules}
                   theme="snow"
                 />
-                <div className="text-xs mt-1">يمكنك إدراج حتى 20 صورة داخل المحتوى.</div>
+                <div className="text-xs mt-1">عدد الصور المدرجة: {contentImageCount}/{imageLimit} (الحد الأقصى 20).</div>
               </div>
 
               <div>
