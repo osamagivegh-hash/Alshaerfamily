@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, useMemo } from 'react'
 import { adminPalestine } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../LoadingSpinner'
@@ -112,17 +112,6 @@ const AdminPalestine = () => {
     }
   }
 
-  const scrollEditorIntoView = () => {
-    const quillInstance = editorRef.current?.getEditor?.()
-    if (!quillInstance) return
-
-    requestAnimationFrame(() => {
-      const editorWrapper = quillInstance.root.closest('.rich-text-editor')
-      editorWrapper?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-      quillInstance.focus()
-    })
-  }
-
   if (loading && !showForm) {
     return <LoadingSpinner />
   }
@@ -130,41 +119,42 @@ const AdminPalestine = () => {
   const contentImageCount = (formData.content.match(/<img/gi) || []).length;
   const imageLimit = 20;
 
-  const modules = {
+  const modules = useMemo(() => ({
     toolbar: {
       container: [[{ header: [1, 2, false] }], ['bold', 'italic'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'image'], ['clean']],
       handlers: {
-        image: function() {
-          if (contentImageCount >= imageLimit) {
-            toast.error('لا يمكن إضافة أكثر من 20 صورة داخل المحتوى.');
-            return;
+        image: function () {
+          const quill = this.quill
+          const currentImages = quill?.root?.querySelectorAll('img')?.length || 0
+          if (currentImages >= imageLimit) {
+            toast.error('لا يمكن إضافة أكثر من 20 صورة داخل المحتوى.')
+            return
           }
 
-          const input = document.createElement('input');
-          input.setAttribute('type', 'file');
-          input.setAttribute('accept', 'image/*');
-          input.click();
+          const input = document.createElement('input')
+          input.type = 'file'
+          input.accept = 'image/*'
+          input.click()
           input.onchange = async () => {
             const file = input.files && input.files[0]
-            if (file) {
-              try {
-                const url = await uploadEditorImage(file)
-                const quill = this.quill
-                const selection = quill.getSelection(true)
-                const index = selection ? selection.index : quill.getLength()
-                quill.insertEmbed(index, 'image', url)
-                quill.setSelection(index + 1)
-                scrollEditorIntoView()
-              } catch (error) {
-                console.error('Image upload failed:', error)
-                toast.error('فشل رفع الصورة. حاول مرة أخرى.')
-              }
+            if (!file) return
+
+            try {
+              const url = await uploadEditorImage(file)
+              const selection = quill.getSelection(true)
+              const index = selection ? selection.index : quill.getLength()
+              quill.insertEmbed(index, 'image', url)
+              quill.setSelection(index + 1)
+              quill.focus()
+            } catch (error) {
+              console.error('Image upload failed:', error)
+              toast.error('فشل رفع الصورة. حاول مرة أخرى.')
             }
           }
         }
       }
     }
-  };
+  }), [imageLimit])
 
   return (
     <div className="space-y-6">
