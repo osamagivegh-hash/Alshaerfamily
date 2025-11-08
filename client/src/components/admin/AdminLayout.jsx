@@ -12,7 +12,6 @@ const AdminLayout = () => {
     { id: 'dashboard', label: 'لوحة التحكم', path: '/admin/dashboard', icon: '📊' },
     { id: 'news', label: 'الأخبار', path: '/admin/news', icon: '📰' },
     { id: 'conversations', label: 'الحوارات', path: '/admin/conversations', icon: '💬' },
-    { id: 'family-tree', label: 'شجرة العائلة', path: '/admin/family-tree', icon: '🌳' },
     { id: 'palestine', label: 'فلسطين', path: '/admin/palestine', icon: '🏛️' },
     { id: 'articles', label: 'المقالات', path: '/admin/articles', icon: '📝' },
     { id: 'gallery', label: 'معرض الصور', path: '/admin/gallery', icon: '🖼️' },
