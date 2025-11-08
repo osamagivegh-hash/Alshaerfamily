@@ -185,20 +185,20 @@ router.get('/comments/:contentType/:contentId', asyncHandler(async (req, res) =>
 router.post('/comments', sanitizeInput, validate(commentValidation), asyncHandler(async (req, res) => {
   const { contentType, contentId, name, email, comment } = req.body;
   
-  // Create new comment (default: not approved, needs admin approval)
+  // Create new comment (auto-approved)
   const newComment = new Comments({
     contentType,
     contentId: contentId.toString(),
     name: name.trim(),
     email: email ? email.trim() : '',
     comment: comment.trim(),
-    approved: false
+    approved: true
   });
   
   const savedComment = await newComment.save();
   
   logger.info('New comment created', { contentType, contentId, name });
-  res.success(201, 'تم إضافة التعليق بنجاح، سيتم مراجعته قريباً', {
+  res.success(201, 'تم إضافة التعليق بنجاح', {
     ...savedComment.toObject(),
     id: savedComment._id.toString()
   });
