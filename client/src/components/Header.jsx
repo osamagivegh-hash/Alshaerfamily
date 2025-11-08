@@ -158,7 +158,7 @@ const Header = () => {
                 <button
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
-                  className={`nav-link px-3 py-2 text-sm transition-colors duration-200 ${
+                  className={`nav-link px-4 py-2 text-base font-semibold transition-colors duration-200 ${
                     activeSection === item.id 
                       ? 'text-palestine-green border-b-2 border-palestine-green' 
                       : 'text-palestine-black hover:text-palestine-green'
