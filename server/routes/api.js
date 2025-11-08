@@ -20,15 +20,10 @@ const {
 } = require('../middleware/validation');
 const logger = require('../middleware/logger');
 const router = express.Router();
-const multer = require('multer');
 const path = require('path');
-
-const upload = multer({
-  storage: multer.diskStorage({
-    destination: (req, file, cb) => cb(null, 'uploads/'),
-    filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
-  })
-});
+const fs = require('fs-extra');
+const { upload, isCloudinaryConfigured, cloudinaryFolder, uploadsDir } = require('../config/storage');
+const cloudinaryUtils = require('../utils/cloudinary');
 
 // Helper function to normalize MongoDB documents (convert _id to id)
 const normalizeDocument = (doc) => {
@@ -471,17 +466,46 @@ router.get('/ticker/palestine-news', asyncHandler(async (req, res) => {
   return res.success(200, 'لا توجد أخبار متاحة حالياً', []);
 }));
 
-router.post('/upload/single-image', upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'لم يتم رفع صورة' });
-  const url = `/uploads/${req.file.filename}`;
-  res.json({ url });
-});
+const saveLocalImage = async (file) => {
+  const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+  const extension = path.extname(file.originalname || '.jpg') || '.jpg';
+  const filename = `image-${uniqueSuffix}${extension}`;
+  const filePath = path.join(uploadsDir, filename);
+  await fs.writeFile(filePath, file.buffer);
+  return {
+    url: `/uploads/${filename}`
+  };
+};
 
-router.post('/upload/editor-image', upload.single('image'), (req, res) => {
-  if (!req.file) return res.status(400).json({ error: 'لم يتم رفع صورة' });
-  const url = `/uploads/${req.file.filename}`;
-  res.json({ url });
-});
+const handleImageUpload = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ error: 'لم يتم رفع صورة' });
+  }
+
+  try {
+    if (isCloudinaryConfigured) {
+      try {
+        const result = await cloudinaryUtils.uploadImage(req.file.buffer, cloudinaryFolder);
+        return res.json({
+          url: result.secure_url,
+          publicId: result.public_id
+        });
+      } catch (cloudError) {
+        console.error('Cloudinary upload failed, falling back to local storage:', cloudError);
+      }
+    }
+
+    const localResult = await saveLocalImage(req.file);
+    return res.json(localResult);
+  } catch (error) {
+    console.error('Image upload error:', error);
+    return res.status(500).json({ error: 'فشل رفع الصورة' });
+  }
+};
+
+router.post('/upload/single-image', upload.single('image'), handleImageUpload);
+
+router.post('/upload/editor-image', upload.single('image'), handleImageUpload);
 
 module.exports = router;
 
