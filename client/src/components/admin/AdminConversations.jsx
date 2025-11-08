@@ -37,6 +37,44 @@ const AdminConversations = () => {
 
   const editorRef = useRef(null)
 
+  const imageLimit = 20
+  const modules = useMemo(() => ({
+    toolbar: {
+      container: [[{ header: [1, 2, false] }], ['bold', 'italic'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'image'], ['clean']],
+      handlers: {
+        image: function () {
+          const quill = this.quill
+          const currentImages = quill?.root?.querySelectorAll('img')?.length || 0
+          if (currentImages >= imageLimit) {
+            toast.error('لا يمكن إضافة أكثر من 20 صورة داخل المحتوى.')
+            return
+          }
+
+          const input = document.createElement('input')
+          input.type = 'file'
+          input.accept = 'image/*'
+          input.click()
+          input.onchange = async () => {
+            const file = input.files && input.files[0]
+            if (!file) return
+
+            try {
+              const url = await uploadEditorImage(file)
+              const selection = quill.getSelection(true)
+              const index = selection ? selection.index : quill.getLength()
+              quill.insertEmbed(index, 'image', url)
+              quill.setSelection(index + 1)
+              quill.focus()
+            } catch (error) {
+              console.error('Image upload failed:', error)
+              toast.error('فشل رفع الصورة. حاول مرة أخرى.')
+            }
+          }
+        }
+      }
+    }
+  }), [imageLimit])
+
   useEffect(() => {
     fetchConversations()
   }, [])
@@ -155,44 +193,6 @@ const AdminConversations = () => {
   }
 
   const contentImageCount = (formData.content.match(/<img/gi) || []).length;
-  const imageLimit = 20;
-
-  const modules = useMemo(() => ({
-    toolbar: {
-      container: [[{ header: [1, 2, false] }], ['bold', 'italic'], [{ list: 'ordered' }, { list: 'bullet' }], ['link', 'image'], ['clean']],
-      handlers: {
-        image: function () {
-          const quill = this.quill
-          const currentImages = quill?.root?.querySelectorAll('img')?.length || 0
-          if (currentImages >= imageLimit) {
-            toast.error('لا يمكن إضافة أكثر من 20 صورة داخل المحتوى.')
-            return
-          }
-
-          const input = document.createElement('input')
-          input.type = 'file'
-          input.accept = 'image/*'
-          input.click()
-          input.onchange = async () => {
-            const file = input.files && input.files[0]
-            if (!file) return
-
-            try {
-              const url = await uploadEditorImage(file)
-              const selection = quill.getSelection(true)
-              const index = selection ? selection.index : quill.getLength()
-              quill.insertEmbed(index, 'image', url)
-              quill.setSelection(index + 1)
-              quill.focus()
-            } catch (error) {
-              console.error('Image upload failed:', error)
-              toast.error('فشل رفع الصورة. حاول مرة أخرى.')
-            }
-          }
-        }
-      }
-    }
-  }), [imageLimit])
 
   return (
     <div className="space-y-6">
