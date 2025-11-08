@@ -33,9 +33,21 @@ const Header = () => {
 
   const scrollToSection = (sectionId) => {
     const element = document.getElementById(sectionId)
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' })
-    }
+    if (!element) return
+
+    const headerEl = document.querySelector('header')
+    const tickerEl = document.getElementById('news-tickers')
+    const headerHeight = headerEl?.offsetHeight || 0
+    const tickerHeight = tickerEl?.offsetHeight || 0
+    const offset = headerHeight + tickerHeight + 20 // small margin
+
+    const elementPosition = element.getBoundingClientRect().top + window.pageYOffset
+    const targetPosition = Math.max(elementPosition - offset, 0)
+
+    window.scrollTo({
+      top: targetPosition,
+      behavior: 'smooth'
+    })
   }
 
   const navItems = [
@@ -156,6 +168,7 @@ const Header = () => {
             <div className="flex space-x-reverse space-x-8">
               {navItems.map((item) => (
                 <button
+                  type="button"
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
                   className={`nav-link px-4 py-2 text-base font-semibold transition-colors duration-200 ${

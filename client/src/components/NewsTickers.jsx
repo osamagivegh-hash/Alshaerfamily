@@ -87,7 +87,7 @@ const NewsTickers = () => {
   const displayFamilyNews = Array.isArray(familyTickerNews) ? familyTickerNews : []
 
   return (
-    <div className="fixed top-16 w-full z-40" style={{ height: `${tickersHeight}px` }}>
+    <div id="news-tickers" className="fixed top-16 w-full z-40" style={{ height: `${tickersHeight}px` }}>
       {/* Family News Ticker (Palestine Flag - Green) */}
       <NewsTicker
         items={displayFamilyNews}
