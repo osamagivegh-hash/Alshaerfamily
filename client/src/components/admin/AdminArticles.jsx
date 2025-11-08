@@ -9,6 +9,15 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { uploadEditorImage } from './EditorImageUploader';
 
+const formatDateForInput = (value) => {
+  if (!value) return new Date().toISOString().split('T')[0]
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) {
+    return new Date().toISOString().split('T')[0]
+  }
+  return date.toISOString().split('T')[0]
+}
+
 const AdminArticles = () => {
   const [articles, setArticles] = useState([])
   const [loading, setLoading] = useState(true)
@@ -84,7 +93,7 @@ const AdminArticles = () => {
       title: article.title || '',
       author: article.author || '',
       content: article.content || '',
-      date: article.date || new Date().toISOString().split('T')[0],
+      date: formatDateForInput(article.date),
       image: article.image || '',
       summary: article.summary || '',
       tags: Array.isArray(article.tags) ? article.tags : [],
@@ -155,19 +164,21 @@ const AdminArticles = () => {
           input.setAttribute('accept', 'image/*');
           input.click();
           input.onchange = async () => {
-            const file = input.files && input.files[0];
+            const file = input.files && input.files[0]
             if (file) {
               try {
-                const url = await uploadEditorImage(file);
-                const quill = this.quill;
-                const range = quill.getSelection(true);
-                quill.insertEmbed(range ? range.index : quill.getLength(), 'image', url);
+                const url = await uploadEditorImage(file)
+                const quill = this.quill
+                const selection = quill.getSelection(true)
+                const index = selection ? selection.index : quill.getLength()
+                quill.insertEmbed(index, 'image', url)
+                quill.setSelection(index + 1)
               } catch (error) {
-                console.error('Image upload failed:', error);
-                toast.error('فشل رفع الصورة. حاول مرة أخرى.');
+                console.error('Image upload failed:', error)
+                toast.error('فشل رفع الصورة. حاول مرة أخرى.')
               }
             }
-          };
+          }
         }
       }
     }

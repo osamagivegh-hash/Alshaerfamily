@@ -132,19 +132,21 @@ const AdminPalestine = () => {
           input.setAttribute('accept', 'image/*');
           input.click();
           input.onchange = async () => {
-            const file = input.files && input.files[0];
+            const file = input.files && input.files[0]
             if (file) {
               try {
-                const url = await uploadEditorImage(file);
-                const quill = this.quill;
-                const range = quill.getSelection(true);
-                quill.insertEmbed(range ? range.index : quill.getLength(), 'image', url);
+                const url = await uploadEditorImage(file)
+                const quill = this.quill
+                const selection = quill.getSelection(true)
+                const index = selection ? selection.index : quill.getLength()
+                quill.insertEmbed(index, 'image', url)
+                quill.setSelection(index + 1)
               } catch (error) {
-                console.error('Image upload failed:', error);
-                toast.error('فشل رفع الصورة. حاول مرة أخرى.');
+                console.error('Image upload failed:', error)
+                toast.error('فشل رفع الصورة. حاول مرة أخرى.')
               }
             }
-          };
+          }
         }
       }
     }
