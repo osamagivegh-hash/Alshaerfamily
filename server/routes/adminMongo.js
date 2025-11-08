@@ -9,6 +9,7 @@ const {
   Palestine, 
   Gallery, 
   Contacts,
+  Comments,
   FamilyTickerNews,
   PalestineTickerNews,
   TickerSettings
@@ -306,6 +307,38 @@ const saveToLocalStorage = async (req, res) => {
     url: fileUrl 
   });
 };
+
+// ==================== COMMENTS MANAGEMENT ====================
+
+router.get('/comments', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { contentType, contentId } = req.query;
+    const query = {};
+    if (contentType) query.contentType = contentType;
+    if (contentId) query.contentId = contentId;
+
+    const comments = await Comments.find(query).sort({ createdAt: -1 });
+    res.json(normalizeDocument(comments));
+  } catch (error) {
+    console.error('Get comments error:', error);
+    res.status(500).json({ message: 'خطأ في جلب التعليقات' });
+  }
+});
+
+router.delete('/comments/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const deletedComment = await Comments.findByIdAndDelete(id);
+    if (!deletedComment) {
+      return res.status(404).json({ message: 'التعليق غير موجود' });
+    }
+
+    res.json({ message: 'تم حذف التعليق بنجاح', id });
+  } catch (error) {
+    console.error('Delete comment error:', error);
+    res.status(500).json({ message: 'خطأ في حذف التعليق' });
+  }
+});
 
 // ==================== FAMILY TICKER NEWS CRUD ====================
 

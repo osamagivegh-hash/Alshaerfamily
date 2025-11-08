@@ -51,21 +51,25 @@ const Comments = ({ contentType, contentId }) => {
         contentId,
         name: newComment.name.trim(),
         email: newComment.email.trim(),
-        comment: newComment.comment.trim(),
-        approved: false // Comments need approval
+        comment: newComment.comment.trim()
       })
 
       // Add new comment to list (optimistically)
-      setComments([...comments, {
-        ...response.data,
-        id: response.data._id || response.data.id,
-        createdAt: new Date().toISOString()
-      }])
+      const created = response.data?.data || response.data || {}
+      const normalizedComment = {
+        id: created.id || created._id,
+        name: created.name || newComment.name.trim(),
+        email: created.email || newComment.email.trim(),
+        comment: created.comment || newComment.comment.trim(),
+        approved: created.approved !== undefined ? created.approved : true,
+        createdAt: created.createdAt || new Date().toISOString()
+      }
+      setComments(prev => [normalizedComment, ...prev])
 
       // Reset form
       setNewComment({ name: '', email: '', comment: '' })
       setShowForm(false)
-      toast.success('تم إرسال تعليقك بنجاح! سيتم مراجعته قبل النشر.')
+      toast.success('تم إضافة تعليقك بنجاح!')
     } catch (error) {
       console.error('Error submitting comment:', error)
       toast.error('فشل إرسال التعليق. الرجاء المحاولة مرة أخرى.')

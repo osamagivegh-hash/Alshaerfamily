@@ -318,6 +318,26 @@ export const adminPalestineTickerNews = {
   }
 }
 
+export const adminComments = {
+  getAll: async (params = {}) => {
+    try {
+      const response = await adminApi.get('/comments', { params })
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب التعليقات')
+    }
+  },
+
+  delete: async (id) => {
+    try {
+      const response = await adminApi.delete(`/comments/${id}`)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في حذف التعليق')
+    }
+  }
+}
+
 // Ticker Settings API
 export const adminTickerSettings = {
   get: async () => {

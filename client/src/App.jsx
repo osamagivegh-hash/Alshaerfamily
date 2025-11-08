@@ -20,6 +20,7 @@ import AdminConversations from './components/admin/AdminConversations'
 import AdminArticles from './components/admin/AdminArticles'
 import AdminPalestine from './components/admin/AdminPalestine'
 import AdminGallery from './components/admin/AdminGallery'
+import AdminComments from './components/admin/AdminComments'
 import AdminContacts from './components/admin/AdminContacts'
 import AdminSettings from './components/admin/AdminSettings'
 import AdminTickers from './components/admin/AdminTickers'
@@ -51,6 +52,7 @@ function App() {
               <Route path="articles" element={<AdminArticles />} />
               <Route path="palestine" element={<AdminPalestine />} />
               <Route path="gallery" element={<AdminGallery />} />
+              <Route path="comments" element={<AdminComments />} />
               <Route path="contacts" element={<AdminContacts />} />
               <Route path="tickers" element={<AdminTickers />} />
               <Route path="settings" element={<AdminSettings />} />
