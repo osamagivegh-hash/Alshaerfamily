@@ -324,3 +324,80 @@ textarea:focus-visible {
     break-inside: avoid;
   }
 }
+
+/* Rich text editor styles */
+.rich-text-editor {
+  position: relative;
+}
+
+.rich-text-editor .ql-toolbar {
+  border-radius: 0.75rem 0.75rem 0 0;
+  border-color: #e5e7eb;
+  background-color: #f9fafb;
+}
+
+.rich-text-editor .ql-container {
+  min-height: 280px;
+  max-height: 520px;
+  overflow-y: auto;
+  border-radius: 0 0 0.75rem 0.75rem;
+  border-color: #e5e7eb;
+  font-size: 1rem;
+}
+
+.rich-text-editor .ql-editor {
+  min-height: 240px;
+  padding: 1.25rem 1rem 3rem 1rem;
+  line-height: 1.8;
+}
+
+.rich-text-editor .ql-editor.ql-blank::before {
+  font-style: normal;
+  color: #9ca3af;
+  right: 1rem;
+  left: auto;
+}
+
+.rich-text-editor .ql-editor img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.5rem auto;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+/* Displayed content images */
+.prose-arabic img,
+.formatted-content img,
+.rtl-content img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1.5rem auto;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.prose-arabic iframe,
+.formatted-content iframe {
+  width: 100%;
+  min-height: 320px;
+  border-radius: 0.75rem;
+  border: none;
+  margin: 1.5rem 0;
+}
+
+/* Ensure long content remains scrollable inside the editor */
+.rich-text-editor .ql-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.rich-text-editor .ql-container::-webkit-scrollbar-thumb {
+  background-color: rgba(31, 41, 55, 0.25);
+  border-radius: 9999px;
+}
+
+.rich-text-editor .ql-container::-webkit-scrollbar-track {
+  background-color: transparent;
+}

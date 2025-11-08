@@ -218,10 +218,12 @@ const AdminPalestine = () => {
               <div>
                 <label className="block text-sm font-medium text-palestine-black mb-2">المحتوى *</label>
                 <ReactQuill
+                  className="rich-text-editor"
                   value={formData.content}
                   onChange={content => setFormData({...formData, content})}
                   modules={modules}
                   theme="snow"
+                  placeholder="اكتب المحتوى الخاص بالقسم ويمكنك إدراج صور متعددة داخل النص..."
                 />
                 <div className="text-xs mt-1">عدد الصور المدرجة: {contentImageCount}/{imageLimit} (الحد الأقصى 20).</div>
               </div>

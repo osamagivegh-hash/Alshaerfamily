@@ -275,10 +275,12 @@ const AdminNews = () => {
               <div>
                 <label className="block text-sm font-medium text-palestine-black mb-2">محتوى الخبر *</label>
                 <ReactQuill
+                  className="rich-text-editor"
                   value={formData.content}
                   onChange={content => setFormData({...formData, content})}
                   modules={modules}
                   theme="snow"
+                  placeholder="اكتب محتوى الخبر بالتفصيل ويمكنك إدراج الصور داخل النص..."
                 />
                 <div className="text-xs mt-1">عدد الصور المدرجة: {contentImageCount}/{imageLimit} (الحد الأقصى 20).</div>
               </div>
