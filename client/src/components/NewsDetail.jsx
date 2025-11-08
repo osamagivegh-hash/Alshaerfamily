@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -8,7 +8,6 @@ import NotFound from './common/NotFound'
 import ImageWithFallback from './common/ImageWithFallback'
 import { normalizeImageUrl } from '../utils/imageUtils'
 import Comments from './common/Comments'
-import { getNewsById, getRelatedNews } from '../data'
 import { api } from '../utils/api'
 
 const NewsDetail = () => {
@@ -18,62 +17,57 @@ const NewsDetail = () => {
   const [loading, setLoading] = useState(true)
   
   useEffect(() => {
+    let isMounted = true
     const fetchNews = async () => {
+      setLoading(true)
       try {
-        setLoading(true)
-        // Try API first
-        try {
-          const response = await api.get(`/news/${id}`)
-          // Extract data from nested response structure: { success, message, data, timestamp }
-          const apiNews = response.data?.data || response.data
-          // Normalize the news to have both id and _id
-          if (apiNews) {
-            apiNews.id = apiNews.id || apiNews._id?.toString() || id
-            setNewsItem(apiNews)
-            
-            // Fetch all news to get related items
-            try {
-              const allNewsResponse = await api.get('/sections/news')
-              // Extract data from nested response structure
-              const allNewsData = allNewsResponse.data?.data || allNewsResponse.data || []
-              const allNews = Array.isArray(allNewsData) ? allNewsData : []
-              // Filter out current news and get up to 3 related items
-              const related = allNews
-                .filter(item => {
-                  const itemId = item.id || item._id?.toString()
-                  return itemId !== id && itemId !== apiNews.id
-                })
-                .slice(0, 3)
-              setRelatedNews(related)
-            } catch (relatedError) {
-              console.log('Failed to fetch related news from API, using static data:', relatedError)
-              // Fallback to static data for related news
-              const staticRelated = getRelatedNews(apiNews.id || id)
-              setRelatedNews(staticRelated)
-            }
-            
-            setLoading(false)
-            return
+        const response = await api.get(`/news/${id}`)
+        const apiNews = response.data?.data || response.data
+        if (apiNews && isMounted) {
+          const normalized = {
+            ...apiNews,
+            id: apiNews.id || apiNews._id?.toString() || id
           }
-        } catch (apiError) {
-          console.log('API fetch failed, trying static data:', apiError)
+          setNewsItem(normalized)
+          // Fetch related news items
+          try {
+            const allNewsResponse = await api.get('/sections/news')
+            const allNewsData = allNewsResponse.data?.data || allNewsResponse.data || []
+            const allNews = Array.isArray(allNewsData) ? allNewsData : []
+            const related = allNews
+              .filter(item => {
+                const itemId = item.id || item._id?.toString()
+                return itemId && itemId !== normalized.id
+              })
+              .slice(0, 3)
+            if (isMounted) setRelatedNews(related)
+          } catch (relatedError) {
+            console.error('Failed to fetch related news from API:', relatedError)
+            if (isMounted) setRelatedNews([])
+          }
         }
-        
-        // Fallback to static data
-        const staticNews = getNewsById(id)
-        if (staticNews) {
-          setNewsItem(staticNews)
-          const staticRelated = getRelatedNews(id)
-          setRelatedNews(staticRelated)
+        if (!apiNews && isMounted) {
+          setNewsItem(null)
+          setRelatedNews([])
         }
       } catch (error) {
         console.error('Error fetching news:', error)
+        if (isMounted) {
+          setNewsItem(null)
+          setRelatedNews([])
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
-    
+
     fetchNews()
+
+    return () => {
+      isMounted = false
+    }
   }, [id])
 
   if (loading) {

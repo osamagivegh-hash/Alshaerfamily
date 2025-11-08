@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react'
 import NewsTicker from './common/NewsTicker'
-import familyNews from '../data/familyNews'
 import { fetchPalestineNews, api } from '../utils/api'
 
 const NewsTickers = () => {
@@ -16,16 +15,14 @@ const NewsTickers = () => {
         const response = await api.get('/ticker/family-news')
         // Extract data from nested response structure: { success, message, data, timestamp }
         const headlines = response.data?.data || response.data || []
-        if (Array.isArray(headlines) && headlines.length > 0) {
+        if (Array.isArray(headlines)) {
           setFamilyTickerNews(headlines)
         } else {
-          // Fallback to static data
-          setFamilyTickerNews(familyNews)
+          setFamilyTickerNews([])
         }
       } catch (err) {
         console.error('Error fetching family ticker news:', err)
-        // Fallback to static data
-        setFamilyTickerNews(familyNews)
+        setFamilyTickerNews([])
       }
     }
 
@@ -87,7 +84,7 @@ const NewsTickers = () => {
   const tickersHeight = palestineNews.length > 0 ? 120 : 80
 
   // Use API data if available, otherwise fallback to static data
-  const displayFamilyNews = familyTickerNews.length > 0 ? familyTickerNews : familyNews
+  const displayFamilyNews = Array.isArray(familyTickerNews) ? familyTickerNews : []
 
   return (
     <div className="fixed top-16 w-full z-40" style={{ height: `${tickersHeight}px` }}>

@@ -1,14 +1,45 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
-import { getStaticSections } from '../../data'
+import { api } from '../../utils/api'
 
 const SearchBar = ({ className = '' }) => {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState([])
   const [isOpen, setIsOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [sectionsData, setSectionsData] = useState({ articles: [], conversations: [], news: [] })
+  const [isFetching, setIsFetching] = useState(false)
   const searchRef = useRef(null)
   const resultsRef = useRef(null)
+
+  useEffect(() => {
+    let isMounted = true
+    const loadSections = async () => {
+      setIsFetching(true)
+      try {
+        const response = await api.get('/sections')
+        const data = response.data?.data || response.data || {}
+        if (!isMounted) return
+        setSectionsData({
+          articles: Array.isArray(data.articles) ? data.articles : [],
+          conversations: Array.isArray(data.conversations) ? data.conversations : [],
+          news: Array.isArray(data.news) ? data.news : []
+        })
+      } catch (error) {
+        console.error('Failed to fetch sections for search:', error)
+        if (isMounted) {
+          setSectionsData({ articles: [], conversations: [], news: [] })
+        }
+      } finally {
+        if (isMounted) setIsFetching(false)
+      }
+    }
+
+    loadSections()
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   // Search function
   const performSearch = (searchQuery) => {
@@ -18,10 +49,8 @@ const SearchBar = ({ className = '' }) => {
     }
 
     setIsLoading(true)
-    
-    // Simulate API delay for better UX
+    const data = sectionsData
     setTimeout(() => {
-      const data = getStaticSections()
       const searchResults = []
 
       // Search in articles
@@ -31,7 +60,7 @@ const SearchBar = ({ className = '' }) => {
           searchResults.push({
             ...article,
             type: 'article',
-            route: `/articles/${article.id}`,
+            route: `/articles/${article.id || article._id}`,
             score
           })
         }
@@ -44,7 +73,7 @@ const SearchBar = ({ className = '' }) => {
           searchResults.push({
             ...conversation,
             type: 'conversation',
-            route: `/conversations/${conversation.id}`,
+            route: `/conversations/${conversation.id || conversation._id}`,
             score
           })
         }
@@ -57,7 +86,7 @@ const SearchBar = ({ className = '' }) => {
           searchResults.push({
             ...newsItem,
             type: 'news',
-            route: `/news/${newsItem.id}`,
+            route: `/news/${newsItem.id || newsItem._id}`,
             score
           })
         }
@@ -199,7 +228,7 @@ const SearchBar = ({ className = '' }) => {
           ref={resultsRef}
           className="absolute top-full left-0 right-0 mt-2 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto"
         >
-          {isLoading ? (
+          {isLoading || isFetching ? (
             <div className="p-4 text-center text-gray-500">
               <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-palestine-green mx-auto mb-2"></div>
               جاري البحث...
@@ -211,7 +240,7 @@ const SearchBar = ({ className = '' }) => {
               </div>
               {results.map((result, index) => (
                 <Link
-                  key={`${result.type}-${result.id}-${index}`}
+                  key={`${result.type}-${result.id || result._id}-${index}`}
                   to={result.route}
                   className="block p-4 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 transition-colors"
                   onClick={() => {

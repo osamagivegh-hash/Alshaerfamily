@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
@@ -8,53 +8,80 @@ import NotFound from './common/NotFound'
 import ImageWithFallback from './common/ImageWithFallback'
 import { normalizeImageUrl } from '../utils/imageUtils'
 import Comments from './common/Comments'
-import { getDialogueById, getRelatedDialogues } from '../data'
 import { api } from '../utils/api'
 
 const ConversationDetail = () => {
   const { id } = useParams()
   const [conversation, setConversation] = useState(null)
+  const [relatedConversations, setRelatedConversations] = useState([])
   const [loading, setLoading] = useState(true)
   
   useEffect(() => {
+    let isMounted = true
     const fetchConversation = async () => {
+      setLoading(true)
       try {
-        setLoading(true)
-        // Try API first
-        try {
-          const response = await api.get(`/conversations/${id}`)
-          // Extract data from nested response structure: { success, message, data, timestamp }
-          const apiConversation = response.data?.data || response.data
-          // Normalize the conversation to have both id and _id
-          if (apiConversation) {
-            apiConversation.id = apiConversation.id || apiConversation._id?.toString() || id
-            setConversation(apiConversation)
-            setLoading(false)
-            return
+        const response = await api.get(`/conversations/${id}`)
+        const apiConversation = response.data?.data || response.data
+        if (apiConversation && isMounted) {
+          const normalized = {
+            ...apiConversation,
+            id: apiConversation.id || apiConversation._id?.toString() || id
           }
-        } catch (apiError) {
-          console.log('API fetch failed, trying static data:', apiError)
+          setConversation(normalized)
         }
-        
-        // Fallback to static data
-        const staticConversation = getDialogueById(id)
-        if (staticConversation) {
-          setConversation(staticConversation)
+        if (!apiConversation && isMounted) {
+          setConversation(null)
         }
       } catch (error) {
         console.error('Error fetching conversation:', error)
+        if (isMounted) {
+          setConversation(null)
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
-    
+
     fetchConversation()
+
+    return () => {
+      isMounted = false
+    }
   }, [id])
-  
-  const relatedConversations = useMemo(() => {
-    if (!conversation) return []
-    return getRelatedDialogues(conversation.id || id)
-  }, [conversation, id])
+
+  useEffect(() => {
+    let isMounted = true
+    const fetchRelated = async () => {
+      if (!conversation) {
+        if (isMounted) setRelatedConversations([])
+        return
+      }
+      try {
+        const response = await api.get('/sections/conversations')
+        const data = response.data?.data || response.data || []
+        const list = Array.isArray(data) ? data : []
+        const currentId = conversation.id || conversation._id?.toString()
+        const related = list
+          .filter(item => {
+            const itemId = item.id || item._id?.toString()
+            return itemId && itemId !== currentId
+          })
+          .slice(0, 3)
+        if (isMounted) setRelatedConversations(related)
+      } catch (error) {
+        console.error('Error fetching related conversations:', error)
+        if (isMounted) setRelatedConversations([])
+      }
+    }
+
+    fetchRelated()
+    return () => {
+      isMounted = false
+    }
+  }, [conversation])
 
   if (loading) {
     return (
@@ -104,8 +131,8 @@ const ConversationDetail = () => {
           <div className="grid gap-6 md:grid-cols-2">
             {relatedConversations.map((relatedConversation) => (
               <Link
-                key={relatedConversation.id}
-                to={`/conversations/${relatedConversation.id}`}
+                key={relatedConversation.id || relatedConversation._id}
+                to={`/conversations/${relatedConversation.id || relatedConversation._id}`}
                 className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 block"
               >
                 <h3 className="font-bold text-palestine-black mb-2 line-clamp-2">

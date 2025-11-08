@@ -8,53 +8,79 @@ import NotFound from './common/NotFound'
 import ImageWithFallback from './common/ImageWithFallback'
 import { normalizeImageUrl } from '../utils/imageUtils'
 import Comments from './common/Comments'
-import { getArticleById, getRelatedArticles } from '../data'
-import { api } from '../utils/api'
+import { api, fetchSectionData } from '../utils/api'
 
 const ArticleDetail = () => {
   const { id } = useParams()
   const [article, setArticle] = useState(null)
   const [loading, setLoading] = useState(true)
-  
+  const [relatedArticles, setRelatedArticles] = useState([])
+
   useEffect(() => {
+    let isMounted = true
     const fetchArticle = async () => {
+      setLoading(true)
       try {
-        setLoading(true)
-        // Try API first
-        try {
-          const response = await api.get(`/articles/${id}`)
-          // Extract data from nested response structure: { success, message, data, timestamp }
-          const apiArticle = response.data?.data || response.data
-          // Normalize the article to have both id and _id
-          if (apiArticle) {
-            apiArticle.id = apiArticle.id || apiArticle._id?.toString() || id
-            setArticle(apiArticle)
-            setLoading(false)
-            return
+        const response = await api.get(`/articles/${id}`)
+        const apiArticle = response.data?.data || response.data
+        if (apiArticle && isMounted) {
+          const normalized = {
+            ...apiArticle,
+            id: apiArticle.id || apiArticle._id?.toString() || id
           }
-        } catch (apiError) {
-          console.log('API fetch failed, trying static data:', apiError)
+          setArticle(normalized)
         }
-        
-        // Fallback to static data
-        const staticArticle = getArticleById(id)
-        if (staticArticle) {
-          setArticle(staticArticle)
+        if (!apiArticle && isMounted) {
+          setArticle(null)
         }
       } catch (error) {
         console.error('Error fetching article:', error)
+        if (isMounted) {
+          setArticle(null)
+        }
       } finally {
-        setLoading(false)
+        if (isMounted) {
+          setLoading(false)
+        }
       }
     }
-    
+
     fetchArticle()
+
+    return () => {
+      isMounted = false
+    }
   }, [id])
-  
-  const relatedArticles = useMemo(() => {
-    if (!article) return []
-    return getRelatedArticles(article.id || id)
-  }, [article, id])
+
+  useEffect(() => {
+    let isMounted = true
+    const fetchRelated = async () => {
+      if (!article) {
+        if (isMounted) setRelatedArticles([])
+        return
+      }
+      try {
+        const data = await fetchSectionData('articles')
+        const list = Array.isArray(data) ? data : []
+        const currentId = article.id || article._id?.toString()
+        const filtered = list
+          .filter(item => {
+            const itemId = item.id || item._id?.toString()
+            return itemId && itemId !== currentId
+          })
+          .slice(0, 3)
+        if (isMounted) setRelatedArticles(filtered)
+      } catch (error) {
+        console.error('Error fetching related articles:', error)
+        if (isMounted) setRelatedArticles([])
+      }
+    }
+
+    fetchRelated()
+    return () => {
+      isMounted = false
+    }
+  }, [article])
 
   if (loading) {
     return (
@@ -91,8 +117,8 @@ const ArticleDetail = () => {
           <div className="grid gap-6 md:grid-cols-2">
             {relatedArticles.map((relatedArticle) => (
               <Link
-                key={relatedArticle.id}
-                to={`/articles/${relatedArticle.id}`}
+                key={relatedArticle.id || relatedArticle._id}
+                to={`/articles/${relatedArticle.id || relatedArticle._id}`}
                 className="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 block"
               >
                 <h3 className="font-bold text-palestine-black mb-2 line-clamp-2">
