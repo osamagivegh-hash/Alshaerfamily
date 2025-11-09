@@ -161,9 +161,12 @@ myfamily/
 ### إعداد متغيرات البيئة
 ```bash
 # في ملف .env
-MONGODB_URI=mongodb+srv://username:password@cluster0.xxxxx.mongodb.net/alshaer-family?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://username:<DB_SECRET>@cluster0.xxxxx.mongodb.net/alshaer-family?retryWrites=true&w=majority
 JWT_SECRET=your-very-long-and-secure-jwt-secret-key
 ADMIN_PASSWORD=YourSecurePassword123!
+EMAIL_SERVICE=gmail
+EMAIL_USER=your-email@example.com
+EMAIL_PASS=<APP_SPECIFIC_SECRET>
 ```
 
 ### إضافة البيانات التجريبية

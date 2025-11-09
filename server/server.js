@@ -96,32 +96,6 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Debug endpoint to check admin user (remove in production)
-app.get('/api/debug/admin', async (req, res) => {
-  try {
-    const { Admin } = require('./models');
-    const adminCount = await Admin.countDocuments();
-    const adminUser = await Admin.findOne({ username: 'admin' }, { password: 0 });
-    
-    res.json({
-      adminExists: !!adminUser,
-      adminCount,
-      adminUser: adminUser ? {
-        username: adminUser.username,
-        email: adminUser.email,
-        role: adminUser.role,
-        lastLogin: adminUser.lastLogin
-      } : null,
-      defaultCredentials: {
-        username: process.env.ADMIN_USERNAME || 'admin',
-        passwordSet: !!(process.env.ADMIN_PASSWORD || 'AlShaer2024!')
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
 // Storage status (for quick runtime checks)
 app.get('/api/storage/status', (req, res) => {
   try {
@@ -132,74 +106,6 @@ app.get('/api/storage/status', (req, res) => {
     });
   } catch (e) {
     res.status(500).json({ error: 'storage status error', details: String(e) });
-  }
-});
-
-
-// Manual admin creation endpoint (remove in production)
-app.post('/api/debug/create-admin', async (req, res) => {
-  try {
-    const { Admin } = require('./models');
-    const bcrypt = require('bcryptjs');
-    
-    // Check if admin already exists
-    const existingAdmin = await Admin.findOne({ username: 'admin' });
-    if (existingAdmin) {
-      return res.json({ message: 'Admin already exists', adminExists: true });
-    }
-    
-    // Create new admin
-    const defaultAdmin = new Admin({
-      username: process.env.ADMIN_USERNAME || 'admin',
-      email: process.env.ADMIN_EMAIL || 'admin@alshaerfamily.com',
-      password: await bcrypt.hash(process.env.ADMIN_PASSWORD || 'AlShaer2024!', 10),
-      role: 'admin',
-      lastLogin: null
-    });
-    
-    await defaultAdmin.save();
-    
-    res.json({ 
-      message: 'Admin created successfully',
-      admin: {
-        username: defaultAdmin.username,
-        email: defaultAdmin.email,
-        role: defaultAdmin.role
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Reset admin password endpoint (remove in production)
-app.post('/api/debug/reset-admin-password', async (req, res) => {
-  try {
-    const { Admin } = require('./models');
-    const bcrypt = require('bcryptjs');
-    
-    const admin = await Admin.findOne({ username: 'admin' });
-    if (!admin) {
-      return res.status(404).json({ message: 'Admin not found' });
-    }
-    
-    // Reset to default password
-    const newPassword = process.env.ADMIN_PASSWORD || 'AlShaer2024!';
-    admin.password = await bcrypt.hash(newPassword, 10);
-    admin.updatedAt = new Date();
-    await admin.save();
-    
-    res.json({ 
-      message: 'Admin password reset successfully',
-      newPassword: newPassword,
-      admin: {
-        username: admin.username,
-        email: admin.email,
-        role: admin.role
-      }
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
   }
 });
 

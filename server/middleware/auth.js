@@ -1,29 +1,40 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 const { Admin } = require('../models');
 require('dotenv').config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'al-shaer-family-secret-key-2024';
+const rawJwtSecret = process.env.JWT_SECRET;
+if (!rawJwtSecret) {
+  console.warn('JWT_SECRET is not set; generating ephemeral secret (not recommended for production).');
+}
+const JWT_SECRET = rawJwtSecret || crypto.randomBytes(32).toString('hex');
 
 // Initialize admin user
 const initializeAdmin = async () => {
   try {
-    const existingAdmin = await Admin.findOne({ username: 'admin' });
+    const adminUsername = (process.env.ADMIN_USERNAME || '').trim();
+    const adminEmail = (process.env.ADMIN_EMAIL || '').trim();
+    const adminPassword = (process.env.ADMIN_PASSWORD || '').trim();
+
+    if (!adminUsername || !adminEmail || !adminPassword) {
+      console.warn('Admin bootstrap skipped: ADMIN_USERNAME, ADMIN_EMAIL, and ADMIN_PASSWORD must be set.');
+      return;
+    }
+
+    const existingAdmin = await Admin.findOne({ username: adminUsername });
     
     if (!existingAdmin) {
       const defaultAdmin = new Admin({
-        username: process.env.ADMIN_USERNAME || 'admin',
-        email: process.env.ADMIN_EMAIL || 'admin@alshaerfamily.com',
-        password: await bcrypt.hash(process.env.ADMIN_PASSWORD || 'AlShaer2024!', 10),
+        username: adminUsername,
+        email: adminEmail,
+        password: await bcrypt.hash(adminPassword, 10),
         role: 'admin',
         lastLogin: null
       });
       
       await defaultAdmin.save();
-      console.log('✓ تم إنشاء حساب المدير الافتراضي');
-      console.log(`  اسم المستخدم: ${defaultAdmin.username}`);
-      console.log('  كلمة المرور: AlShaer2024!');
-      console.log('  يرجى تغيير كلمة المرور بعد أول تسجيل دخول');
+      console.log('✓ Admin account created from environment configuration');
     }
   } catch (error) {
     console.error('خطأ في إنشاء حساب المدير:', error);
@@ -68,25 +79,19 @@ const requireAdmin = (req, res, next) => {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
-    console.log('Login attempt:', { username, hasPassword: !!password });
 
     if (!username || !password) {
-      console.log('Missing credentials');
       return res.status(400).json({ message: 'اسم المستخدم وكلمة المرور مطلوبان' });
     }
 
     const admin = await Admin.findOne({ username });
-    console.log('Admin found:', !!admin);
     
     if (!admin) {
-      console.log('Admin not found for username:', username);
       return res.status(401).json({ message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
     }
 
     const validPassword = await bcrypt.compare(password, admin.password);
-    console.log('Password valid:', validPassword);
     if (!validPassword) {
-      console.log('Invalid password for username:', username);
       return res.status(401).json({ message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
     }
 
