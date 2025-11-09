@@ -46,7 +46,7 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  animation: ticker-scroll 110s linear infinite;
+  animation: ticker-scroll 160s linear infinite;
 }
 
 .top-news-ticker[dir='rtl'] .top-news-ticker__items {
@@ -137,8 +137,8 @@
   }
 
   .top-news-ticker__items {
-    animation-duration: 80s;
-    gap: 2rem;
+    animation-duration: 120s;
+    gap: 1.75rem;
   }
 
   .top-news-ticker__item {
