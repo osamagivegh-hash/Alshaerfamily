@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { adminFamilyTickerNews, adminPalestineTickerNews, adminTickerSettings } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../LoadingSpinner'
-import ReactQuill from 'react-quill';
-import 'react-quill/dist/quill.snow.css';
 
 const AdminTickers = () => {
   const [familyTickerNews, setFamilyTickerNews] = useState([])
@@ -22,9 +20,6 @@ const AdminTickers = () => {
   })
   const [settings, setSettings] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
-  const [mainImage, setMainImage] = useState(null);
-  const [content, setContent] = useState('');
-  const [embeddedImages, setEmbeddedImages] = useState([]); // To count images in content
 
   const tickerLabels = {
     family: 'الشريط العائلي',
@@ -506,60 +501,7 @@ const AdminTickers = () => {
                 </button>
               </div>
 
-              <form onSubmit={async (e) => {
-                e.preventDefault();
-                setIsSubmitting(true);
-                // Prepare FormData to send both the main image and content with images
-                const formPayload = new FormData();
-                Object.entries(formData).forEach(([key, val]) => formPayload.append(key, val));
-                if (mainImage) formPayload.append('mainImage', mainImage);
-                formPayload.append('content', content);
-                // Use the correct API call to submit FormData (adjust adminApi if needed)
-                try {
-                  if (editingItem) {
-                    // Pass as FormData
-                    await api.update(editingItem.id || editingItem._id, formPayload);
-                    toast.success('تم تحديث عنصر الشريط بنجاح');
-                  } else {
-                    await api.create(formPayload);
-                    toast.success('تم إضافة عنصر الشريط بنجاح');
-                  }
-                  setShowForm(false);
-                  setEditingItem(null);
-                  setFormData({ headline: '', source: '', url: '', active: true, order: 0 });
-                  setMainImage(null);
-                  setContent('');
-                  if (activeTickerType === 'family') await fetchFamilyTickerData();
-                  else await fetchPalestineTickerData();
-                } catch (error) {
-                  toast.error(error.message);
-                } finally {
-                  setIsSubmitting(false);
-                }
-              }} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-palestine-black mb-2">الصورة الرئيسية</label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={e => {
-                      if (e.target.files && e.target.files.length > 0) {
-                        setMainImage(e.target.files[0]);
-                      }
-                    }}
-                    className="block w-full"
-                  />
-                  {mainImage && (
-                    <div className="mt-2">
-                      <img
-                        src={URL.createObjectURL(mainImage)}
-                        alt="معاينة الصورة الرئيسية"
-                        className="max-h-32 rounded shadow"
-                      />
-                    </div>
-                  )}
-                  <p className="text-xs text-gray-500 mt-1">ارفع صورة واحدة رئيسية كغلاف.</p>
-                </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-palestine-black mb-2">
                     العنوان / الخبر
@@ -603,48 +545,6 @@ const AdminTickers = () => {
                     </div>
                   </div>
                 )}
-
-                <div>
-                  <label className="block text-sm font-medium text-palestine-black mb-2">محتوى الخبر/المقال/الحوار (يدعم إدراج صور حتى 20 صورة)</label>
-                  <ReactQuill
-                    value={content}
-                    onChange={value => {
-                      setContent(value);
-                      // Count <img ...> tags to enforce limit
-                      const imgCount = (value.match(/<img/g) || []).length;
-                      setEmbeddedImages(imgCount);
-                    }}
-                    modules={{
-                      toolbar: [
-                        [{ header: [1, 2, false] }],
-                        ['bold', 'italic', 'underline', 'strike'],
-                        [{ list: 'ordered' }, { list: 'bullet' }],
-                        ['link', 'image'],
-                        ['clean'],
-                      ],
-                      imageUploader: {
-                        upload: async (file) => {
-                          // This is a placeholder for image upload.
-                          // In a real application, you would send the file to your backend
-                          // and get a URL back.
-                          // For now, we'll just return a dummy URL.
-                          console.log('Uploading image:', file);
-                          return `https://via.placeholder.com/150?text=${encodeURIComponent(file.name)}`;
-                        },
-                        maxNumberOfFiles: 20, // Maximum number of images allowed
-                        maxFileSize: 5 * 1024 * 1024, // 5MB
-                        accept: 'image/*',
-                        showUploadedPictures: true,
-                        error: (error) => {
-                          console.error('Image upload error:', error);
-                          toast.error('Failed to upload image.');
-                        }
-                      }
-                    }}
-                    theme="snow"
-                  />
-                  <div className="text-xs mt-1">عدد الصور المدمجة في المحتوى: {embeddedImages}/20</div>
-                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
