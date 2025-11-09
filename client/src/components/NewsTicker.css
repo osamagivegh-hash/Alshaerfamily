@@ -46,13 +46,17 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  animation: ticker-scroll 160s linear infinite;
+  /* ✅ تم التبطيء هنا */
+  animation: ticker-scroll 240s linear infinite;
+  will-change: transform;
+  transition: animation-play-state 0.3s ease;
 }
 
 .top-news-ticker[dir='rtl'] .top-news-ticker__items {
   animation-name: ticker-scroll-rtl;
 }
 
+/* ✅ يتوقف عند الوقوف عليه */
 .top-news-ticker__track:hover .top-news-ticker__items,
 .top-news-ticker__track:focus-within .top-news-ticker__items {
   animation-play-state: paused;
@@ -109,6 +113,7 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
+/* ✅ حركة الشريط من اليسار لليمين */
 @keyframes ticker-scroll {
   0% {
     transform: translate3d(0, 0, 0);
@@ -118,6 +123,7 @@
   }
 }
 
+/* ✅ دعم الاتجاه المعاكس RTL */
 @keyframes ticker-scroll-rtl {
   0% {
     transform: translate3d(0, 0, 0);
@@ -127,6 +133,7 @@
   }
 }
 
+/* ✅ تخصيص للهواتف */
 @media (max-width: 768px) {
   .top-news-ticker__container {
     flex-direction: column;
@@ -136,8 +143,9 @@
     padding-block: 0.4rem;
   }
 
+  /* تبطيء بسيط إضافي على الهواتف */
   .top-news-ticker__items {
-    animation-duration: 120s;
+    animation-duration: 200s;
     gap: 1.75rem;
   }
 
@@ -146,9 +154,9 @@
   }
 }
 
+/* احترام تفضيلات الوصول */
 @media (prefers-reduced-motion: reduce) {
   .top-news-ticker__items {
     animation: none;
   }
 }
-
