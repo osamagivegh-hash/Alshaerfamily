@@ -172,10 +172,7 @@ cd server
 node scripts/initializeData.js
 ```
 
-## لوحة الإدارة
-
-### الوصول للوحة الإدارة
-- **الرابط**: `http://localhost:3000/admin` (محلياً) أو `https://yoursite.com/admin` (بعد النشر)
+النشر)
 
 ### مميزات لوحة الإدارة
 - **لوحة تحكم شاملة** مع إحصائيات مفصلة
