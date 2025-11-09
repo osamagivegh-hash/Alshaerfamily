@@ -70,7 +70,7 @@ const PublicApp = () => {
     <>
       <Header />
       <NewsTickers />
-      <main style={{ paddingTop: '184px' }} className="md:pt-44">
+      <main style={{ paddingTop: '220px' }} className="md:pt-[18rem]">
         <Hero />
         
         <LazySection>

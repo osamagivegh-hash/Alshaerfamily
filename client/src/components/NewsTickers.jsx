@@ -7,6 +7,7 @@ const NewsTickers = () => {
   const [palestineNews, setPalestineNews] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [headerOffset, setHeaderOffset] = useState(120)
 
   useEffect(() => {
     // Fetch family ticker news from API
@@ -47,6 +48,17 @@ const NewsTickers = () => {
       }
     }
 
+    const calculateOffset = () => {
+      const headerEl = document.querySelector('header')
+      const offset = headerEl?.offsetHeight ? headerEl.offsetHeight : 120
+      setHeaderOffset(offset)
+    }
+
+    // Initial measurement
+    calculateOffset()
+
+    window.addEventListener('resize', calculateOffset)
+
     // Fetch both news sources
     fetchFamilyNews()
     fetchPalestine()
@@ -70,7 +82,10 @@ const NewsTickers = () => {
         })
     }, 60000) // 60 seconds
 
-    return () => clearInterval(interval)
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('resize', calculateOffset)
+    }
   }, [])
 
   // Static messages for black ticker
@@ -86,8 +101,19 @@ const NewsTickers = () => {
   // Use API data if available, otherwise fallback to static data
   const displayFamilyNews = Array.isArray(familyTickerNews) ? familyTickerNews : []
 
+  useEffect(() => {
+    const headerEl = document.querySelector('header')
+    if (headerEl?.offsetHeight) {
+      setHeaderOffset(headerEl.offsetHeight)
+    }
+  }, [palestineNews.length, loading])
+
   return (
-    <div id="news-tickers" className="fixed top-16 w-full z-40" style={{ height: `${tickersHeight}px` }}>
+    <div
+      id="news-tickers"
+      className="fixed w-full z-40"
+      style={{ top: `${headerOffset}px`, height: `${tickersHeight}px` }}
+    >
       {/* Family News Ticker (Palestine Flag - Green) */}
       <NewsTicker
         items={displayFamilyNews}

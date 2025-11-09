@@ -10,6 +10,8 @@ const { initializeAdmin } = require('./middleware/auth');
 const { responseHandler } = require('./middleware/responseHandler');
 const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./middleware/logger');
+const newsRouter = require('./routes/news');
+const { startNewsJob } = require('./jobs/newsJob');
 require('dotenv').config();
 
 const app = express();
@@ -110,6 +112,7 @@ app.get('/api/storage/status', (req, res) => {
 });
 
 // API Routes
+app.use('/api/news', newsRouter);
 app.use('/api', require('./routes/api'));
 app.use('/api/admin', require('./routes/adminMongo'));
 
@@ -124,6 +127,9 @@ app.use(errorHandler);
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`خادم عائلة الشاعر يعمل على المنفذ ${PORT}`);
+  startNewsJob().catch(error => {
+    console.error('[news-job] Failed to start:', error.message);
+  });
 });
 
 // Log storage mode

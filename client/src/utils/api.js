@@ -1,6 +1,10 @@
 import axios from 'axios'
 
-const API_BASE_URL = '/api'
+const API_ROOT = import.meta.env.VITE_API_BASE_URL
+  ? import.meta.env.VITE_API_BASE_URL.replace(/\/$/, '')
+  : ''
+
+const API_BASE_URL = `${API_ROOT}/api`
 
 // Create axios instance
 export const api = axios.create({
@@ -90,5 +94,7 @@ export const fetchPalestineNews = async () => {
     ]
   }
 }
+
+export const API_ROOT_URL = API_ROOT || ''
 
 export default api
