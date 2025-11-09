@@ -2,10 +2,13 @@ const path = require('path');
 const fs = require('fs-extra');
 
 const DEFAULT_FEEDS = [
-  'https://www.wafa.ps/rss-feed/arabic',
-  'https://www.maannews.net/rss/ar.xml',
-  'https://www.aljazeera.net/xml/rss/all.xml',
-  'https://www.alarabiya.net/.mrss/ar.xml'
+  'https://english.iswnews.com/feed/',
+  'https://www.newarab.com/rss.xml',
+  'https://www.middleeastmonitor.com/feed/',
+  'https://mondoweiss.net/feed/',
+  'https://www.timesofisrael.com/feed/',
+  'https://www.al-monitor.com/rss',
+  'https://feeds.bbci.co.uk/arabic/middleeast/rss.xml'
 ];
 
 const DEFAULT_KEYWORDS = [
