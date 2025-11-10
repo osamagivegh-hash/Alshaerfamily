@@ -5,7 +5,6 @@ const DEFAULT_FEEDS = [
   'https://www.aljazeera.net/aljazeeranet/rss',
   'https://www.alarabiya.net/tools/feeds/latest-news.xml',
   'https://www.skynewsarabia.com/rss/latest.xml',
-  'https://www.alquds.co.uk/feed/',
   'https://www.al-monitor.com/rss',
   'https://www.newarab.com/rss.xml',
   'https://feeds.bbci.co.uk/arabic/middleeast/rss.xml'
