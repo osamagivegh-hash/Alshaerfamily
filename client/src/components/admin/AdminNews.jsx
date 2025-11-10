@@ -32,7 +32,8 @@ const AdminNews = () => {
     headline: '',
     summary: '',
     tags: [],
-    category: 'events'
+    category: 'General',
+    isArchived: false
   })
 
   const editorRef = useRef(null)
@@ -116,7 +117,8 @@ const AdminNews = () => {
         headline: '',
         summary: '',
         tags: [],
-        category: 'events'
+        category: 'General',
+        isArchived: false
       })
       fetchNews()
     } catch (error) {
@@ -137,7 +139,8 @@ const AdminNews = () => {
       headline: newsItem.headline || newsItem.title || '',
       summary: newsItem.summary || '',
       tags: Array.isArray(newsItem.tags) ? newsItem.tags : [],
-      category: resolveNewsCategory(newsItem.category) || 'events'
+      category: resolveNewsCategory(newsItem.category) || 'General',
+      isArchived: Boolean(newsItem.isArchived)
     })
     setShowForm(true)
   }
@@ -170,6 +173,19 @@ const AdminNews = () => {
       fetchNews()
     } catch (error) {
       toast.error(error.message)
+    }
+  }
+
+  const handleToggleArchive = async (newsItem) => {
+    const newsId = newsItem.id || newsItem._id
+    if (!newsId) return
+
+    try {
+      await adminNews.toggleArchive(newsId, !newsItem.isArchived)
+      toast.success(!newsItem.isArchived ? 'تم نقل الخبر إلى الأرشيف' : 'تم استرجاع الخبر من الأرشيف')
+      fetchNews()
+    } catch (error) {
+      toast.error(error.message || 'تعذر تحديث حالة الأرشفة')
     }
   }
 
@@ -214,7 +230,8 @@ const AdminNews = () => {
                 headline: '',
                 summary: '',
                 tags: [],
-                category: 'events'
+                category: 'General',
+                isArchived: false
               })
             }}
             className="btn-primary"
@@ -279,6 +296,26 @@ const AdminNews = () => {
                     </option>
                   ))}
                 </select>
+              </div>
+
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                <div>
+                  <p className="text-sm font-semibold text-palestine-black">حالة الأرشفة</p>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {formData.isArchived
+                      ? `هذا الخبر مؤرشف${editingNews?.archivedAt ? ` منذ ${new Date(editingNews.archivedAt).toLocaleDateString('ar-SA', { dateStyle: 'medium' })}` : ''}`
+                      : 'هذا الخبر منشور حالياً على الموقع'}
+                  </p>
+                </div>
+                <label className="inline-flex items-center gap-2 text-sm text-palestine-black">
+                  <input
+                    type="checkbox"
+                    className="h-5 w-5 text-palestine-green border-gray-300 rounded focus:ring-palestine-green"
+                    checked={formData.isArchived}
+                    onChange={(e) => setFormData({ ...formData, isArchived: e.target.checked })}
+                  />
+                  <span>أرشفة هذا الخبر</span>
+                </label>
               </div>
 
               <div>
@@ -395,74 +432,102 @@ const AdminNews = () => {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {news.map((newsItem) => (
-              <div key={newsItem.id} className="p-4 hover:bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    <input
-                      type="checkbox"
-                      checked={selectedNews.includes(newsItem.id || newsItem._id)}
-                      onChange={(e) => {
-                        const itemId = newsItem.id || newsItem._id
-                        if (e.target.checked) {
-                          setSelectedNews([...selectedNews, itemId])
-                        } else {
-                          setSelectedNews(selectedNews.filter(id => id !== itemId))
-                        }
-                      }}
-                      className="ml-3"
-                    />
-                    {(newsItem.image || newsItem.coverImage) && (
-                      <img
-                        src={newsItem.image || newsItem.coverImage}
-                        alt={newsItem.title}
-                        className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
-                        onError={(e) => {
-                          e.target.style.display = 'none'
+            {news.map((newsItem) => {
+              const itemId = newsItem.id || newsItem._id
+              const isArchived = Boolean(newsItem.isArchived)
+
+              return (
+                <div
+                  key={itemId}
+                  className={`p-4 transition-colors duration-200 ${isArchived ? 'bg-gray-50 opacity-90' : 'hover:bg-gray-50'}`}
+                >
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4 flex-1">
+                      <input
+                        type="checkbox"
+                        checked={selectedNews.includes(itemId)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedNews([...selectedNews, itemId])
+                          } else {
+                            setSelectedNews(selectedNews.filter(id => id !== itemId))
+                          }
                         }}
+                        className="ml-3"
                       />
-                    )}
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold text-palestine-black">
-                        {newsItem.title}
-                      </h3>
-                      <p className="text-xs text-palestine-green font-semibold mt-1">
-                        {formatNewsCategory(newsItem.category) || 'غير مصنف'}
-                      </p>
-                      <p className="text-gray-600 mt-1">
-                        {(newsItem.summary || newsItem.content || '').substring(0, 100)}...
-                      </p>
-                      <div className="flex items-center mt-2 text-sm text-gray-500">
-                        <span>بواسطة: {newsItem.reporter || newsItem.author || 'غير محدد'}</span>
-                        <span className="mx-2">•</span>
-                        <span>{new Date(newsItem.date).toLocaleDateString('ar-SA')}</span>
-                        {(newsItem.image || newsItem.coverImage) && (
-                          <>
-                            <span className="mx-2">•</span>
-                            <span className="text-palestine-green">✓ صورة</span>
-                          </>
-                        )}
+                      {(newsItem.image || newsItem.coverImage) && (
+                        <img
+                          src={newsItem.image || newsItem.coverImage}
+                          alt={newsItem.title}
+                          className="w-20 h-20 object-cover rounded-lg flex-shrink-0"
+                          onError={(e) => {
+                            e.target.style.display = 'none'
+                          }}
+                        />
+                      )}
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-lg font-semibold text-palestine-black">
+                            {newsItem.title}
+                          </h3>
+                          {isArchived && (
+                            <span className="text-xs font-semibold text-gray-600 bg-gray-200 px-2 py-1 rounded-full">
+                              مؤرشف
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-palestine-green font-semibold mt-1">
+                          {formatNewsCategory(newsItem.category) || 'غير مصنف'}
+                        </p>
+                        <p className="text-gray-600 mt-1">
+                          {(newsItem.summary || newsItem.content || '').substring(0, 100)}...
+                        </p>
+                        <div className="flex items-center mt-2 text-sm text-gray-500 flex-wrap gap-2">
+                          <span>بواسطة: {newsItem.reporter || newsItem.author || 'غير محدد'}</span>
+                          <span className="text-gray-400">•</span>
+                          <span>{new Date(newsItem.date).toLocaleDateString('ar-SA')}</span>
+                          {(newsItem.image || newsItem.coverImage) && (
+                            <>
+                              <span className="text-gray-400">•</span>
+                              <span className="text-palestine-green">✓ صورة</span>
+                            </>
+                          )}
+                          {isArchived && newsItem.archivedAt && (
+                            <>
+                              <span className="text-gray-400">•</span>
+                              <span className="text-gray-600">
+                                مؤرشف منذ {new Date(newsItem.archivedAt).toLocaleDateString('ar-SA', { dateStyle: 'medium' })}
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEdit(newsItem)}
-                      className="bg-palestine-green text-white px-3 py-1 rounded text-sm hover:bg-olive-700 transition-colors duration-200"
-                    >
-                      تعديل
-                    </button>
-                    <button
-                      onClick={() => handleDelete(newsItem.id || newsItem._id)}
-                      className="bg-palestine-red text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors duration-200"
-                    >
-                      حذف
-                    </button>
+                    <div className="flex flex-col md:flex-row md:items-center gap-2">
+                      <button
+                        onClick={() => handleToggleArchive(newsItem)}
+                        className={`px-3 py-1 rounded text-sm transition-colors duration-200 ${isArchived ? 'bg-gray-300 text-gray-800 hover:bg-gray-400' : 'bg-amber-500 text-white hover:bg-amber-600'}`}
+                      >
+                        {isArchived ? 'استرجاع' : 'أرشفة'}
+                      </button>
+                      <button
+                        onClick={() => handleEdit(newsItem)}
+                        className="bg-palestine-green text-white px-3 py-1 rounded text-sm hover:bg-olive-700 transition-colors duration-200"
+                      >
+                        تعديل
+                      </button>
+                      <button
+                        onClick={() => handleDelete(itemId)}
+                        className="bg-palestine-red text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors duration-200"
+                      >
+                        حذف
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         )}
       </div>

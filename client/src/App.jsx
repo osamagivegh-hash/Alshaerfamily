@@ -10,6 +10,7 @@ import ConversationDetail from './components/ConversationDetail'
 import NewsDetail from './components/NewsDetail'
 import NotFound from './components/common/NotFound'
 import ScrollToTop from './components/common/ScrollToTop'
+import ArchivePage from './pages/Archive'
 
 // Admin Components
 import AdminLogin from './components/admin/AdminLogin'
@@ -35,6 +36,7 @@ function App() {
           <Routes>
             {/* Public Routes */}
             <Route path="/" element={<PublicApp />} />
+            <Route path="/archive" element={<ArchivePage />} />
             <Route path="/articles/:id" element={<ArticleDetail />} />
             <Route path="/conversations/:id" element={<ConversationDetail />} />
             <Route path="/news/:id" element={<NewsDetail />} />

@@ -168,6 +168,14 @@ const createCRUDFunctions = (endpoint) => ({
 
 // Section-specific APIs
 export const adminNews = createCRUDFunctions('news')
+adminNews.toggleArchive = async (id, isArchived) => {
+  try {
+    const response = await adminApi.patch(`/news/${id}/archive`, { isArchived })
+    return response.data
+  } catch (error) {
+    throw new Error(error.response?.data?.message || 'خطأ في تحديث حالة الأرشفة')
+  }
+}
 export const adminConversations = createCRUDFunctions('conversations')
 export const adminArticles = createCRUDFunctions('articles')
 export const adminPalestine = createCRUDFunctions('palestine')

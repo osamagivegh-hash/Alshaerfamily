@@ -30,6 +30,8 @@ adminSchema.index({ username: 1 });
 adminSchema.index({ email: 1 });
 adminSchema.index({ role: 1 });
 
+const NEWS_CATEGORIES = ['General', 'Obituaries', 'Events', 'Celebrations', 'Other'];
+
 // News Schema
 const newsSchema = new mongoose.Schema({
   title: { type: String, required: true },
@@ -42,17 +44,58 @@ const newsSchema = new mongoose.Schema({
   coverImage: { type: String },
   date: { type: Date, required: true },
   tags: [{ type: String }],
-  category: { type: String },
+  category: { type: String, enum: NEWS_CATEGORIES, default: 'General' },
+  isArchived: { type: Boolean, default: false },
+  archivedAt: { type: Date, default: null },
   gallery: [{ type: String }],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 });
 
+newsSchema.pre('save', function(next) {
+  if (this.isModified('isArchived')) {
+    if (this.isArchived) {
+      this.archivedAt = this.archivedAt || new Date();
+    } else {
+      this.archivedAt = null;
+    }
+  }
+  next();
+});
+
+newsSchema.pre('findOneAndUpdate', function(next) {
+  const update = this.getUpdate() || {};
+  const set = update.$set || update;
+
+  if (set.isArchived !== undefined) {
+    if (set.isArchived) {
+      const archivedAt = set.archivedAt || new Date();
+      if (update.$set) {
+        update.$set.archivedAt = archivedAt;
+      } else {
+        update.archivedAt = archivedAt;
+      }
+    } else {
+      if (update.$set) {
+        update.$set.archivedAt = null;
+      } else {
+        update.archivedAt = null;
+      }
+    }
+    this.setUpdate(update);
+  }
+
+  next();
+});
+
+newsSchema.statics.CATEGORIES = NEWS_CATEGORIES;
+
 // News Indexes
 newsSchema.index({ date: -1 });
 newsSchema.index({ title: 'text', content: 'text', summary: 'text' });
 newsSchema.index({ tags: 1 });
-newsSchema.index({ category: 1 });
+newsSchema.index({ category: 1, isArchived: 1 });
+newsSchema.index({ isArchived: 1, archivedAt: -1 });
 newsSchema.index({ author: 1 });
 newsSchema.index({ createdAt: -1 });
 

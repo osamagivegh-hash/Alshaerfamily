@@ -1,46 +1,51 @@
 export const NEWS_CATEGORY_OPTIONS = [
-  { value: 'obituaries', label: 'الوفيات' },
-  { value: 'occasions', label: 'المناسبات' },
-  { value: 'events', label: 'الفعاليات والإنجازات' }
+  { value: 'General', label: '📰 الأخبار العامة' },
+  { value: 'Obituaries', label: '🕊️ الوفيات' },
+  { value: 'Events', label: '🎉 الفعاليات' },
+  { value: 'Celebrations', label: '🎈 المناسبات' },
+  { value: 'Other', label: '⚙️ أخرى' }
 ];
 
 export const NEWS_CATEGORY_LABELS = NEWS_CATEGORY_OPTIONS.reduce((acc, category) => {
-  acc[category.value] = category.label;
+  acc[category.value] = category.label.replace(/^[^\s]+\s/, '').trim() || category.label;
   return acc;
 }, {});
 
-const CATEGORY_ALIASES = {
-  obituaries: ['obituaries', 'وفيات', 'الوفيات'],
-  occasions: ['occasions', 'المناسبات', 'مناسبات'],
-  events: [
-    'events',
-    'event',
-    'الفعاليات',
-    'فعاليات',
-    'الفعاليات والإنجازات',
-    'الفعاليات والانجازات',
-    'الانجازات',
-    'الإنجازات'
-  ]
+const CATEGORY_ALIAS_MAP = {
+  general: 'General',
+  '📰 الأخبار العامة': 'General',
+  الأخبار: 'General',
+  الوفيات: 'Obituaries',
+  وفيات: 'Obituaries',
+  obituaries: 'Obituaries',
+  events: 'Events',
+  event: 'Events',
+  الفعاليات: 'Events',
+  فعاليات: 'Events',
+  celebrations: 'Celebrations',
+  celebration: 'Celebrations',
+  المناسبات: 'Celebrations',
+  مناسبات: 'Celebrations',
+  other: 'Other',
+  أخرى: 'Other',
+  اخرى: 'Other'
 };
 
 export const resolveNewsCategory = (value) => {
   if (!value) return null;
-  const input = value.toString().trim().toLowerCase();
+  const input = value.toString().trim();
   if (!input) return null;
 
-  for (const [slug, aliases] of Object.entries(CATEGORY_ALIASES)) {
-    if (aliases.some(alias => alias.toLowerCase() === input)) {
-      return slug;
-    }
-  }
+  const exactMatch = NEWS_CATEGORY_OPTIONS.find(option => option.value === input);
+  if (exactMatch) return exactMatch.value;
 
-  return null;
+  const normalized = input.toLowerCase();
+  return CATEGORY_ALIAS_MAP[normalized] || null;
 };
 
 export const formatNewsCategory = (value) => {
   const resolved = resolveNewsCategory(value);
   if (!resolved) return null;
-  return NEWS_CATEGORY_LABELS[resolved] || null;
+  return NEWS_CATEGORY_LABELS[resolved] || NEWS_CATEGORY_OPTIONS.find(option => option.value === resolved)?.label || resolved;
 };
 

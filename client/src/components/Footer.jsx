@@ -54,6 +54,14 @@ const Footer = () => {
                   مقالات
                 </button>
               </li>
+              <li>
+                <a
+                  href="/archive"
+                  className="text-gray-300 hover:text-palestine-green transition-colors duration-200 block"
+                >
+                  الأرشيف
+                </a>
+              </li>
             </ul>
           </div>
 

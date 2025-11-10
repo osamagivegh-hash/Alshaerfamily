@@ -190,6 +190,35 @@ createCRUDRoutes('articles', Articles);
 createCRUDRoutes('palestine', Palestine);
 createCRUDRoutes('gallery', Gallery);
 
+router.patch('/news/:id/archive', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isArchived } = req.body;
+
+    if (typeof isArchived !== 'boolean') {
+      return res.status(400).json({ message: 'قيمة الأرشفة غير صالحة' });
+    }
+
+    const updated = await News.findByIdAndUpdate(
+      id,
+      { isArchived, updatedAt: new Date() },
+      { new: true, runValidators: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'الخبر غير موجود' });
+    }
+
+    res.json({
+      message: isArchived ? 'تم نقل الخبر إلى الأرشيف' : 'تم استرجاع الخبر من الأرشيف',
+      item: normalizeDocument(updated)
+    });
+  } catch (error) {
+    console.error('Toggle news archive error:', error);
+    res.status(500).json({ message: 'خطأ في تحديث حالة الأرشفة' });
+  }
+});
+
 // Contact management
 router.get('/contacts', authenticateToken, requireAdmin, async (req, res) => {
   try {

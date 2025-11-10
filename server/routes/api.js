@@ -25,6 +25,36 @@ const fs = require('fs-extra');
 const { upload, isCloudinaryConfigured, cloudinaryFolder, uploadsDir } = require('../config/storage');
 const cloudinaryUtils = require('../utils/cloudinary');
 
+const NEWS_CATEGORY_ENUM = (News && News.CATEGORIES) ? News.CATEGORIES : ['General', 'Obituaries', 'Events', 'Celebrations', 'Other'];
+const NEWS_CATEGORY_LOOKUP = NEWS_CATEGORY_ENUM.reduce((acc, category) => {
+  acc[category.toLowerCase()] = category;
+  return acc;
+}, {
+  'اخبار': 'General',
+  'الأخبار': 'General',
+  'الأخبار العامة': 'General',
+  'وفيات': 'Obituaries',
+  'الوفيات': 'Obituaries',
+  'فعاليات': 'Events',
+  'الفعاليات': 'Events',
+  'المناسبات': 'Celebrations',
+  'مناسبات': 'Celebrations',
+  'أخرى': 'Other',
+  'اخرى': 'Other'
+});
+
+const resolveNewsCategory = (value) => {
+  if (!value) return null;
+  const input = value.toString().trim();
+  if (!input) return null;
+
+  if (NEWS_CATEGORY_ENUM.includes(input)) {
+    return input;
+  }
+
+  return NEWS_CATEGORY_LOOKUP[input.toLowerCase()] || null;
+};
+
 // Helper function to normalize MongoDB documents (convert _id to id)
 const normalizeDocument = (doc) => {
   if (!doc) return null;
@@ -43,7 +73,7 @@ router.get('/sections', asyncHandler(async (req, res) => {
   const sections = {};
   
   // Fetch data from MongoDB collections - removed limit to show all items
-  sections.news = normalizeDocument(await News.find().sort({ date: -1 }));
+  sections.news = normalizeDocument(await News.find({ isArchived: { $ne: true } }).sort({ date: -1 }));
   sections.conversations = normalizeDocument(await Conversations.find().sort({ date: -1 }).limit(10));
   sections.articles = normalizeDocument(await Articles.find().sort({ date: -1 }).limit(10));
   sections.palestine = normalizeDocument(await Palestine.find().sort({ createdAt: -1 }));
@@ -60,7 +90,7 @@ router.get('/sections/:section', asyncHandler(async (req, res) => {
   
   switch (section) {
     case 'news':
-      data = normalizeDocument(await News.find().sort({ date: -1 }));
+      data = normalizeDocument(await News.find({ isArchived: { $ne: true } }).sort({ date: -1 }));
       break;
     case 'conversations':
       data = normalizeDocument(await Conversations.find().sort({ date: -1 }).limit(10));
@@ -137,6 +167,45 @@ router.get('/conversations/:id', asyncHandler(async (req, res) => {
   }
   
   res.success(200, 'تم جلب الحوار بنجاح', normalizeDocument(conversation));
+}));
+
+// Get archived news
+router.get('/news/archive', asyncHandler(async (req, res) => {
+  const { category } = req.query;
+  const filter = { isArchived: true };
+
+  if (category) {
+    const resolved = resolveNewsCategory(category);
+    if (!resolved) {
+      return res.error(400, 'تصنيف الأخبار غير صالح');
+    }
+    filter.category = resolved;
+  }
+
+  const archivedNews = await News.find(filter)
+    .sort({ archivedAt: -1, date: -1 })
+    .lean();
+
+  res.success(200, 'تم جلب الأخبار المؤرشفة بنجاح', normalizeDocument(archivedNews));
+}));
+
+// Get news by category (non-archived)
+router.get('/news/category/:category', asyncHandler(async (req, res) => {
+  const { category } = req.params;
+  const resolved = resolveNewsCategory(category);
+
+  if (!resolved) {
+    return res.error(400, 'تصنيف الأخبار غير صالح');
+  }
+
+  const newsByCategory = await News.find({
+    category: resolved,
+    isArchived: { $ne: true }
+  })
+    .sort({ date: -1 })
+    .lean();
+
+  res.success(200, 'تم جلب الأخبار حسب التصنيف', normalizeDocument(newsByCategory));
 }));
 
 // Get single news by ID
