@@ -47,8 +47,7 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  /* ✅ تم التبطيء هنا */
-  animation: ticker-scroll 120s linear infinite;
+  animation: ticker-scroll 60s linear infinite;
   will-change: transform;
   transition: animation-play-state 0.3s ease;
 }
@@ -144,9 +143,8 @@
     padding-block: 0.4rem;
   }
 
-  /* تبطيء بسيط إضافي على الهواتف */
   .top-news-ticker__items {
-    animation-duration: 200s;
+    animation-duration: 100s;
     gap: 1.75rem;
   }
 

@@ -2,12 +2,12 @@ const path = require('path');
 const fs = require('fs-extra');
 
 const DEFAULT_FEEDS = [
-  'https://english.iswnews.com/feed/',
-  'https://www.newarab.com/rss.xml',
-  'https://www.middleeastmonitor.com/feed/',
-  'https://mondoweiss.net/feed/',
-  'https://www.timesofisrael.com/feed/',
+  'https://www.aljazeera.net/aljazeeranet/rss',
+  'https://www.alarabiya.net/tools/feeds/latest-news.xml',
+  'https://www.skynewsarabia.com/rss/latest.xml',
+  'https://www.alquds.co.uk/feed/',
   'https://www.al-monitor.com/rss',
+  'https://www.newarab.com/rss.xml',
   'https://feeds.bbci.co.uk/arabic/middleeast/rss.xml'
 ];
 
