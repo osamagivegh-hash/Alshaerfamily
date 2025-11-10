@@ -94,11 +94,16 @@ const NewsTicker = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const direction = useMemo(() => detectDirection(items), [items])
+  const arabicItems = useMemo(
+    () => items.filter(item => ARABIC_REGEX.test(item.title || '')),
+    [items]
+  )
+
+  const direction = useMemo(() => detectDirection(arabicItems), [arabicItems])
   const marqueeItems = useMemo(() => {
-    if (!items.length) return []
-    return [...items, ...items]
-  }, [items])
+    if (!arabicItems.length) return []
+    return [...arabicItems, ...arabicItems]
+  }, [arabicItems])
 
   return (
     <section
@@ -114,11 +119,11 @@ const NewsTicker = () => {
         </div>
 
         <div className="top-news-ticker__viewport">
-          {loading && !items.length ? (
+        {loading && !arabicItems.length ? (
             <div className="top-news-ticker__status">جارِ تحميل آخر الأخبار الفلسطينية...</div>
-          ) : error && !items.length ? (
+        ) : error && !arabicItems.length ? (
             <div className="top-news-ticker__status top-news-ticker__status--error">{error}</div>
-          ) : !items.length ? (
+        ) : !arabicItems.length ? (
             <div className="top-news-ticker__status">{FALLBACK_MESSAGE}</div>
           ) : (
             <div className="top-news-ticker__track" data-paused-on-hover>

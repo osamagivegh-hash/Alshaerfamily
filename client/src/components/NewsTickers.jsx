@@ -80,7 +80,7 @@ const NewsTickers = () => {
         borderColor="border-palestine-black"
         isThin={true}
       />
-
+      
       {/* Palestine Headlines Ticker */}
       <PalestineNewsTicker />
     </div>

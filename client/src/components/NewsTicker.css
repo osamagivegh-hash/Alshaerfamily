@@ -1,8 +1,9 @@
+
 .top-news-ticker {
   width: 100%;
-  background-color: #111;
+  background-color: #ce1126;
   color: #fff;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.25);
   font-family: 'Cairo', 'Noto Naskh Arabic', sans-serif;
   position: relative;
   overflow: hidden;
