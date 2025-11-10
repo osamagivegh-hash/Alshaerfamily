@@ -66,35 +66,6 @@ export const fetchContactMessages = async () => {
 }
 
 // Fetch Palestine news from server-side API (avoids CORS issues)
-export const fetchPalestineNews = async () => {
-  try {
-    // Use server-side endpoint to avoid CORS issues
-    const response = await api.get('/ticker/palestine-news')
-    
-    // Extract data from nested response structure: { success, message, data, timestamp }
-    const headlines = response.data?.data || response.data || []
-    
-    if (Array.isArray(headlines) && headlines.length > 0) {
-      return headlines
-    }
-    
-    // Fallback headlines
-    return [
-      "تحديثات مباشرة من فلسطين 🇵🇸",
-      "أخبار فلسطين اليوم",
-      "فلسطين في قلبنا دائماً 🇵🇸"
-    ]
-  } catch (error) {
-    console.error('Error fetching Palestine news:', error)
-    // Return fallback headlines on error
-    return [
-      "تحديثات مباشرة من فلسطين 🇵🇸",
-      "أخبار فلسطين اليوم",
-      "فلسطين في قلبنا دائماً 🇵🇸"
-    ]
-  }
-}
-
 export const API_ROOT_URL = API_ROOT || ''
 
 export default api

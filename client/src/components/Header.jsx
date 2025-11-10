@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import SearchBar from './common/SearchBar'
 import MobileMenu from './common/MobileMenu'
-import NewsTicker from './NewsTicker'
 
 const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -69,7 +68,6 @@ const Header = () => {
         ? 'bg-white shadow-lg backdrop-blur-sm' 
         : 'bg-white/90'
     }`}>
-      <NewsTicker />
       {/* Country Flags - Top Right Corner */}
       <div className="absolute top-1 left-1 md:top-2 md:left-2 flex items-center gap-1.5 z-10">
         {/* Palestine Flag */}
