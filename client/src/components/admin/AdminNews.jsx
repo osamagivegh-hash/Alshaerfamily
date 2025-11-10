@@ -6,6 +6,7 @@ import ImageUpload from './ImageUpload'
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import { uploadEditorImage } from './EditorImageUploader';
+import { NEWS_CATEGORY_OPTIONS, resolveNewsCategory, formatNewsCategory } from '../../constants/newsCategories'
 
 const formatDateForInput = (value) => {
   if (!value) return new Date().toISOString().split('T')[0]
@@ -31,7 +32,7 @@ const AdminNews = () => {
     headline: '',
     summary: '',
     tags: [],
-    category: ''
+    category: 'events'
   })
 
   const editorRef = useRef(null)
@@ -115,7 +116,7 @@ const AdminNews = () => {
         headline: '',
         summary: '',
         tags: [],
-        category: ''
+        category: 'events'
       })
       fetchNews()
     } catch (error) {
@@ -136,7 +137,7 @@ const AdminNews = () => {
       headline: newsItem.headline || newsItem.title || '',
       summary: newsItem.summary || '',
       tags: Array.isArray(newsItem.tags) ? newsItem.tags : [],
-      category: newsItem.category || ''
+      category: resolveNewsCategory(newsItem.category) || 'events'
     })
     setShowForm(true)
   }
@@ -213,7 +214,7 @@ const AdminNews = () => {
                 headline: '',
                 summary: '',
                 tags: [],
-                category: ''
+                category: 'events'
               })
             }}
             className="btn-primary"
@@ -260,6 +261,25 @@ const AdminNews = () => {
                 value={formData.image}
                 onChange={(url) => setFormData({...formData, image: url})}
               />
+
+              <div>
+                <label className="block text-sm font-medium text-palestine-black mb-2">
+                  تصنيف الخبر *
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  required
+                  className="form-input"
+                >
+                  <option value="">اختر التصنيف المناسب</option>
+                  {NEWS_CATEGORY_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
 
               <div>
                 <label className="block text-sm font-medium text-palestine-black mb-2">
@@ -406,6 +426,9 @@ const AdminNews = () => {
                       <h3 className="text-lg font-semibold text-palestine-black">
                         {newsItem.title}
                       </h3>
+                      <p className="text-xs text-palestine-green font-semibold mt-1">
+                        {formatNewsCategory(newsItem.category) || 'غير مصنف'}
+                      </p>
                       <p className="text-gray-600 mt-1">
                         {(newsItem.summary || newsItem.content || '').substring(0, 100)}...
                       </p>

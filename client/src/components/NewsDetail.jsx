@@ -9,6 +9,7 @@ import ImageWithFallback from './common/ImageWithFallback'
 import { normalizeImageUrl } from '../utils/imageUtils'
 import Comments from './common/Comments'
 import { api } from '../utils/api'
+import { NEWS_CATEGORY_LABELS, resolveNewsCategory } from '../constants/newsCategories'
 
 const NewsDetail = () => {
   const { id } = useParams()
@@ -34,10 +35,13 @@ const NewsDetail = () => {
             const allNewsResponse = await api.get('/sections/news')
             const allNewsData = allNewsResponse.data?.data || allNewsResponse.data || []
             const allNews = Array.isArray(allNewsData) ? allNewsData : []
+            const currentCategory = resolveNewsCategory(normalized.category)
             const related = allNews
               .filter(item => {
                 const itemId = item.id || item._id?.toString()
-                return itemId && itemId !== normalized.id
+                if (!itemId || itemId === normalized.id) return false
+                if (!currentCategory) return true
+                return resolveNewsCategory(item.category) === currentCategory
               })
               .slice(0, 3)
             if (isMounted) setRelatedNews(related)
@@ -96,6 +100,8 @@ const NewsDetail = () => {
   const readingTime = Math.max(3, Math.ceil((newsItem.content || '').split(/\s+/).length / 220))
 
   const newsId = newsItem.id || newsItem._id?.toString() || id
+  const categorySlug = resolveNewsCategory(newsItem.category)
+  const categoryLabel = categorySlug ? NEWS_CATEGORY_LABELS[categorySlug] : 'خبر'
 
   const relatedSection = (
     <>
@@ -144,7 +150,7 @@ const NewsDetail = () => {
       type="news"
       backLink="/#news"
       backLabel="العودة إلى الأخبار"
-      category="خبر"
+      category={categoryLabel}
       title={newsItem.title}
       date={newsItem.date}
       author={newsItem.reporter || 'فريق الأخبار'}
