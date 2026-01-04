@@ -12,7 +12,8 @@ const {
   Comments,
   FamilyTickerNews,
   PalestineTickerNews,
-  TickerSettings
+  TickerSettings,
+  HeroSlide
 } = require('../models');
 
 // Import storage configuration
@@ -640,6 +641,125 @@ router.put('/ticker-settings', authenticateToken, requireAdmin, async (req, res)
   } catch (error) {
     console.error('Update ticker settings error:', error);
     res.status(500).json({ message: 'خطأ في تحديث إعدادات الشريط' });
+  }
+});
+
+// ==================== HERO SLIDES CRUD ====================
+
+// GET all hero slides (admin)
+router.get('/hero-slides', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const slides = await HeroSlide.find().sort({ order: 1, createdAt: -1 });
+    res.json(normalizeDocument(slides));
+  } catch (error) {
+    console.error('Get hero slides error:', error);
+    res.status(500).json({ message: 'خطأ في جلب شرائح البطل' });
+  }
+});
+
+// GET active hero slides (public API)
+router.get('/hero-slides/active', async (req, res) => {
+  try {
+    const slides = await HeroSlide.find({ active: true })
+      .sort({ order: 1, createdAt: -1 })
+      .select('title subtitle image link linkText order');
+    res.json(normalizeDocument(slides));
+  } catch (error) {
+    console.error('Get active hero slides error:', error);
+    res.status(500).json({ message: 'خطأ في جلب شرائح البطل' });
+  }
+});
+
+// GET single hero slide
+router.get('/hero-slides/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const slide = await HeroSlide.findById(id);
+    
+    if (!slide) {
+      return res.status(404).json({ message: 'الشريحة غير موجودة' });
+    }
+    
+    res.json(normalizeDocument(slide));
+  } catch (error) {
+    console.error('Get hero slide error:', error);
+    res.status(500).json({ message: 'خطأ في جلب الشريحة' });
+  }
+});
+
+// POST create new hero slide
+router.post('/hero-slides', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { title, subtitle, image, link, linkText, active, order } = req.body;
+    
+    if (!title || title.trim() === '') {
+      return res.status(400).json({ message: 'العنوان مطلوب' });
+    }
+    
+    if (!image || image.trim() === '') {
+      return res.status(400).json({ message: 'الصورة مطلوبة' });
+    }
+    
+    const newSlide = new HeroSlide({
+      title: title.trim(),
+      subtitle: subtitle ? subtitle.trim() : '',
+      image: image.trim(),
+      link: link ? link.trim() : '',
+      linkText: linkText ? linkText.trim() : '',
+      active: active !== undefined ? active : true,
+      order: order || 0
+    });
+    
+    const savedSlide = await newSlide.save();
+    res.status(201).json(normalizeDocument(savedSlide));
+  } catch (error) {
+    console.error('Create hero slide error:', error);
+    res.status(500).json({ message: 'خطأ في إضافة الشريحة' });
+  }
+});
+
+// PUT update hero slide
+router.put('/hero-slides/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, subtitle, image, link, linkText, active, order } = req.body;
+    
+    const slide = await HeroSlide.findById(id);
+    if (!slide) {
+      return res.status(404).json({ message: 'الشريحة غير موجودة' });
+    }
+    
+    if (title !== undefined) slide.title = title.trim();
+    if (subtitle !== undefined) slide.subtitle = subtitle.trim();
+    if (image !== undefined) slide.image = image.trim();
+    if (link !== undefined) slide.link = link.trim();
+    if (linkText !== undefined) slide.linkText = linkText.trim();
+    if (active !== undefined) slide.active = active;
+    if (order !== undefined) slide.order = order;
+    slide.updatedAt = new Date();
+    
+    const updatedSlide = await slide.save();
+    res.json(normalizeDocument(updatedSlide));
+  } catch (error) {
+    console.error('Update hero slide error:', error);
+    res.status(500).json({ message: 'خطأ في تحديث الشريحة' });
+  }
+});
+
+// DELETE hero slide
+router.delete('/hero-slides/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const slide = await HeroSlide.findByIdAndDelete(id);
+    
+    if (!slide) {
+      return res.status(404).json({ message: 'الشريحة غير موجودة' });
+    }
+    
+    res.json({ message: 'تم حذف الشريحة بنجاح' });
+  } catch (error) {
+    console.error('Delete hero slide error:', error);
+    res.status(500).json({ message: 'خطأ في حذف الشريحة' });
   }
 });
 

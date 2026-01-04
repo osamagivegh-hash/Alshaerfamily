@@ -9,7 +9,8 @@ const {
   Comments,
   FamilyTickerNews,
   PalestineTickerNews,
-  TickerSettings
+  TickerSettings,
+  HeroSlide
 } = require('../models');
 const { asyncHandler } = require('../middleware/errorHandler');
 const { 
@@ -283,6 +284,17 @@ router.get('/comments/:contentType/:contentId/count', asyncHandler(async (req, r
     total: totalCount, 
     approved: approvedCount 
   });
+}));
+
+// ==================== HERO SLIDES ENDPOINTS ====================
+
+// GET active hero slides (public)
+router.get('/hero-slides', asyncHandler(async (req, res) => {
+  const slides = await HeroSlide.find({ active: true })
+    .sort({ order: 1, createdAt: -1 })
+    .select('title subtitle image link linkText order');
+  
+  res.success(200, 'تم جلب شرائح البطل بنجاح', normalizeDocument(slides));
 }));
 
 // ==================== TICKER NEWS ENDPOINTS ====================

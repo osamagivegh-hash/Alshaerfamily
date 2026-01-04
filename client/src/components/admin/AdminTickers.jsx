@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react'
-import { adminFamilyTickerNews, adminPalestineTickerNews, adminTickerSettings } from '../../utils/adminApi'
+import { adminFamilyTickerNews, adminPalestineTickerNews, adminTickerSettings, adminHeroSlides, adminUpload } from '../../utils/adminApi'
 import toast from 'react-hot-toast'
 import LoadingSpinner from '../LoadingSpinner'
+import { normalizeImageUrl } from '../../utils/imageUtils'
 
 const AdminTickers = () => {
   const [familyTickerNews, setFamilyTickerNews] = useState([])
   const [palestineTickerNews, setPalestineTickerNews] = useState([])
+  const [heroSlides, setHeroSlides] = useState([])
   const [loading, setLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showForm, setShowForm] = useState(false)
@@ -20,6 +22,20 @@ const AdminTickers = () => {
   })
   const [settings, setSettings] = useState(null)
   const [showSettings, setShowSettings] = useState(false)
+  
+  // Hero Slides state
+  const [showHeroForm, setShowHeroForm] = useState(false)
+  const [editingHeroSlide, setEditingHeroSlide] = useState(null)
+  const [heroFormData, setHeroFormData] = useState({
+    title: '',
+    subtitle: '',
+    image: '',
+    link: '',
+    linkText: '',
+    active: true,
+    order: 0
+  })
+  const [uploadingImage, setUploadingImage] = useState(false)
 
   const tickerLabels = {
     family: 'الشريط العائلي',
@@ -33,7 +49,8 @@ const AdminTickers = () => {
         await Promise.all([
           fetchFamilyTickerData(),
           fetchPalestineTickerData(),
-          fetchSettings()
+          fetchSettings(),
+          fetchHeroSlides()
         ])
       } finally {
         setLoading(false)
@@ -69,6 +86,133 @@ const AdminTickers = () => {
       setSettings(data)
     } catch (error) {
       console.error('Error fetching settings:', error)
+    }
+  }
+
+  const fetchHeroSlides = async () => {
+    try {
+      const data = await adminHeroSlides.getAll()
+      setHeroSlides(Array.isArray(data) ? data : [])
+    } catch (error) {
+      toast.error(error.message)
+      setHeroSlides([])
+    }
+  }
+
+  // Hero slide image upload handler
+  const handleHeroImageUpload = async (e) => {
+    const file = e.target.files[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      toast.error('يجب اختيار ملف صورة فقط')
+      return
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('حجم الصورة يجب أن يكون أقل من 5 ميجابايت')
+      return
+    }
+
+    setUploadingImage(true)
+    try {
+      const response = await adminUpload.uploadImage(file)
+      const imageUrl = normalizeImageUrl(response.url)
+      setHeroFormData({ ...heroFormData, image: imageUrl })
+      toast.success('تم رفع الصورة بنجاح')
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast.error(error.message || 'فشل رفع الصورة')
+    } finally {
+      setUploadingImage(false)
+    }
+  }
+
+  const handleHeroSubmit = async (e) => {
+    e.preventDefault()
+    
+    if (!heroFormData.image) {
+      toast.error('يرجى رفع صورة للشريحة')
+      return
+    }
+    
+    setIsSubmitting(true)
+
+    try {
+      if (editingHeroSlide) {
+        const slideId = editingHeroSlide.id || editingHeroSlide._id
+        await adminHeroSlides.update(slideId, heroFormData)
+        toast.success('تم تحديث الشريحة بنجاح')
+      } else {
+        await adminHeroSlides.create(heroFormData)
+        toast.success('تم إضافة الشريحة بنجاح')
+      }
+      
+      setShowHeroForm(false)
+      setEditingHeroSlide(null)
+      setHeroFormData({
+        title: '',
+        subtitle: '',
+        image: '',
+        link: '',
+        linkText: '',
+        active: true,
+        order: 0
+      })
+      await fetchHeroSlides()
+    } catch (error) {
+      toast.error(error.message)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleHeroEdit = (slide) => {
+    setEditingHeroSlide(slide)
+    setHeroFormData({
+      title: slide.title || '',
+      subtitle: slide.subtitle || '',
+      image: slide.image || '',
+      link: slide.link || '',
+      linkText: slide.linkText || '',
+      active: slide.active !== undefined ? slide.active : true,
+      order: slide.order || 0
+    })
+    setShowHeroForm(true)
+  }
+
+  const handleHeroDelete = async (id) => {
+    if (!confirm('هل أنت متأكد من حذف هذه الشريحة؟')) return
+
+    try {
+      const slideId = typeof id === 'object' ? (id.id || id._id) : id
+      await adminHeroSlides.delete(slideId)
+      toast.success('تم حذف الشريحة بنجاح')
+      await fetchHeroSlides()
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
+  const handleHeroToggleActive = async (slide) => {
+    try {
+      const slideId = slide.id || slide._id
+      await adminHeroSlides.update(slideId, { active: !slide.active })
+      toast.success(`تم ${slide.active ? 'إيقاف' : 'تفعيل'} الشريحة بنجاح`)
+      await fetchHeroSlides()
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
+  const handleHeroMoveOrder = async (slide, direction) => {
+    try {
+      const slideId = slide.id || slide._id
+      const newOrder = direction === 'up' ? slide.order - 1 : slide.order + 1
+      await adminHeroSlides.update(slideId, { order: newOrder })
+      await fetchHeroSlides()
+    } catch (error) {
+      toast.error(error.message)
     }
   }
 
@@ -471,6 +615,349 @@ const AdminTickers = () => {
           </div>
         )}
       </div>
+
+      {/* Hero Slides Section */}
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <h3 className="text-xl font-bold text-palestine-black">
+              🖼️ شرائح البطل (Hero Slides)
+            </h3>
+            <p className="text-sm text-gray-500 mt-1">
+              أضف صور الشرائح التي تظهر تحت شريط الأخبار. قم برفع الصور مباشرة من جهازك.
+            </p>
+          </div>
+          <button
+            onClick={() => {
+              setShowHeroForm(true)
+              setEditingHeroSlide(null)
+              setHeroFormData({
+                title: '',
+                subtitle: '',
+                image: '',
+                link: '',
+                linkText: '',
+                active: true,
+                order: heroSlides.length
+              })
+            }}
+            className="btn-primary"
+          >
+            + إضافة شريحة
+          </button>
+        </div>
+
+        {heroSlides.length === 0 ? (
+          <div className="bg-amber-50 border-r-4 border-amber-500 p-4 rounded">
+            <p className="text-gray-700 mb-2">
+              لم يتم إضافة أي شرائح بعد.
+            </p>
+            <p className="text-sm text-gray-600">
+              أضف شرائح جديدة مع صور من جهازك لتظهر في قسم البطل تحت شريط الأخبار.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {heroSlides
+              .sort((a, b) => (a.order || 0) - (b.order || 0))
+              .map((slide, index) => (
+                <div key={slide.id || slide._id} className="border border-gray-200 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                  {/* Image Preview */}
+                  <div className="relative h-40 bg-gray-100">
+                    <img
+                      src={normalizeImageUrl(slide.image)}
+                      alt={slide.title}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.src = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMjAwIj48cmVjdCBmaWxsPSIjZGRkIiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIvPjx0ZXh0IGZpbGw9IiM5OTkiIGZvbnQtZmFtaWx5PSJzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBkeT0iLjNlbSIgdGV4dC1hbmNob3I9Im1pZGRsZSIgeD0iNTAlIiB5PSI1MCUiPtmE2Kcg2LXZiNix2Ko8L3RleHQ+PC9zdmc+'
+                      }}
+                    />
+                    {/* Status Badge */}
+                    <span className={`absolute top-2 right-2 px-2 py-1 rounded-full text-xs font-medium ${
+                      slide.active 
+                        ? 'bg-green-500 text-white' 
+                        : 'bg-gray-500 text-white'
+                    }`}>
+                      {slide.active ? 'نشط' : 'غير نشط'}
+                    </span>
+                    {/* Order Badge */}
+                    <span className="absolute top-2 left-2 bg-palestine-black text-white px-2 py-1 rounded-full text-xs font-medium">
+                      #{slide.order || 0}
+                    </span>
+                  </div>
+                  
+                  {/* Content */}
+                  <div className="p-4">
+                    <h4 className="font-bold text-palestine-black mb-1 truncate">{slide.title}</h4>
+                    {slide.subtitle && (
+                      <p className="text-sm text-gray-600 mb-2 truncate">{slide.subtitle}</p>
+                    )}
+                    {slide.link && (
+                      <p className="text-xs text-palestine-green truncate mb-2">
+                        🔗 {slide.linkText || 'رابط'}
+                      </p>
+                    )}
+                    
+                    {/* Actions */}
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex gap-1">
+                        <button
+                          onClick={() => handleHeroMoveOrder(slide, 'up')}
+                          disabled={index === 0}
+                          className={`p-1 text-sm ${index === 0 ? 'text-gray-300' : 'text-palestine-green hover:text-olive-700'}`}
+                          title="نقل للأعلى"
+                        >
+                          ↑
+                        </button>
+                        <button
+                          onClick={() => handleHeroMoveOrder(slide, 'down')}
+                          disabled={index === heroSlides.length - 1}
+                          className={`p-1 text-sm ${index === heroSlides.length - 1 ? 'text-gray-300' : 'text-palestine-green hover:text-olive-700'}`}
+                          title="نقل للأسفل"
+                        >
+                          ↓
+                        </button>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => handleHeroToggleActive(slide)}
+                          className={`text-sm px-2 py-1 rounded ${
+                            slide.active 
+                              ? 'text-orange-600 hover:bg-orange-50' 
+                              : 'text-green-600 hover:bg-green-50'
+                          }`}
+                          title={slide.active ? 'إيقاف' : 'تفعيل'}
+                        >
+                          {slide.active ? '⏸️' : '▶️'}
+                        </button>
+                        <button
+                          onClick={() => handleHeroEdit(slide)}
+                          className="text-palestine-green hover:text-olive-700 text-sm"
+                          title="تعديل"
+                        >
+                          ✏️
+                        </button>
+                        <button
+                          onClick={() => handleHeroDelete(slide.id || slide._id)}
+                          className="text-palestine-red hover:text-red-700 text-sm"
+                          title="حذف"
+                        >
+                          🗑️
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        )}
+      </div>
+
+      {/* Hero Slide Form Modal */}
+      {showHeroForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-xl font-bold text-palestine-black">
+                  {editingHeroSlide ? 'تعديل الشريحة' : 'إضافة شريحة جديدة'}
+                </h3>
+                <button
+                  onClick={() => {
+                    setShowHeroForm(false)
+                    setEditingHeroSlide(null)
+                    setHeroFormData({
+                      title: '',
+                      subtitle: '',
+                      image: '',
+                      link: '',
+                      linkText: '',
+                      active: true,
+                      order: 0
+                    })
+                  }}
+                  className="text-gray-500 hover:text-gray-700 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <form onSubmit={handleHeroSubmit} className="space-y-4">
+                {/* Image Upload */}
+                <div>
+                  <label className="block text-sm font-medium text-palestine-black mb-2">
+                    صورة الشريحة <span className="text-red-500">*</span>
+                  </label>
+                  
+                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-4">
+                    {heroFormData.image ? (
+                      <div className="relative">
+                        <img
+                          src={normalizeImageUrl(heroFormData.image)}
+                          alt="معاينة"
+                          className="w-full h-48 object-cover rounded-lg"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setHeroFormData({ ...heroFormData, image: '' })}
+                          className="absolute top-2 left-2 bg-red-500 text-white p-2 rounded-full hover:bg-red-600 transition-colors"
+                          title="حذف الصورة"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                          </svg>
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="flex flex-col items-center justify-center cursor-pointer py-8">
+                        {uploadingImage ? (
+                          <>
+                            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-palestine-green mb-3"></div>
+                            <p className="text-gray-600">جاري رفع الصورة...</p>
+                          </>
+                        ) : (
+                          <>
+                            <svg className="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <p className="text-lg font-medium text-gray-700 mb-1">اضغط لرفع صورة</p>
+                            <p className="text-sm text-gray-500">PNG, JPG, WEBP (حد أقصى 5MB)</p>
+                          </>
+                        )}
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="image/*"
+                          onChange={handleHeroImageUpload}
+                          disabled={uploadingImage}
+                        />
+                      </label>
+                    )}
+                  </div>
+                </div>
+
+                {/* Title */}
+                <div>
+                  <label className="block text-sm font-medium text-palestine-black mb-2">
+                    العنوان <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={heroFormData.title}
+                    onChange={(e) => setHeroFormData({ ...heroFormData, title: e.target.value })}
+                    className="form-input"
+                    placeholder="أدخل عنوان الشريحة"
+                    required
+                  />
+                </div>
+
+                {/* Subtitle */}
+                <div>
+                  <label className="block text-sm font-medium text-palestine-black mb-2">
+                    العنوان الفرعي (اختياري)
+                  </label>
+                  <input
+                    type="text"
+                    value={heroFormData.subtitle}
+                    onChange={(e) => setHeroFormData({ ...heroFormData, subtitle: e.target.value })}
+                    className="form-input"
+                    placeholder="أدخل العنوان الفرعي"
+                  />
+                </div>
+
+                {/* Link */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-palestine-black mb-2">
+                      الرابط (اختياري)
+                    </label>
+                    <input
+                      type="url"
+                      value={heroFormData.link}
+                      onChange={(e) => setHeroFormData({ ...heroFormData, link: e.target.value })}
+                      className="form-input"
+                      placeholder="https://example.com"
+                      dir="ltr"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-palestine-black mb-2">
+                      نص الرابط (اختياري)
+                    </label>
+                    <input
+                      type="text"
+                      value={heroFormData.linkText}
+                      onChange={(e) => setHeroFormData({ ...heroFormData, linkText: e.target.value })}
+                      className="form-input"
+                      placeholder="مثال: اقرأ المزيد"
+                    />
+                  </div>
+                </div>
+
+                {/* Order and Status */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-palestine-black mb-2">
+                      الترتيب
+                    </label>
+                    <input
+                      type="number"
+                      value={heroFormData.order}
+                      onChange={(e) => setHeroFormData({ ...heroFormData, order: parseInt(e.target.value) || 0 })}
+                      className="form-input"
+                      min="0"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">رقم أقل = يظهر أولاً</p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-palestine-black mb-2">
+                      الحالة
+                    </label>
+                    <select
+                      value={heroFormData.active ? 'true' : 'false'}
+                      onChange={(e) => setHeroFormData({ ...heroFormData, active: e.target.value === 'true' })}
+                      className="form-input"
+                    >
+                      <option value="true">نشط</option>
+                      <option value="false">غير نشط</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowHeroForm(false)
+                      setEditingHeroSlide(null)
+                      setHeroFormData({
+                        title: '',
+                        subtitle: '',
+                        image: '',
+                        link: '',
+                        linkText: '',
+                        active: true,
+                        order: 0
+                      })
+                    }}
+                    className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    إلغاء
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || uploadingImage || !heroFormData.image}
+                    className="btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSubmitting ? 'جاري الحفظ...' : editingHeroSlide ? 'تحديث' : 'إضافة'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Form Modal */}
       {showForm && (

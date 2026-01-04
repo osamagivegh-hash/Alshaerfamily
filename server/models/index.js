@@ -258,6 +258,23 @@ const tickerSettingsSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
+// Hero Slides Schema (for hero slider below news tickers)
+const heroSlideSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  subtitle: { type: String },
+  image: { type: String, required: true },
+  link: { type: String },
+  linkText: { type: String },
+  active: { type: Boolean, default: true },
+  order: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+});
+
+// Hero Slides Indexes
+heroSlideSchema.index({ active: 1, order: 1 });
+heroSlideSchema.index({ createdAt: -1 });
+
 // Create Models
 const Admin = mongoose.model('Admin', adminSchema);
 const News = mongoose.model('News', newsSchema);
@@ -270,6 +287,7 @@ const Comments = mongoose.model('Comments', commentsSchema);
 const FamilyTickerNews = mongoose.model('FamilyTickerNews', familyTickerNewsSchema);
 const PalestineTickerNews = mongoose.model('PalestineTickerNews', palestineTickerNewsSchema);
 const TickerSettings = mongoose.model('TickerSettings', tickerSettingsSchema);
+const HeroSlide = mongoose.model('HeroSlide', heroSlideSchema);
 
 module.exports = {
   connectDB,
@@ -283,5 +301,6 @@ module.exports = {
   Comments,
   FamilyTickerNews,
   PalestineTickerNews,
-  TickerSettings
+  TickerSettings,
+  HeroSlide
 };

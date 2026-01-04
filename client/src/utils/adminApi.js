@@ -367,4 +367,52 @@ export const adminTickerSettings = {
   }
 }
 
+// Hero Slides API
+export const adminHeroSlides = {
+  getAll: async () => {
+    try {
+      const response = await adminApi.get('/hero-slides')
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب شرائح البطل')
+    }
+  },
+
+  getById: async (id) => {
+    try {
+      const response = await adminApi.get(`/hero-slides/${id}`)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب الشريحة')
+    }
+  },
+
+  create: async (data) => {
+    try {
+      const response = await adminApi.post('/hero-slides', data)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في إضافة الشريحة')
+    }
+  },
+
+  update: async (id, data) => {
+    try {
+      const response = await adminApi.put(`/hero-slides/${id}`, data)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في تحديث الشريحة')
+    }
+  },
+
+  delete: async (id) => {
+    try {
+      const response = await adminApi.delete(`/hero-slides/${id}`)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في حذف الشريحة')
+    }
+  }
+}
+
 export default adminApi
