@@ -5,7 +5,7 @@ require('dotenv').config();
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGODB_URI);
-    
+
     console.log(`✓ MongoDB Atlas متصل: ${conn.connection.host}`);
     console.log(`✓ قاعدة البيانات: ${conn.connection.name}`);
   } catch (error) {
@@ -52,7 +52,7 @@ const newsSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 });
 
-newsSchema.pre('save', function(next) {
+newsSchema.pre('save', function (next) {
   if (this.isModified('isArchived')) {
     if (this.isArchived) {
       this.archivedAt = this.archivedAt || new Date();
@@ -63,7 +63,7 @@ newsSchema.pre('save', function(next) {
   next();
 });
 
-newsSchema.pre('findOneAndUpdate', function(next) {
+newsSchema.pre('findOneAndUpdate', function (next) {
   const update = this.getUpdate() || {};
   const set = update.$set || update;
 
@@ -181,10 +181,10 @@ const contactsSchema = new mongoose.Schema({
   name: { type: String, required: true },
   email: { type: String, required: true },
   message: { type: String, required: true },
-  status: { 
-    type: String, 
-    enum: ['new', 'read', 'replied', 'archived'], 
-    default: 'new' 
+  status: {
+    type: String,
+    enum: ['new', 'read', 'replied', 'archived'],
+    default: 'new'
   },
   date: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
@@ -197,10 +197,10 @@ contactsSchema.index({ createdAt: -1 });
 
 // Comments Schema
 const commentsSchema = new mongoose.Schema({
-  contentType: { 
-    type: String, 
+  contentType: {
+    type: String,
     required: true,
-    enum: ['article', 'news', 'conversation'] 
+    enum: ['article', 'news', 'conversation']
   },
   contentId: { type: String, required: true },
   name: { type: String, required: true },
@@ -250,10 +250,10 @@ const tickerSettingsSchema = new mongoose.Schema({
   palestineTickerEnabled: { type: Boolean, default: true },
   autoUpdateInterval: { type: Number, default: 60000 }, // in milliseconds
   maxHeadlines: { type: Number, default: 10 },
-  newsApiProvider: { 
-    type: String, 
-    enum: ['gnews', 'newsapi'], 
-    default: 'gnews' 
+  newsApiProvider: {
+    type: String,
+    enum: ['gnews', 'newsapi'],
+    default: 'gnews'
   },
   updatedAt: { type: Date, default: Date.now }
 });
@@ -289,6 +289,9 @@ const PalestineTickerNews = mongoose.model('PalestineTickerNews', palestineTicke
 const TickerSettings = mongoose.model('TickerSettings', tickerSettingsSchema);
 const HeroSlide = mongoose.model('HeroSlide', heroSlideSchema);
 
+// Import Person model
+const Person = require('./Person');
+
 module.exports = {
   connectDB,
   Admin,
@@ -302,5 +305,6 @@ module.exports = {
   FamilyTickerNews,
   PalestineTickerNews,
   TickerSettings,
-  HeroSlide
+  HeroSlide,
+  Person
 };

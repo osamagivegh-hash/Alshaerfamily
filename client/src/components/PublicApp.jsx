@@ -5,6 +5,7 @@ import HeroSlider from './HeroSlider'
 import Hero from './Hero'
 import LoadingSpinner from './LoadingSpinner'
 import LazySection from './common/LazySection'
+import { FamilyTreeSection } from './FamilyTree'
 import { fetchSectionsData } from '../utils/api'
 
 // Lazy load components
@@ -47,8 +48,8 @@ const PublicApp = () => {
         <div className="text-center">
           <h2 className="text-2xl font-bold text-palestine-red mb-4">خطأ في التحميل</h2>
           <p className="text-gray-600">{error}</p>
-          <button 
-            onClick={() => window.location.reload()} 
+          <button
+            onClick={() => window.location.reload()}
             className="btn-primary mt-4"
           >
             إعادة المحاولة
@@ -74,7 +75,10 @@ const PublicApp = () => {
       <main style={{ paddingTop: '150px' }} className="md:pt-[10rem]">
         <HeroSlider />
         <Hero />
-        
+
+        {/* Family Tree Section */}
+        <FamilyTreeSection />
+
         <LazySection>
           <Suspense fallback={<SectionFallback name="الأخبار" />}>
             <News data={sectionsData?.news || []} />
@@ -111,7 +115,7 @@ const PublicApp = () => {
           </Suspense>
         </LazySection>
       </main>
-      
+
       <Suspense fallback={<SectionFallback name="التذييل" />}>
         <Footer />
       </Suspense>

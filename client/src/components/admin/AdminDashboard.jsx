@@ -65,6 +65,13 @@ const AdminDashboard = () => {
       path: '/admin/gallery'
     },
     {
+      title: 'شجرة العائلة',
+      value: stats?.persons || 0,
+      icon: '🌳',
+      color: 'bg-emerald-600',
+      path: '/admin/family-tree'
+    },
+    {
       title: 'الرسائل',
       value: stats?.contacts || 0,
       icon: '📧',
@@ -94,6 +101,13 @@ const AdminDashboard = () => {
       icon: '📝',
       color: 'bg-palestine-red',
       action: () => navigate('/admin/articles/new')
+    },
+    {
+      title: 'إضافة فرد للعائلة',
+      description: 'أضف شخصاً لشجرة العائلة',
+      icon: '🌳',
+      color: 'bg-emerald-600',
+      action: () => navigate('/admin/family-tree')
     },
     {
       title: 'رفع صور جديدة',
@@ -170,7 +184,7 @@ const AdminDashboard = () => {
               </div>
               <span className="text-green-600 text-sm">يعمل بشكل طبيعي</span>
             </div>
-            
+
             <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-green-500 rounded-full ml-3"></div>
@@ -178,7 +192,7 @@ const AdminDashboard = () => {
               </div>
               <span className="text-green-600 text-sm">متصلة</span>
             </div>
-            
+
             <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
               <div className="flex items-center">
                 <div className="w-3 h-3 bg-green-500 rounded-full ml-3"></div>
@@ -199,7 +213,7 @@ const AdminDashboard = () => {
                 {(stats?.news || 0) + (stats?.conversations || 0) + (stats?.articles || 0) + (stats?.palestine || 0)}
               </span>
             </div>
-            
+
             <div className="flex justify-between items-center">
               <span className="text-gray-600">الرسائل الجديدة</span>
               <span className="text-2xl font-bold text-palestine-red">

@@ -49,14 +49,14 @@ const corsOptions = {
   origin: function (origin, callback) {
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
-    
+
     const allowedOrigins = [
       'https://alshaerfamily.onrender.com',
       'http://localhost:5173',
       'http://localhost:3000',
       'http://localhost:5000'
     ];
-    
+
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
@@ -90,8 +90,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ 
-    status: 'OK', 
+  res.json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
     mongodb: process.env.MONGODB_URI ? 'Configured' : 'Not Configured',
     environment: process.env.NODE_ENV || 'development'
@@ -113,6 +113,7 @@ app.get('/api/storage/status', (req, res) => {
 
 // API Routes
 app.use('/api/news', newsRouter);
+app.use('/api/persons', require('./routes/persons'));
 app.use('/api', require('./routes/api'));
 app.use('/api/admin', require('./routes/adminMongo'));
 
@@ -133,11 +134,11 @@ app.listen(PORT, () => {
 });
 
 // Log storage mode
-      try {
-        const { isCloudinaryConfigured } = require('./config/storage');
-        console.log(`Storage mode: ${isCloudinaryConfigured ? 'Cloudinary' : 'Local (dev only)'}`);
-      } catch (e) {
-        console.warn('Storage status check failed:', e);
-      }
-      
-      
+try {
+  const { isCloudinaryConfigured } = require('./config/storage');
+  console.log(`Storage mode: ${isCloudinaryConfigured ? 'Cloudinary' : 'Local (dev only)'}`);
+} catch (e) {
+  console.warn('Storage status check failed:', e);
+}
+
+

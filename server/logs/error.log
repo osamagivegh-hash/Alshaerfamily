@@ -1,0 +1,14 @@
+[ERROR] 2026-01-03T23:32:52.267Z - Request failed
+{"method":"POST","url":"/login","status":401,"duration":"278ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-03T23:32:54.293Z - Request failed
+{"method":"POST","url":"/login","status":401,"duration":"260ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-03T23:33:50.715Z - Request failed
+{"method":"POST","url":"/login","status":401,"duration":"262ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-04T00:19:30.897Z - Request failed
+{"method":"POST","url":"/login","status":401,"duration":"304ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-04T08:12:01.064Z - Request failed
+{"method":"GET","url":"/api/sections","status":500,"duration":"30015ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/2.2.44 Chrome/138.0.7204.251 Electron/37.7.0 Safari/537.36"}
+[ERROR] 2026-01-04T08:12:21.074Z - Request failed
+{"method":"GET","url":"/api/sections","status":500,"duration":"30012ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/2.2.44 Chrome/138.0.7204.251 Electron/37.7.0 Safari/537.36"}
+[ERROR] 2026-01-09T11:30:37.172Z - Request failed
+{"method":"POST","url":"/login","status":401,"duration":"250ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}

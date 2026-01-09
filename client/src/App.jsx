@@ -25,6 +25,7 @@ import AdminComments from './components/admin/AdminComments'
 import AdminContacts from './components/admin/AdminContacts'
 import AdminSettings from './components/admin/AdminSettings'
 import AdminTickers from './components/admin/AdminTickers'
+import AdminFamilyTree from './components/admin/AdminFamilyTree'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 
 function App() {
@@ -40,7 +41,7 @@ function App() {
             <Route path="/articles/:id" element={<ArticleDetail />} />
             <Route path="/conversations/:id" element={<ConversationDetail />} />
             <Route path="/news/:id" element={<NewsDetail />} />
-            
+
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/admin/*" element={
@@ -57,11 +58,12 @@ function App() {
               <Route path="comments" element={<AdminComments />} />
               <Route path="contacts" element={<AdminContacts />} />
               <Route path="tickers" element={<AdminTickers />} />
+              <Route path="family-tree" element={<AdminFamilyTree />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
-          
+
           {/* Toast Notifications */}
           <Toaster
             position="top-center"
