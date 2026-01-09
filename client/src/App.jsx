@@ -11,6 +11,7 @@ import NewsDetail from './components/NewsDetail'
 import NotFound from './components/common/NotFound'
 import ScrollToTop from './components/common/ScrollToTop'
 import ArchivePage from './pages/Archive'
+import FamilyTreePage from './pages/FamilyTreePage'
 
 // Admin Components
 import AdminLogin from './components/admin/AdminLogin'
@@ -38,6 +39,7 @@ function App() {
             {/* Public Routes */}
             <Route path="/" element={<PublicApp />} />
             <Route path="/archive" element={<ArchivePage />} />
+            <Route path="/family-tree" element={<FamilyTreePage />} />
             <Route path="/articles/:id" element={<ArticleDetail />} />
             <Route path="/conversations/:id" element={<ConversationDetail />} />
             <Route path="/news/:id" element={<NewsDetail />} />

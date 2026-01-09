@@ -219,7 +219,7 @@ const renderNodes = (layoutNode, onClick) => {
 };
 
 // Main Tree Visualization Component
-const TreeVisualization = ({ data, onNodeClick, zoom = 1 }) => {
+const TreeVisualization = ({ data, onNodeClick, zoom = 1, className = '', style = {} }) => {
     const containerRef = useRef(null);
     const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
 
@@ -263,8 +263,8 @@ const TreeVisualization = ({ data, onNodeClick, zoom = 1 }) => {
     return (
         <div
             ref={containerRef}
-            className="w-full overflow-auto bg-gradient-to-b from-gray-50 to-gray-100 rounded-xl"
-            style={{ maxHeight: '70vh' }}
+            className={`w-full overflow-auto bg-gradient-to-b from-gray-50 to-gray-100 rounded-xl ${className}`}
+            style={{ maxHeight: '70vh', ...style }}
         >
             <svg
                 className="tree-svg w-full"
