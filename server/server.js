@@ -63,6 +63,8 @@ const corsOptions = {
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
+      'https://alshaerf.com',
+      'https://www.alshaerf.com',
       'https://alshaerfamily.onrender.com',
       process.env.CORS_ORIGIN, // Allow custom origin from env
       'http://localhost:5173',
