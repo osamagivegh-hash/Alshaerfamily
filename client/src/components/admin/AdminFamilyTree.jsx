@@ -7,6 +7,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
 import toast from 'react-hot-toast';
 import adminApi from '../../utils/adminApi';
+import TreeVisualization from '../FamilyTree/TreeVisualization';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -432,14 +433,27 @@ const AdminFamilyTree = () => {
                     </div>
                 </div>
             ) : (
-                /* Tree View (Simplified) */
-                <div className="bg-white rounded-xl shadow-sm border p-4">
+                /* Tree View (Graphical) */
+                <div className="bg-white rounded-xl shadow-sm border overflow-hidden" style={{ height: '700px' }}>
                     {tree ? (
-                        <div className="overflow-x-auto">
-                            <pre className="text-sm font-mono whitespace-pre-wrap direction-ltr text-left">
-                                {renderTreeText(tree, 0)}
-                            </pre>
-                        </div>
+                        <TreeVisualization
+                            data={tree}
+                            onNodeClick={(node) => {
+                                // Find the full person object from the persons list to edit
+                                // The tree node might contain limited data, so best to find from list or fetch
+                                const personToEdit = persons.find(p => (p.id || p._id) === node._id);
+                                if (personToEdit) {
+                                    openEditModal(personToEdit);
+                                } else {
+                                    // Fallback if not in current list (though list should have everything usually, or fetch it)
+                                    // For now just try to open with node data or fetch details
+                                    openEditModal(node);
+                                }
+                            }}
+                            zoom={0.8}
+                            className="h-full bg-gray-50"
+                            style={{ height: '100%', maxHeight: 'none' }}
+                        />
                     ) : (
                         <div className="text-center py-8 text-gray-500">
                             لا توجد شجرة بعد
