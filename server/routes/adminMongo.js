@@ -78,6 +78,11 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
 
 // Generic CRUD operations for MongoDB collections
 const createCRUDRoutes = (sectionName, Model) => {
+  const mongoose = require('mongoose');
+
+  // Helper to validate ObjectId
+  const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
   // GET all items
   router.get(`/${sectionName}`, authenticateToken, requireAdmin, async (req, res) => {
     try {
@@ -93,6 +98,12 @@ const createCRUDRoutes = (sectionName, Model) => {
   router.get(`/${sectionName}/:id`, authenticateToken, requireAdmin, async (req, res) => {
     try {
       const { id } = req.params;
+
+      // Validate ObjectId format
+      if (!isValidObjectId(id)) {
+        return res.status(400).json({ message: 'معرف غير صالح' });
+      }
+
       const item = await Model.findById(id);
 
       if (item) {

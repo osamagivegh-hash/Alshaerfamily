@@ -95,22 +95,20 @@ const AdminLogin = () => {
             <button
               type="submit"
               disabled={loading}
-              className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${
-                loading
+              className={`w-full py-3 px-4 rounded-lg font-medium transition-all duration-200 ${loading
                   ? 'bg-gray-400 cursor-not-allowed'
                   : 'bg-palestine-green hover:bg-olive-700 text-white'
-              }`}
+                }`}
             >
               {loading ? 'جاري تسجيل الدخول...' : 'تسجيل الدخول'}
             </button>
           </form>
 
-          {/* Default Credentials Info */}
+          {/* Security Notice */}
           <div className="mt-6 p-4 bg-olive-50 rounded-lg">
-            <h4 className="text-sm font-semibold text-olive-800 mb-2">بيانات الدخول الافتراضية:</h4>
-            <p className="text-xs text-olive-700">اسم المستخدم: admin</p>
-            <p className="text-xs text-olive-700">كلمة المرور: AlShaer2024!</p>
-            <p className="text-xs text-olive-600 mt-2">يرجى تغيير كلمة المرور بعد أول تسجيل دخول</p>
+            <p className="text-xs text-olive-700 text-center">
+              🔒 للحصول على بيانات الدخول، تواصل مع مدير النظام
+            </p>
           </div>
         </div>
 

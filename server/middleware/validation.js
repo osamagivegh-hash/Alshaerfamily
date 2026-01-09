@@ -226,23 +226,55 @@ const galleryValidation = [
     .withMessage('الصور يجب أن تكون مصفوفة')
 ];
 
-// Sanitization helper
+// HTML entity escaping for XSS prevention
+const escapeHtml = (str) => {
+  if (typeof str !== 'string') return str;
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+};
+
+// Deep sanitization helper for nested objects
+const deepSanitize = (obj, allowHtml = false) => {
+  if (obj === null || obj === undefined) return obj;
+
+  if (typeof obj === 'string') {
+    // Strip HTML tags unless explicitly allowed
+    const stripped = allowHtml ? obj : obj.replace(/<[^>]*>/g, '');
+    return stripped.trim();
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map(item => deepSanitize(item, allowHtml));
+  }
+
+  if (typeof obj === 'object') {
+    const sanitized = {};
+    for (const key of Object.keys(obj)) {
+      // Allow HTML in specific fields (like rich text content)
+      const isHtmlField = ['content', 'biography', 'notes'].includes(key);
+      sanitized[key] = deepSanitize(obj[key], isHtmlField);
+    }
+    return sanitized;
+  }
+
+  return obj;
+};
+
+// Sanitization middleware
 const sanitizeInput = (req, res, next) => {
   if (req.body) {
-    Object.keys(req.body).forEach(key => {
-      if (typeof req.body[key] === 'string') {
-        // Remove HTML tags and trim
-        req.body[key] = req.body[key].trim().replace(/<[^>]*>/g, '');
-      } else if (Array.isArray(req.body[key])) {
-        // Sanitize array elements
-        req.body[key] = req.body[key].map(item => {
-          if (typeof item === 'string') {
-            return item.trim().replace(/<[^>]*>/g, '');
-          }
-          return item;
-        });
-      }
-    });
+    req.body = deepSanitize(req.body);
+  }
+  if (req.query) {
+    req.query = deepSanitize(req.query);
+  }
+  if (req.params) {
+    req.params = deepSanitize(req.params);
   }
   next();
 };

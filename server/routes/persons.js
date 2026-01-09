@@ -12,7 +12,6 @@ const router = express.Router();
 /**
  * @route   GET /api/persons
  * @desc    Get all persons (flat list)
- * @access  Public
  */
 router.get('/', async (req, res) => {
     try {
@@ -26,10 +25,12 @@ router.get('/', async (req, res) => {
 
         const query = {};
 
+        // Sanitize search input to prevent ReDoS attacks
         if (search) {
+            const sanitizedSearch = search.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
             query.$or = [
-                { fullName: { $regex: search, $options: 'i' } },
-                { nickname: { $regex: search, $options: 'i' } }
+                { fullName: { $regex: sanitizedSearch, $options: 'i' } },
+                { nickname: { $regex: sanitizedSearch, $options: 'i' } }
             ];
         }
 
@@ -37,11 +38,15 @@ router.get('/', async (req, res) => {
             query.generation = parseInt(generation);
         }
 
+        // Limit pagination to prevent abuse
+        const safeLimit = Math.min(Math.max(1, parseInt(limit) || 100), 200);
+        const safePage = Math.max(1, parseInt(page) || 1);
+
         const persons = await Person.find(query)
             .populate('fatherId', 'fullName')
             .sort({ [sort]: 1, siblingOrder: 1 })
-            .skip((page - 1) * limit)
-            .limit(parseInt(limit));
+            .skip((safePage - 1) * safeLimit)
+            .limit(safeLimit);
 
         const total = await Person.countDocuments(query);
 

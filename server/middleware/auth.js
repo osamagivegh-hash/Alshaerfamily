@@ -2,6 +2,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
 const { Admin } = require('../models');
+const { logAuthAttempt } = require('./auditLog');
 require('dotenv').config();
 
 const rawJwtSecret = process.env.JWT_SECRET;
@@ -23,7 +24,7 @@ const initializeAdmin = async () => {
     }
 
     const existingAdmin = await Admin.findOne({ username: adminUsername });
-    
+
     if (!existingAdmin) {
       const defaultAdmin = new Admin({
         username: adminUsername,
@@ -32,7 +33,7 @@ const initializeAdmin = async () => {
         role: 'admin',
         lastLogin: null
       });
-      
+
       await defaultAdmin.save();
       console.log('✓ Admin account created from environment configuration');
     }
@@ -52,7 +53,7 @@ const authenticateToken = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
-    
+
     // Check if admin still exists
     const admin = await Admin.findOne({ username: decoded.username });
     if (!admin) {
@@ -79,19 +80,25 @@ const requireAdmin = (req, res, next) => {
 const login = async (req, res) => {
   try {
     const { username, password } = req.body;
+    const clientIp = req.ip || req.connection.remoteAddress;
+    const userAgent = req.get('User-Agent') || 'unknown';
 
     if (!username || !password) {
       return res.status(400).json({ message: 'اسم المستخدم وكلمة المرور مطلوبان' });
     }
 
     const admin = await Admin.findOne({ username });
-    
+
     if (!admin) {
+      // Log failed attempt - user not found
+      await logAuthAttempt(username, false, clientIp, userAgent, 'User not found');
       return res.status(401).json({ message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
     }
 
     const validPassword = await bcrypt.compare(password, admin.password);
     if (!validPassword) {
+      // Log failed attempt - wrong password
+      await logAuthAttempt(username, false, clientIp, userAgent, 'Invalid password');
       return res.status(401).json({ message: 'اسم المستخدم أو كلمة المرور غير صحيحة' });
     }
 
@@ -99,14 +106,17 @@ const login = async (req, res) => {
     admin.lastLogin = new Date();
     await admin.save();
 
+    // Log successful login
+    await logAuthAttempt(username, true, clientIp, userAgent);
+
     const token = jwt.sign(
-      { 
-        username: admin.username, 
-        email: admin.email, 
-        role: admin.role 
+      {
+        username: admin.username,
+        email: admin.email,
+        role: admin.role
       },
       JWT_SECRET,
-      { expiresIn: '24h' }
+      { expiresIn: '4h' } // Reduced from 24h for better security
     );
 
     res.json({
@@ -134,12 +144,16 @@ const changePassword = async (req, res) => {
       return res.status(400).json({ message: 'كلمة المرور الحالية والجديدة مطلوبتان' });
     }
 
-    if (newPassword.length < 6) {
-      return res.status(400).json({ message: 'كلمة المرور يجب أن تكون 6 أحرف على الأقل' });
+    // Strong password policy
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{12,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      return res.status(400).json({
+        message: 'كلمة المرور يجب أن تكون 12 حرف على الأقل وتحتوي على حرف كبير وصغير ورقم ورمز خاص'
+      });
     }
 
     const admin = await Admin.findOne({ username: req.user.username });
-    
+
     const validPassword = await bcrypt.compare(currentPassword, admin.password);
     if (!validPassword) {
       return res.status(401).json({ message: 'كلمة المرور الحالية غير صحيحة' });
@@ -161,6 +175,6 @@ module.exports = {
   authenticateToken,
   requireAdmin,
   login,
-  changePassword,
-  JWT_SECRET
+  changePassword
+  // Note: JWT_SECRET intentionally not exported for security
 };

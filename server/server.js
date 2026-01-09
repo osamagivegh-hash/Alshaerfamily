@@ -23,11 +23,23 @@ connectDB().then(() => {
   initializeAdmin();
 });
 
-// Rate limiting
+// General rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 2000, // limit each IP to 2000 requests per windowMs
-  message: 'تم تجاوز الحد المسموح من الطلبات، حاول مرة أخرى لاحقاً'
+  max: 500, // limit each IP to 500 requests per windowMs (reduced from 2000)
+  message: { success: false, message: 'تم تجاوز الحد المسموح من الطلبات، حاول مرة أخرى لاحقاً' },
+  standardHeaders: true,
+  legacyHeaders: false
+});
+
+// Strict rate limiting for authentication endpoints
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // Only 5 login attempts per 15 minutes per IP
+  message: { success: false, message: 'محاولات تسجيل دخول كثيرة. يرجى المحاولة بعد 15 دقيقة' },
+  standardHeaders: true,
+  legacyHeaders: false,
+  skipSuccessfulRequests: true // Don't count successful logins
 });
 
 // Middleware
@@ -47,23 +59,26 @@ app.use(helmet({
 // Configure CORS properly for production
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (like mobile apps, Postman, or server-to-server)
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
       'https://alshaerfamily.onrender.com',
+      process.env.CORS_ORIGIN, // Allow custom origin from env
       'http://localhost:5173',
       'http://localhost:3000',
       'http://localhost:5000'
-    ];
+    ].filter(Boolean); // Remove undefined/null values
 
     if (allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(null, true); // Allow all origins in production for now
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 };
 
@@ -115,6 +130,8 @@ app.get('/api/storage/status', (req, res) => {
 app.use('/api/news', newsRouter);
 app.use('/api/persons', require('./routes/persons'));
 app.use('/api', require('./routes/api'));
+// Apply strict rate limiting to login endpoint
+app.use('/api/admin/login', authLimiter);
 app.use('/api/admin', require('./routes/adminMongo'));
 
 // Serve React app for all non-API routes
