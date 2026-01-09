@@ -19,13 +19,13 @@ const personSchema = new mongoose.Schema({
     trim: true,
     index: true
   },
-  
+
   // Optional nickname or known-as name
   nickname: {
     type: String,
     trim: true
   },
-  
+
   // Father reference (self-referencing for tree structure)
   fatherId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -33,102 +33,102 @@ const personSchema = new mongoose.Schema({
     default: null,
     index: true
   },
-  
+
   // Mother reference (optional for extended genealogy)
   motherId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Person',
     default: null
   },
-  
+
   // Generation level (auto-calculated from root)
   generation: {
     type: Number,
     default: 0,
     index: true
   },
-  
+
   // Gender (male/female)
   gender: {
     type: String,
     enum: ['male', 'female', 'unknown'],
     default: 'male'
   },
-  
+
   // Birth date (approximate for historical figures)
   birthDate: {
     type: String,
     trim: true
   },
-  
+
   // Death date (if applicable)
   deathDate: {
     type: String,
     trim: true
   },
-  
+
   // Is this person still alive?
   isAlive: {
     type: Boolean,
     default: true
   },
-  
+
   // Birth location/origin
   birthPlace: {
     type: String,
     trim: true
   },
-  
+
   // Current residence
   currentResidence: {
     type: String,
     trim: true
   },
-  
+
   // Occupation or profession
   occupation: {
     type: String,
     trim: true
   },
-  
+
   // Biography or notes
   biography: {
     type: String,
     trim: true
   },
-  
+
   // Additional notes for historical documentation
   notes: {
     type: String,
     trim: true
   },
-  
+
   // Profile image URL
   profileImage: {
     type: String,
     trim: true
   },
-  
+
   // Order among siblings (for display purposes)
   siblingOrder: {
     type: Number,
     default: 0
   },
-  
+
   // Is this the root ancestor?
   isRoot: {
     type: Boolean,
     default: false,
     index: true
   },
-  
+
   // Contact information (for living family members)
   contact: {
     phone: String,
     email: String,
     address: String
   },
-  
+
   // Verification status (for accuracy tracking)
   verification: {
     status: {
@@ -140,7 +140,7 @@ const personSchema = new mongoose.Schema({
     verifiedAt: Date,
     source: String
   },
-  
+
   // Created by (admin user tracking)
   createdBy: {
     type: String,
@@ -158,7 +158,8 @@ const personSchema = new mongoose.Schema({
 }, {
   timestamps: true,
   toJSON: { virtuals: true },
-  toObject: { virtuals: true }
+  toObject: { virtuals: true },
+  collection: 'persons' // Explicitly set collection name
 });
 
 // Virtual for children (those who have this person as father)
@@ -169,7 +170,7 @@ personSchema.virtual('children', {
 });
 
 // Virtual for full lineage path (ancestors)
-personSchema.virtual('lineage').get(function() {
+personSchema.virtual('lineage').get(function () {
   return this._lineage || [];
 });
 
@@ -181,7 +182,7 @@ personSchema.virtual('childrenCount', {
 });
 
 // Pre-save middleware to auto-calculate generation
-personSchema.pre('save', async function(next) {
+personSchema.pre('save', async function (next) {
   if (this.isModified('fatherId') || this.isNew) {
     if (!this.fatherId) {
       this.generation = 0;
@@ -199,7 +200,7 @@ personSchema.pre('save', async function(next) {
 });
 
 // Static method to get full tree starting from root
-personSchema.statics.getFullTree = async function() {
+personSchema.statics.getFullTree = async function () {
   const root = await this.findOne({ isRoot: true }).populate({
     path: 'children',
     populate: {
@@ -228,38 +229,38 @@ personSchema.statics.getFullTree = async function() {
 };
 
 // Static method to build nested tree structure
-personSchema.statics.buildTree = async function(personId = null) {
+personSchema.statics.buildTree = async function (personId = null) {
   const buildNode = async (id) => {
     const person = await this.findById(id).lean();
     if (!person) return null;
-    
+
     const children = await this.find({ fatherId: id }).lean();
     const childNodes = await Promise.all(
       children.map(child => buildNode(child._id))
     );
-    
+
     return {
       ...person,
       children: childNodes.filter(Boolean).sort((a, b) => a.siblingOrder - b.siblingOrder)
     };
   };
-  
+
   if (personId) {
     return buildNode(personId);
   }
-  
+
   // If no ID provided, start from root
   const root = await this.findOne({ isRoot: true }).lean();
   if (!root) return null;
-  
+
   return buildNode(root._id);
 };
 
 // Static method to get ancestors chain
-personSchema.statics.getAncestors = async function(personId) {
+personSchema.statics.getAncestors = async function (personId) {
   const ancestors = [];
   let currentPerson = await this.findById(personId);
-  
+
   while (currentPerson && currentPerson.fatherId) {
     const father = await this.findById(currentPerson.fatherId);
     if (father) {
@@ -269,19 +270,19 @@ personSchema.statics.getAncestors = async function(personId) {
       break;
     }
   }
-  
+
   return ancestors;
 };
 
 // Static method to get descendants count
-personSchema.statics.getDescendantsCount = async function(personId) {
+personSchema.statics.getDescendantsCount = async function (personId) {
   let count = 0;
   const countDescendants = async (id) => {
     const children = await this.find({ fatherId: id });
     count += children.length;
     await Promise.all(children.map(child => countDescendants(child._id)));
   };
-  
+
   await countDescendants(personId);
   return count;
 };

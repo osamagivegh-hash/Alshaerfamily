@@ -98,25 +98,16 @@ const TreeNode = ({ layoutNode, onClick }) => {
 
     return (
         <g
-            className="tree-node cursor-pointer transition-transform duration-200 hover:transform hover:scale-105"
+            className="tree-node group cursor-pointer"
             transform={`translate(${x}, ${y})`}
             onClick={() => onClick && onClick(node)}
         >
-            {/* Node background */}
-            <rect
-                x="0"
-                y="0"
-                width={config.nodeWidth}
-                height={config.nodeHeight}
-                rx="12"
-                ry="12"
-                fill={getGradient()}
-                className="drop-shadow-lg"
-                style={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3))' }}
-            />
-
-            {/* Root indicator */}
-            {node.isRoot && (
+            {/* Inner group for scaling effects to avoid conflict with positioning transform */}
+            <g
+                className="transition-transform duration-200 ease-in-out group-hover:scale-105"
+                style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+            >
+                {/* Node background */}
                 <rect
                     x="0"
                     y="0"
@@ -124,37 +115,54 @@ const TreeNode = ({ layoutNode, onClick }) => {
                     height={config.nodeHeight}
                     rx="12"
                     ry="12"
-                    fill="none"
-                    stroke="#FFD700"
-                    strokeWidth="3"
+                    fill={getGradient()}
+                    className="drop-shadow-lg"
+                    style={{ filter: 'drop-shadow(0 4px 6px rgba(0, 0, 0, 0.3))' }}
                 />
-            )}
 
-            {/* Name */}
-            <text
-                x={config.nodeWidth / 2}
-                y={config.nodeHeight / 2 - 5}
-                textAnchor="middle"
-                fill="white"
-                fontSize="13"
-                fontWeight="600"
-                fontFamily="Cairo, sans-serif"
-                direction="rtl"
-            >
-                {truncateName(node.fullName)}
-            </text>
+                {/* Root indicator */}
+                {node.isRoot && (
+                    <rect
+                        x="0"
+                        y="0"
+                        width={config.nodeWidth}
+                        height={config.nodeHeight}
+                        rx="12"
+                        ry="12"
+                        fill="none"
+                        stroke="#FFD700"
+                        strokeWidth="3"
+                    />
+                )}
 
-            {/* Generation */}
-            <text
-                x={config.nodeWidth / 2}
-                y={config.nodeHeight / 2 + 14}
-                textAnchor="middle"
-                fill="rgba(255,255,255,0.8)"
-                fontSize="10"
-                fontFamily="Cairo, sans-serif"
-            >
-                الجيل {node.generation}
-            </text>
+                {/* Name */}
+                <text
+                    x={config.nodeWidth / 2}
+                    y={config.nodeHeight / 2 - 5}
+                    textAnchor="middle"
+                    fill="white"
+                    fontSize="13"
+                    fontWeight="600"
+                    fontFamily="Cairo, sans-serif"
+                    direction="rtl"
+                    pointerEvents="none"
+                >
+                    {truncateName(node.fullName)}
+                </text>
+
+                {/* Generation */}
+                <text
+                    x={config.nodeWidth / 2}
+                    y={config.nodeHeight / 2 + 14}
+                    textAnchor="middle"
+                    fill="rgba(255,255,255,0.8)"
+                    fontSize="10"
+                    fontFamily="Cairo, sans-serif"
+                    pointerEvents="none"
+                >
+                    الجيل {node.generation}
+                </text>
+            </g>
         </g>
     );
 };

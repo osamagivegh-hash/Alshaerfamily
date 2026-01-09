@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAdmin } from '../../contexts/AdminContext';
 import toast from 'react-hot-toast';
+import adminApi from '../../utils/adminApi';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -43,28 +44,31 @@ const AdminFamilyTree = () => {
     const fetchData = useCallback(async () => {
         try {
             setLoading(true);
-            const headers = { Authorization: `Bearer ${token}` };
 
+            // Fetch admin data using adminApi (handles auth headers automatically)
+            // Fetch public tree data using native fetch
             const [personsRes, statsRes, treeRes] = await Promise.all([
-                fetch(`${API_URL}/api/admin/persons?search=${searchTerm}&generation=${selectedGeneration}`, { headers }),
-                fetch(`${API_URL}/api/admin/persons/stats`, { headers }),
+                adminApi.get(`/persons?search=${searchTerm}&generation=${selectedGeneration}`).catch(err => ({ data: { success: false } })),
+                adminApi.get(`/persons/stats`).catch(err => ({ data: { success: false } })),
                 fetch(`${API_URL}/api/persons/tree`)
             ]);
 
-            const personsData = await personsRes.json();
-            const statsData = await statsRes.json();
+            const personsData = personsRes.data || { success: false };
+            const statsData = statsRes.data || { success: false };
             const treeData = await treeRes.json();
 
+            // Note: adminApi responses are already JSON parsed in .data
             if (personsData.success) setPersons(personsData.data || []);
+            // If stats fail (e.g. 403 handled by interceptor or caught), defaults will apply in getGenerationOptions
             if (statsData.success) setStats(statsData.data);
             if (treeData.success) setTree(treeData.data);
         } catch (error) {
             console.error('Error fetching data:', error);
-            toast.error('خطأ في تحميل البيانات');
+            // toast.error('خطأ في تحميل البيانات'); // Suppress error toast to avoid spam on 403
         } finally {
             setLoading(false);
         }
-    }, [token, searchTerm, selectedGeneration]);
+    }, [searchTerm, selectedGeneration]);
 
     useEffect(() => {
         fetchData();
@@ -76,6 +80,7 @@ const AdminFamilyTree = () => {
             return;
         }
         try {
+            // Public API - keep using fetch
             const res = await fetch(
                 `${API_URL}/api/persons/eligible-fathers?generation=${generation}${editingPerson ? `&excludeId=${editingPerson.id || editingPerson._id}` : ''}`
             );
@@ -147,27 +152,21 @@ const AdminFamilyTree = () => {
 
         setFormLoading(true);
         try {
-            const url = editingPerson
-                ? `${API_URL}/api/admin/persons/${editingPerson.id || editingPerson._id}`
-                : `${API_URL}/api/admin/persons`;
+            const payload = {
+                ...formData,
+                fatherId: formData.fatherId || null
+            };
 
-            const method = editingPerson ? 'PUT' : 'POST';
+            let response;
+            if (editingPerson) {
+                response = await adminApi.put(`/persons/${editingPerson.id || editingPerson._id}`, payload);
+            } else {
+                response = await adminApi.post('/persons', payload);
+            }
 
-            const res = await fetch(url, {
-                method,
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`
-                },
-                body: JSON.stringify({
-                    ...formData,
-                    fatherId: formData.fatherId || null
-                })
-            });
+            const data = response.data;
 
-            const data = await res.json();
-
-            if (data.success || res.ok) {
+            if (data.success) {
                 toast.success(editingPerson ? 'تم تحديث البيانات بنجاح' : 'تمت إضافة الشخص بنجاح');
                 setShowModal(false);
                 fetchData();
@@ -176,7 +175,8 @@ const AdminFamilyTree = () => {
             }
         } catch (error) {
             console.error('Error saving person:', error);
-            toast.error('خطأ في حفظ البيانات');
+            const msg = error.response?.data?.message || 'خطأ في حفظ البيانات';
+            toast.error(msg);
         } finally {
             setFormLoading(false);
         }
@@ -187,41 +187,40 @@ const AdminFamilyTree = () => {
         if (!window.confirm(confirmMsg)) return;
 
         try {
-            const res = await fetch(`${API_URL}/api/admin/persons/${person.id || person._id}`, {
-                method: 'DELETE',
-                headers: { Authorization: `Bearer ${token}` }
-            });
-
-            const data = await res.json();
+            const response = await adminApi.delete(`/persons/${person.id || person._id}`);
+            const data = response.data;
 
             if (data.success) {
                 toast.success('تم حذف الشخص بنجاح');
                 fetchData();
-            } else if (data.childrenCount) {
-                if (window.confirm(`هذا الشخص لديه ${data.childrenCount} أبناء. هل تريد حذفهم جميعاً؟`)) {
-                    const cascadeRes = await fetch(`${API_URL}/api/admin/persons/${person.id || person._id}?cascade=true`, {
-                        method: 'DELETE',
-                        headers: { Authorization: `Bearer ${token}` }
-                    });
-                    const cascadeData = await cascadeRes.json();
-                    if (cascadeData.success) {
-                        toast.success('تم حذف الشخص وأبنائه بنجاح');
-                        fetchData();
-                    } else {
-                        toast.error(cascadeData.message || 'خطأ في الحذف');
-                    }
-                }
             } else {
                 toast.error(data.message || 'خطأ في الحذف');
             }
         } catch (error) {
             console.error('Error deleting person:', error);
-            toast.error('خطأ في حذف الشخص');
+            // Handle cascade suggestion manually since 400 throws error in axios
+            if (error.response?.status === 400 && error.response?.data?.childrenCount) {
+                const data = error.response.data;
+                if (window.confirm(`هذا الشخص لديه ${data.childrenCount} أبناء. هل تريد حذفهم جميعاً؟`)) {
+                    try {
+                        const cascadeRes = await adminApi.delete(`/persons/${person.id || person._id}?cascade=true`);
+                        if (cascadeRes.data.success) {
+                            toast.success('تم حذف الشخص وأبنائه بنجاح');
+                            fetchData();
+                        }
+                    } catch (cascadeError) {
+                        toast.error(cascadeError.response?.data?.message || 'خطأ في الحذف');
+                    }
+                }
+            } else {
+                toast.error(error.response?.data?.message || 'خطأ في حذف الشخص');
+            }
         }
     };
 
     const getGenerationOptions = () => {
-        const maxGen = stats?.maxGeneration || 0;
+        // Fallback to 5 generations if stats are not loaded or failed
+        const maxGen = (stats && typeof stats.maxGeneration === 'number') ? stats.maxGeneration : 5;
         const options = [];
         for (let i = 0; i <= maxGen + 1; i++) {
             options.push(

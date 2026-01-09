@@ -12,3 +12,51 @@
 {"method":"GET","url":"/api/sections","status":500,"duration":"30012ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Cursor/2.2.44 Chrome/138.0.7204.251 Electron/37.7.0 Safari/537.36"}
 [ERROR] 2026-01-09T11:30:37.172Z - Request failed
 {"method":"POST","url":"/login","status":401,"duration":"250ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T12:09:14.655Z - Request failed
+{"method":"POST","url":"/login","status":400,"duration":"3ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T12:09:28.425Z - Request failed
+{"method":"POST","url":"/login","status":400,"duration":"2ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T12:10:19.625Z - Request failed
+{"method":"POST","url":"/login","status":401,"duration":"350ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T12:56:50.610Z - Request failed
+{"method":"GET","url":"/persons?search=&generation=","status":403,"duration":"5ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T12:56:50.618Z - Request failed
+{"method":"GET","url":"/persons/stats","status":403,"duration":"3ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T12:56:50.629Z - Request failed
+{"method":"GET","url":"/persons?search=&generation=","status":403,"duration":"3ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T12:56:50.636Z - Request failed
+{"method":"GET","url":"/persons/stats","status":403,"duration":"1ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T12:59:58.678Z - Request failed
+{"method":"GET","url":"/persons?search=&generation=","status":403,"duration":"2ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T12:59:58.694Z - Request failed
+{"method":"GET","url":"/persons/stats","status":403,"duration":"3ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T12:59:58.745Z - Request failed
+{"method":"GET","url":"/persons?search=&generation=","status":403,"duration":"30ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T12:59:58.791Z - Request failed
+{"method":"GET","url":"/persons/stats","status":403,"duration":"92ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:06:42.344Z - Request failed
+{"method":"GET","url":"/persons?search=&generation=","status":403,"duration":"1ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:06:42.356Z - Request failed
+{"method":"GET","url":"/persons/stats","status":403,"duration":"1ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:06:42.443Z - Request failed
+{"method":"GET","url":"/persons?search=&generation=","status":403,"duration":"1ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:06:43.060Z - Request failed
+{"method":"GET","url":"/persons/stats","status":403,"duration":"2ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:07:23.995Z - Request failed
+{"method":"GET","url":"/persons?search=&generation=","status":403,"duration":"1ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:07:24.079Z - Request failed
+{"method":"GET","url":"/persons/stats","status":403,"duration":"1ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:07:24.642Z - Request failed
+{"method":"GET","url":"/persons?search=&generation=","status":403,"duration":"2ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:07:25.247Z - Request failed
+{"method":"GET","url":"/persons/stats","status":403,"duration":"2ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:14:57.721Z - Request failed
+{"method":"GET","url":"/persons?search=&generation=5","status":403,"duration":"1ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:14:57.738Z - Request failed
+{"method":"GET","url":"/persons/stats","status":403,"duration":"1ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:19:08.795Z - Request failed
+{"method":"POST","url":"/persons","status":403,"duration":"1ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:40:25.205Z - Request failed
+{"method":"GET","url":"/verify","status":403,"duration":"449ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-09T13:40:25.835Z - Request failed
+{"method":"GET","url":"/verify","status":403,"duration":"126ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
