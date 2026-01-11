@@ -23,8 +23,8 @@ export const FamilyTreeAuthProvider = ({ children }) => {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
 
-    // API base URL
-    const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+    // API base URL - empty string in production (relative URLs), localhost in development
+    const API_BASE = import.meta.env.DEV ? 'http://localhost:5000' : ''
 
     // Get stored token
     const getToken = useCallback(() => {
