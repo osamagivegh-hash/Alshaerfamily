@@ -29,7 +29,38 @@ const {
   Visitor
 } = require('../models');
 
-// ...
+// Import storage configuration
+const { upload, isCloudinaryConfigured, cloudinaryFolder, uploadsDir } = require('../config/storage');
+
+// Import Cloudinary utilities
+const cloudinaryUtils = require('../utils/cloudinary');
+
+const router = express.Router();
+
+// Helper function to normalize MongoDB documents (convert _id to id)
+const normalizeDocument = (doc) => {
+  if (!doc) return null;
+  if (Array.isArray(doc)) {
+    return doc.map(item => normalizeDocument(item));
+  }
+  const normalized = doc.toObject ? doc.toObject() : { ...doc };
+  if (normalized._id) {
+    normalized.id = normalized._id.toString();
+  }
+  return normalized;
+};
+
+// Auth routes
+router.post('/login', login);
+router.post('/change-password', authenticateToken, requireAdmin, changePassword);
+
+// Verify token
+router.get('/verify', authenticateToken, (req, res) => {
+  res.json({
+    valid: true,
+    user: req.user
+  });
+});
 
 // Dashboard stats
 router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
