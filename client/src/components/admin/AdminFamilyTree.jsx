@@ -47,13 +47,16 @@ const AdminFamilyTree = () => {
             setLoading(true);
 
             // Fetch persons list
+            // Note: adminApiWrapper returns response.data directly, so personsRes is already the unwrapped response
             try {
                 const personsRes = await adminApi.get(`/persons?search=${searchTerm}&generation=${selectedGeneration}`);
-                console.log('Persons response:', personsRes.data);
-                if (personsRes.data?.success) {
-                    setPersons(personsRes.data.data || []);
+                console.log('Persons response:', personsRes);
+                // personsRes is already { success: true, data: [...], pagination: {...} }
+                if (personsRes?.success) {
+                    setPersons(personsRes.data || []);
+                    console.log('Set persons:', personsRes.data?.length || 0);
                 } else {
-                    console.error('Persons fetch failed:', personsRes.data);
+                    console.error('Persons fetch failed:', personsRes);
                 }
             } catch (err) {
                 console.error('Persons fetch error:', err);
@@ -62,8 +65,9 @@ const AdminFamilyTree = () => {
             // Fetch stats
             try {
                 const statsRes = await adminApi.get(`/persons/stats`);
-                if (statsRes.data?.success) {
-                    setStats(statsRes.data.data);
+                // statsRes is already { success: true, data: {...} }
+                if (statsRes?.success) {
+                    setStats(statsRes.data);
                 }
             } catch (err) {
                 console.error('Stats fetch error:', err);
@@ -188,18 +192,18 @@ const AdminFamilyTree = () => {
                 response = await adminApi.post('/persons', payload);
             }
 
-            const data = response.data;
-
-            if (data.success) {
+            // adminApiWrapper returns response.data directly
+            console.log('Save response:', response);
+            if (response?.success) {
                 toast.success(editingPerson ? 'تم تحديث البيانات بنجاح' : 'تمت إضافة الشخص بنجاح');
                 setShowModal(false);
                 fetchData();
             } else {
-                toast.error(data.message || 'حدث خطأ');
+                toast.error(response?.message || 'حدث خطأ');
             }
         } catch (error) {
             console.error('Error saving person:', error);
-            const msg = error.response?.data?.message || 'خطأ في حفظ البيانات';
+            const msg = error.message || 'خطأ في حفظ البيانات';
             toast.error(msg);
         } finally {
             setFormLoading(false);
@@ -211,33 +215,35 @@ const AdminFamilyTree = () => {
         if (!window.confirm(confirmMsg)) return;
 
         try {
+            // adminApiWrapper returns response.data directly
             const response = await adminApi.delete(`/persons/${person.id || person._id}`);
-            const data = response.data;
+            console.log('Delete response:', response);
 
-            if (data.success) {
+            if (response?.success) {
                 toast.success('تم حذف الشخص بنجاح');
                 fetchData();
             } else {
-                toast.error(data.message || 'خطأ في الحذف');
+                toast.error(response?.message || 'خطأ في الحذف');
             }
         } catch (error) {
             console.error('Error deleting person:', error);
-            // Handle cascade suggestion manually since 400 throws error in axios
-            if (error.response?.status === 400 && error.response?.data?.childrenCount) {
-                const data = error.response.data;
-                if (window.confirm(`هذا الشخص لديه ${data.childrenCount} أبناء. هل تريد حذفهم جميعاً؟`)) {
+            // For errors, we need to check if it's a cascade suggestion
+            // The error.message will contain the message from the thrown error
+            const errorMessage = error.message || '';
+            if (errorMessage.includes('أبناء') || errorMessage.includes('cascade')) {
+                if (window.confirm(`هذا الشخص لديه أبناء. هل تريد حذفهم جميعاً؟`)) {
                     try {
                         const cascadeRes = await adminApi.delete(`/persons/${person.id || person._id}?cascade=true`);
-                        if (cascadeRes.data.success) {
+                        if (cascadeRes?.success) {
                             toast.success('تم حذف الشخص وأبنائه بنجاح');
                             fetchData();
                         }
                     } catch (cascadeError) {
-                        toast.error(cascadeError.response?.data?.message || 'خطأ في الحذف');
+                        toast.error(cascadeError.message || 'خطأ في الحذف');
                     }
                 }
             } else {
-                toast.error(error.response?.data?.message || 'خطأ في حذف الشخص');
+                toast.error(error.message || 'خطأ في حذف الشخص');
             }
         }
     };
