@@ -146,6 +146,12 @@ const AdminFamilyTree = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+
+        // Prevent duplicate submissions
+        if (formLoading) {
+            return;
+        }
+
         if (!formData.fullName.trim()) {
             toast.error('الاسم الكامل مطلوب');
             return;
