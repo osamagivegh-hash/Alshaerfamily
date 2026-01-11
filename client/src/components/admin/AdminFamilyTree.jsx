@@ -46,26 +46,43 @@ const AdminFamilyTree = () => {
         try {
             setLoading(true);
 
-            // Fetch admin data using adminApi (handles auth headers automatically)
-            // Fetch public tree data using native fetch
-            const [personsRes, statsRes, treeRes] = await Promise.all([
-                adminApi.get(`/persons?search=${searchTerm}&generation=${selectedGeneration}`).catch(err => ({ data: { success: false } })),
-                adminApi.get(`/persons/stats`).catch(err => ({ data: { success: false } })),
-                fetch(`${API_URL}/api/persons/tree`)
-            ]);
+            // Fetch persons list
+            try {
+                const personsRes = await adminApi.get(`/persons?search=${searchTerm}&generation=${selectedGeneration}`);
+                console.log('Persons response:', personsRes.data);
+                if (personsRes.data?.success) {
+                    setPersons(personsRes.data.data || []);
+                } else {
+                    console.error('Persons fetch failed:', personsRes.data);
+                }
+            } catch (err) {
+                console.error('Persons fetch error:', err);
+            }
 
-            const personsData = personsRes.data || { success: false };
-            const statsData = statsRes.data || { success: false };
-            const treeData = await treeRes.json();
+            // Fetch stats
+            try {
+                const statsRes = await adminApi.get(`/persons/stats`);
+                if (statsRes.data?.success) {
+                    setStats(statsRes.data.data);
+                }
+            } catch (err) {
+                console.error('Stats fetch error:', err);
+            }
 
-            // Note: adminApi responses are already JSON parsed in .data
-            if (personsData.success) setPersons(personsData.data || []);
-            // If stats fail (e.g. 403 handled by interceptor or caught), defaults will apply in getGenerationOptions
-            if (statsData.success) setStats(statsData.data);
-            if (treeData.success) setTree(treeData.data);
+            // Fetch tree (public API)
+            try {
+                const treeRes = await fetch(`${API_URL}/api/persons/tree`);
+                const treeData = await treeRes.json();
+                if (treeData.success) {
+                    setTree(treeData.data);
+                }
+            } catch (err) {
+                console.error('Tree fetch error:', err);
+            }
+
         } catch (error) {
             console.error('Error fetching data:', error);
-            // toast.error('خطأ في تحميل البيانات'); // Suppress error toast to avoid spam on 403
+            toast.error('خطأ في تحميل البيانات');
         } finally {
             setLoading(false);
         }
@@ -354,6 +371,13 @@ const AdminFamilyTree = () => {
             ) : viewMode === 'list' ? (
                 /* List View */
                 <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+                    {/* List Header with Count */}
+                    <div className="bg-gray-50 border-b px-4 py-3 flex items-center justify-between">
+                        <h3 className="font-bold text-gray-800">قائمة أفراد العائلة</h3>
+                        <span className="bg-palestine-green text-white px-3 py-1 rounded-full text-sm font-medium">
+                            {persons.length} شخص
+                        </span>
+                    </div>
                     <div className="overflow-x-auto">
                         <table className="w-full">
                             <thead className="bg-gray-50">
