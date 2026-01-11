@@ -1592,3 +1592,17 @@
 [INFO] 2026-01-11T11:27:55.503Z - Request {"method":"GET","url":"/persons?limit=5","status":401,"duration":"4ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7462"}
 [INFO] 2026-01-11T11:28:09.082Z - Request {"method":"GET","url":"/tree","status":200,"duration":"174ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7462"}
 [INFO] 2026-01-11T11:30:10.447Z - Request {"method":"GET","url":"/tree","status":200,"duration":"2904ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7462"}
+[INFO] 2026-01-11T21:38:17.137Z - Fetched all sections data {}
+[INFO] 2026-01-11T21:38:17.160Z - Request {"method":"GET","url":"/sections","status":200,"duration":"5989ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[INFO] 2026-01-11T21:38:17.447Z - Request {"method":"GET","url":"/?limit=50","status":200,"duration":"20ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[INFO] 2026-01-11T21:38:17.480Z - Request {"method":"GET","url":"/?limit=50","status":200,"duration":"15ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[INFO] 2026-01-11T21:38:18.522Z - Request {"method":"GET","url":"/hero-slides","status":200,"duration":"1094ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[INFO] 2026-01-11T21:38:19.433Z - Request {"method":"GET","url":"/hero-slides","status":200,"duration":"875ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[INFO] 2026-01-11T21:38:21.185Z - Request {"method":"GET","url":"/stats","status":200,"duration":"3752ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[INFO] 2026-01-11T21:38:21.455Z - Fetched all sections data {}
+[INFO] 2026-01-11T21:38:21.484Z - Request {"method":"GET","url":"/sections","status":200,"duration":"4271ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[INFO] 2026-01-11T21:38:24.210Z - Request {"method":"GET","url":"/stats","status":304,"duration":"3005ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[INFO] 2026-01-11T21:38:26.149Z - Fetched all sections data {}
+[INFO] 2026-01-11T21:38:26.179Z - Request {"method":"GET","url":"/sections","status":200,"duration":"4627ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[INFO] 2026-01-11T21:38:30.728Z - Fetched all sections data {}
+[INFO] 2026-01-11T21:38:30.757Z - Request {"method":"GET","url":"/sections","status":200,"duration":"4569ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
