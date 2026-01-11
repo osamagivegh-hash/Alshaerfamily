@@ -13,6 +13,12 @@ import ScrollToTop from './components/common/ScrollToTop'
 import ArchivePage from './pages/Archive'
 import FamilyTreePage from './pages/FamilyTreePage'
 
+// Family Tree Section Pages
+import FamilyTreeGateway from './pages/FamilyTreeGateway'
+import FounderAppreciation from './pages/FounderAppreciation'
+import FounderDiscussions from './pages/FounderDiscussions'
+import FamilyTreeDisplayPage from './pages/FamilyTreeDisplayPage'
+
 // Admin Components
 import AdminLogin from './components/admin/AdminLogin'
 import AdminLayout from './components/admin/AdminLayout'
@@ -27,6 +33,7 @@ import AdminContacts from './components/admin/AdminContacts'
 import AdminSettings from './components/admin/AdminSettings'
 import AdminTickers from './components/admin/AdminTickers'
 import AdminFamilyTree from './components/admin/AdminFamilyTree'
+import AdminFamilyTreeContent from './components/admin/AdminFamilyTreeContent'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 
 function App() {
@@ -39,7 +46,16 @@ function App() {
             {/* Public Routes */}
             <Route path="/" element={<PublicApp />} />
             <Route path="/archive" element={<ArchivePage />} />
-            <Route path="/family-tree" element={<FamilyTreePage />} />
+
+            {/* Family Tree Section Routes */}
+            <Route path="/family-tree" element={<FamilyTreeGateway />} />
+            <Route path="/family-tree/appreciation" element={<FounderAppreciation />} />
+            <Route path="/family-tree/discussions" element={<FounderDiscussions />} />
+            <Route path="/family-tree/discussions/:id" element={<FounderDiscussions />} />
+            <Route path="/family-tree/tree" element={<FamilyTreeDisplayPage />} />
+            {/* Legacy route - redirects to gateway */}
+            <Route path="/family-tree-old" element={<FamilyTreePage />} />
+
             <Route path="/articles/:id" element={<ArticleDetail />} />
             <Route path="/conversations/:id" element={<ConversationDetail />} />
             <Route path="/news/:id" element={<NewsDetail />} />
@@ -61,6 +77,7 @@ function App() {
               <Route path="contacts" element={<AdminContacts />} />
               <Route path="tickers" element={<AdminTickers />} />
               <Route path="family-tree" element={<AdminFamilyTree />} />
+              <Route path="family-tree-content" element={<AdminFamilyTreeContent />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
             <Route path="*" element={<NotFound />} />

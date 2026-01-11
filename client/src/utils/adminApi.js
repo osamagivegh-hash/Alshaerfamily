@@ -36,7 +36,7 @@ adminApi.interceptors.response.use(
   (response) => response,
   (error) => {
     console.error('API Error:', error.response?.data || error.message)
-    
+
     if (error.response?.status === 401 || error.response?.status === 403) {
       localStorage.removeItem('adminToken')
       localStorage.removeItem('adminUser')
@@ -217,7 +217,7 @@ export const adminUpload = {
     try {
       const formData = new FormData()
       formData.append('image', file)
-      
+
       const response = await adminApi.post('/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
@@ -367,7 +367,6 @@ export const adminTickerSettings = {
   }
 }
 
-// Hero Slides API
 export const adminHeroSlides = {
   getAll: async () => {
     try {
@@ -415,4 +414,123 @@ export const adminHeroSlides = {
   }
 }
 
-export default adminApi
+// Add generic HTTP methods to the adminApi instance for flexible API calls
+// Note: These use relative API paths from the /api base (not /api/admin)
+const API_BASE_URL = import.meta.env.VITE_API_URL || ''
+
+// Generic API wrapper with flexible path support
+const adminApiWrapper = {
+  // Use adminApi instance methods for /api/admin routes
+  ...adminApi,
+
+  // Generic GET request (can use absolute or relative path)
+  get: async (path) => {
+    try {
+      // If path starts with /, it's relative to API base, not admin base
+      if (path.startsWith('/family-tree-content')) {
+        const response = await axios.get(`${API_BASE_URL}/api${path}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('adminToken')}`
+          }
+        })
+        return response.data
+      }
+      const response = await adminApi.get(path)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب البيانات')
+    }
+  },
+
+  // Generic POST request
+  post: async (path, data) => {
+    try {
+      if (path.startsWith('/family-tree-content')) {
+        const response = await axios.post(`${API_BASE_URL}/api${path}`, data, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('adminToken')}`
+          }
+        })
+        return response.data
+      }
+      const response = await adminApi.post(path, data)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في إرسال البيانات')
+    }
+  },
+
+  // Generic PUT request
+  put: async (path, data) => {
+    try {
+      if (path.startsWith('/family-tree-content')) {
+        const response = await axios.put(`${API_BASE_URL}/api${path}`, data, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('adminToken')}`
+          }
+        })
+        return response.data
+      }
+      const response = await adminApi.put(path, data)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في تحديث البيانات')
+    }
+  },
+
+  // Generic PATCH request
+  patch: async (path, data) => {
+    try {
+      if (path.startsWith('/family-tree-content')) {
+        const response = await axios.patch(`${API_BASE_URL}/api${path}`, data, {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${localStorage.getItem('adminToken')}`
+          }
+        })
+        return response.data
+      }
+      const response = await adminApi.patch(path, data)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في تحديث البيانات')
+    }
+  },
+
+  // Generic DELETE request
+  delete: async (path) => {
+    try {
+      if (path.startsWith('/family-tree-content')) {
+        const response = await axios.delete(`${API_BASE_URL}/api${path}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('adminToken')}`
+          }
+        })
+        return response.data
+      }
+      const response = await adminApi.delete(path)
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في حذف البيانات')
+    }
+  },
+
+  // File upload helper
+  upload: async (formData) => {
+    try {
+      const response = await adminApi.post('/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في رفع الملف')
+    }
+  }
+}
+
+export default adminApiWrapper
+

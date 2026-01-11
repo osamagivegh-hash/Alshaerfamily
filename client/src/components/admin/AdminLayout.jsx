@@ -16,6 +16,7 @@ const AdminLayout = () => {
     { id: 'articles', label: 'المقالات', path: '/admin/articles', icon: '📝' },
     { id: 'gallery', label: 'معرض الصور', path: '/admin/gallery', icon: '🖼️' },
     { id: 'family-tree', label: 'شجرة العائلة', path: '/admin/family-tree', icon: '🌳' },
+    { id: 'family-tree-content', label: 'محتوى الشجرة', path: '/admin/family-tree-content', icon: '📄' },
     { id: 'comments', label: 'التعليقات', path: '/admin/comments', icon: '💬' },
     { id: 'contacts', label: 'الرسائل', path: '/admin/contacts', icon: '📧' },
     { id: 'tickers', label: 'شريط الأخبار', path: '/admin/tickers', icon: '📺' },
@@ -72,8 +73,8 @@ const AdminLayout = () => {
                 setSidebarOpen(false)
               }}
               className={`w-full flex items-center px-6 py-3 text-right transition-colors duration-200 ${isActive(item.path)
-                  ? 'bg-palestine-green text-white border-l-4 border-palestine-red'
-                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                ? 'bg-palestine-green text-white border-l-4 border-palestine-red'
+                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
                 }`}
             >
               <span className="text-xl ml-3">{item.icon}</span>

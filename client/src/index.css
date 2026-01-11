@@ -401,3 +401,222 @@ textarea:focus-visible {
 .rich-text-editor .ql-container::-webkit-scrollbar-track {
   background-color: transparent;
 }
+
+/* ==================== FAMILY TREE SECTION STYLES ==================== */
+
+/* Gateway Page Animations */
+@keyframes gateway-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gateway-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes gateway-shine {
+  0% {
+    left: -100%;
+  }
+  50% {
+    left: 100%;
+  }
+  100% {
+    left: 100%;
+  }
+}
+
+.animate-gateway-fade-in {
+  animation: gateway-fade-in 0.8s ease-out forwards;
+}
+
+.animate-gateway-scale-in {
+  animation: gateway-scale-in 0.6s ease-out forwards;
+}
+
+/* Gateway Button Styles */
+.gateway-button {
+  @apply relative overflow-hidden rounded-2xl shadow-2xl transition-all duration-500 transform;
+}
+
+.gateway-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.8s ease-in-out;
+}
+
+.gateway-button:hover::before {
+  left: 150%;
+}
+
+.gateway-button:hover {
+  transform: translateY(-8px) scale(1.02);
+}
+
+/* Family Tree Section Headers */
+.family-tree-header {
+  @apply bg-gradient-to-r text-white shadow-xl;
+}
+
+.family-tree-header-black {
+  background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+}
+
+.family-tree-header-red {
+  background: linear-gradient(135deg, #CE1126 0%, #a50e1f 100%);
+}
+
+.family-tree-header-green {
+  background: linear-gradient(135deg, #007A3D 0%, #005a2c 100%);
+}
+
+/* Discussion Card Styles */
+.discussion-card {
+  @apply bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-500;
+}
+
+.discussion-card:hover {
+  @apply shadow-2xl;
+  transform: translateY(-4px);
+}
+
+.discussion-card-image {
+  @apply relative h-56 overflow-hidden;
+}
+
+.discussion-card-image img {
+  @apply w-full h-full object-cover transition-transform duration-700;
+}
+
+.discussion-card:hover .discussion-card-image img {
+  transform: scale(1.1);
+}
+
+/* Appreciation Page Styles */
+.appreciation-images-grid {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-0;
+}
+
+.appreciation-image-container {
+  @apply relative overflow-hidden;
+}
+
+.appreciation-image-container img {
+  @apply transition-transform duration-700;
+}
+
+.appreciation-image-container:hover img {
+  transform: scale(1.05);
+}
+
+/* Tree Display Page Styles */
+.tree-display-container {
+  @apply flex-1 relative overflow-hidden;
+}
+
+.tree-zoom-controls {
+  @apply flex items-center gap-1 bg-white/20 backdrop-blur-sm rounded-lg p-1;
+}
+
+.tree-zoom-button {
+  @apply p-1.5 hover:bg-white/20 rounded transition-colors;
+}
+
+/* Breadcrumb Styles */
+.breadcrumb-nav {
+  @apply flex items-center gap-2 text-sm;
+}
+
+.breadcrumb-link {
+  @apply opacity-70 hover:opacity-100 transition-opacity;
+}
+
+.breadcrumb-separator {
+  @apply opacity-50;
+}
+
+.breadcrumb-current {
+  @apply font-medium;
+}
+
+/* Tab Navigation */
+.tab-button {
+  @apply flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all;
+}
+
+.tab-button-active {
+  @apply shadow-lg text-white;
+}
+
+.tab-button-inactive {
+  @apply bg-gray-100 text-gray-700 hover:bg-gray-200;
+}
+
+/* Form Styles for Admin */
+.admin-form-section {
+  @apply space-y-6;
+}
+
+.admin-form-label {
+  @apply block text-sm font-medium text-gray-700 mb-2;
+}
+
+.admin-form-input {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all;
+}
+
+.admin-form-textarea {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent resize-y transition-all;
+}
+
+/* Image Preview Styles */
+.image-preview-container {
+  @apply relative w-40 h-32 bg-gray-100 rounded-lg overflow-hidden border-2 border-dashed border-gray-300;
+}
+
+.image-preview-placeholder {
+  @apply flex items-center justify-center h-full text-gray-400;
+}
+
+.image-preview-loading {
+  @apply absolute inset-0 bg-black/50 flex items-center justify-center;
+}
+
+/* Print Styles for Family Tree */
+@media print {
+  .family-tree-header {
+    background: #1a1a1a !important;
+  }
+  
+  .gateway-button {
+    break-inside: avoid;
+    box-shadow: none;
+  }
+  
+  .tree-zoom-controls {
+    display: none !important;
+  }
+}
