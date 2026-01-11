@@ -34,11 +34,8 @@ import AdminComments from './components/admin/AdminComments'
 import AdminContacts from './components/admin/AdminContacts'
 import AdminSettings from './components/admin/AdminSettings'
 import AdminTickers from './components/admin/AdminTickers'
-import AdminFamilyTree from './components/admin/AdminFamilyTree'
-import AdminFamilyTreeContent from './components/admin/AdminFamilyTreeContent'
 import AdminDevTeamMessages from './components/admin/AdminDevTeamMessages'
 import AdminUserManagement from './components/admin/AdminUserManagement'
-import FamilyTreeBackupManager from './components/admin/FamilyTreeBackupManager'
 import CMSBackupManager from './components/admin/CMSBackupManager'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import PermissionGuard from './components/admin/PermissionGuard'
@@ -48,6 +45,9 @@ import FamilyTreeDashboardLayout from './components/admin/FamilyTreeDashboardLay
 import FamilyTreeDashboardOverview from './components/admin/FamilyTreeDashboardOverview'
 import FamilyTreeLogin from './components/FamilyTree/FamilyTreeLogin'
 import FamilyTreeProtectedRoute from './components/FamilyTree/FamilyTreeProtectedRoute'
+import AdminFamilyTree from './components/admin/AdminFamilyTree'
+import AdminFamilyTreeContent from './components/admin/AdminFamilyTreeContent'
+import FamilyTreeBackupManager from './components/admin/FamilyTreeBackupManager'
 
 function App() {
   return (
@@ -156,27 +156,6 @@ function App() {
                 <Route path="tickers" element={
                   <PermissionGuard permission="news">
                     <AdminTickers />
-                  </PermissionGuard>
-                } />
-
-                {/* Family Tree - requires 'family-tree' permission */}
-                <Route path="family-tree" element={
-                  <PermissionGuard permission="family-tree">
-                    <AdminFamilyTree />
-                  </PermissionGuard>
-                } />
-
-                {/* Family Tree Content - requires 'family-tree' permission */}
-                <Route path="family-tree-content" element={
-                  <PermissionGuard permission="family-tree">
-                    <AdminFamilyTreeContent />
-                  </PermissionGuard>
-                } />
-
-                {/* Family Tree Backups - requires 'family-tree' permission */}
-                <Route path="family-tree-backups" element={
-                  <PermissionGuard permission="family-tree">
-                    <FamilyTreeBackupManager />
                   </PermissionGuard>
                 } />
 

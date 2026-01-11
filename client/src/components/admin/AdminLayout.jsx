@@ -9,16 +9,10 @@ const AdminLayout = () => {
   const location = useLocation()
 
   // All menu items with their required permissions
-  // Organized into sections: Family Tree Dashboard and CMS Dashboard
+  // Family Tree has been moved to isolated dashboard at /family-dashboard
   const allMenuItems = [
     // Dashboard Overview (everyone sees this)
     { id: 'dashboard', label: 'لوحة التحكم', path: '/admin/dashboard', icon: '📊', permissions: [], section: 'main' },
-
-    // ===== FAMILY TREE DASHBOARD SECTION =====
-    { id: 'ft-divider', label: '── شجرة العائلة ──', type: 'divider', permissions: ['family-tree'], section: 'family-tree' },
-    { id: 'family-tree', label: 'إدارة الشجرة', path: '/admin/family-tree', icon: '🌳', permissions: ['family-tree'], section: 'family-tree' },
-    { id: 'family-tree-content', label: 'محتوى الشجرة', path: '/admin/family-tree-content', icon: '📄', permissions: ['family-tree'], section: 'family-tree' },
-    { id: 'family-tree-backups', label: 'النسخ الاحتياطية', path: '/admin/family-tree-backups', icon: '💾', permissions: ['family-tree'], section: 'family-tree' },
 
     // ===== CMS DASHBOARD SECTION =====
     { id: 'cms-divider', label: '── إدارة المحتوى ──', type: 'divider', permissions: ['news', 'articles', 'conversations', 'palestine', 'gallery'], section: 'cms' },
