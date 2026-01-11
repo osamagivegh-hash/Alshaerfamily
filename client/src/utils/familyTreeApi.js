@@ -210,8 +210,66 @@ export const familyTreeAuditApi = {
     }
 }
 
+// ==================== USER MANAGEMENT API ====================
+
+export const familyTreeUserApi = {
+    // List Users (ft-super-admin only)
+    getUsers: async () => {
+        try {
+            const response = await ftApi.get('/api/family-tree-auth/users')
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في جلب المستخدمين')
+        }
+    },
+
+    // Create User (ft-super-admin only)
+    createUser: async (userData) => {
+        try {
+            const response = await ftApi.post('/api/family-tree-auth/users', userData)
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في إنشاء المستخدم')
+        }
+    },
+
+    // Update User (ft-super-admin only)
+    updateUser: async (id, userData) => {
+        try {
+            const response = await ftApi.put(`/api/family-tree-auth/users/${id}`, userData)
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في تحديث المستخدم')
+        }
+    },
+
+    // Delete User (ft-super-admin only)
+    deleteUser: async (id) => {
+        try {
+            const response = await ftApi.delete(`/api/family-tree-auth/users/${id}`)
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في حذف المستخدم')
+        }
+    },
+
+    // Change Password (own account)
+    changePassword: async (currentPassword, newPassword) => {
+        try {
+            const response = await ftApi.put('/api/family-tree-auth/change-password', {
+                currentPassword,
+                newPassword
+            })
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في تغيير كلمة المرور')
+        }
+    }
+}
+
 export default {
     dashboard: familyTreeDashboardApi,
     backup: familyTreeBackupApi,
-    audit: familyTreeAuditApi
+    audit: familyTreeAuditApi,
+    users: familyTreeUserApi
 }

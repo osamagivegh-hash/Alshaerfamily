@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useFamilyTreeAuth } from '../../contexts/FamilyTreeAuthContext'
 import { familyTreeDashboardApi, familyTreeBackupApi } from '../../utils/familyTreeApi'
 import toast from 'react-hot-toast'
 
@@ -10,6 +11,7 @@ import toast from 'react-hot-toast'
  * Shows statistics, recent backups, and quick actions.
  */
 const FamilyTreeDashboardOverview = () => {
+    const { isFTSuperAdmin } = useFamilyTreeAuth()
     const [stats, setStats] = useState(null)
     const [loading, setLoading] = useState(true)
     const [creatingBackup, setCreatingBackup] = useState(false)
@@ -161,7 +163,7 @@ const FamilyTreeDashboardOverview = () => {
                         <span>⚡</span>
                         إجراءات سريعة
                     </h2>
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
                         <button
                             onClick={() => navigate('/family-dashboard/members')}
                             className="p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 rounded-xl hover:from-emerald-100 hover:to-emerald-200 transition-all text-right group"
@@ -190,6 +192,15 @@ const FamilyTreeDashboardOverview = () => {
                             <span className="text-3xl mb-2 block group-hover:scale-110 transition-transform">📄</span>
                             <span className="font-semibold text-purple-800">إدارة المحتوى</span>
                         </button>
+                        {isFTSuperAdmin && (
+                            <button
+                                onClick={() => navigate('/family-dashboard/users')}
+                                className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl hover:from-amber-100 hover:to-amber-200 transition-all text-right group"
+                            >
+                                <span className="text-3xl mb-2 block group-hover:scale-110 transition-transform">👥</span>
+                                <span className="font-semibold text-amber-800">إدارة المستخدمين</span>
+                            </button>
+                        )}
                     </div>
                 </div>
 

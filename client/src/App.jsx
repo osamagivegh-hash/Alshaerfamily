@@ -48,6 +48,7 @@ import FamilyTreeProtectedRoute from './components/FamilyTree/FamilyTreeProtecte
 import AdminFamilyTree from './components/admin/AdminFamilyTree'
 import AdminFamilyTreeContent from './components/admin/AdminFamilyTreeContent'
 import FamilyTreeBackupManager from './components/admin/FamilyTreeBackupManager'
+import FamilyTreeUserManagement from './components/admin/FamilyTreeUserManagement'
 
 function App() {
   return (
@@ -92,6 +93,7 @@ function App() {
                 <Route path="tree" element={<AdminFamilyTree />} />
                 <Route path="content" element={<AdminFamilyTreeContent />} />
                 <Route path="backups" element={<FamilyTreeBackupManager />} />
+                <Route path="users" element={<FamilyTreeUserManagement />} />
               </Route>
 
               {/* ===== MAIN CMS ADMIN ROUTES ===== */}
