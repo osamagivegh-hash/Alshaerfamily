@@ -40,6 +40,10 @@ const AdminFamilyTree = () => {
     const [deleteStep, setDeleteStep] = useState(1); // 1 = first confirm, 2 = final confirm
     const [deleteLoading, setDeleteLoading] = useState(false);
 
+    // Pagination State
+    const [currentPage, setCurrentPage] = useState(1);
+    const [itemsPerPage] = useState(30);
+
     const [formData, setFormData] = useState({
         fullName: '',
         nickname: '',
@@ -321,6 +325,21 @@ const AdminFamilyTree = () => {
         return options;
     };
 
+    // Pagination Logic
+    const indexOfLastItem = currentPage * itemsPerPage;
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+    const currentItems = persons.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(persons.length / itemsPerPage);
+
+    const handlePageChange = (pageNumber) => {
+        setCurrentPage(pageNumber);
+    };
+
+    // Reset pagination when filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [searchTerm, selectedGeneration]);
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -478,7 +497,7 @@ const AdminFamilyTree = () => {
                                         </td>
                                     </tr>
                                 ) : (
-                                    persons.map((person) => (
+                                    currentItems.map((person) => (
                                         <tr key={person.id || person._id} className="hover:bg-gray-50">
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center gap-3">
@@ -544,6 +563,54 @@ const AdminFamilyTree = () => {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Pagination Controls */}
+                    {persons.length > 0 && (
+                        <div className="bg-gray-50 border-t px-4 py-3 flex items-center justify-between" dir="ltr">
+                            <div className="flex-1 flex justify-between sm:hidden">
+                                <button
+                                    onClick={() => handlePageChange(currentPage - 1)}
+                                    disabled={currentPage === 1}
+                                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                    السابق
+                                </button>
+                                <button
+                                    onClick={() => handlePageChange(currentPage + 1)}
+                                    disabled={currentPage === totalPages}
+                                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                                >
+                                    التالي
+                                </button>
+                            </div>
+                            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                                <div>
+                                    <p className="text-sm text-gray-700">
+                                        عرض <span className="font-medium">{indexOfFirstItem + 1}</span> إلى <span className="font-medium">{Math.min(indexOfLastItem, persons.length)}</span> من <span className="font-medium">{persons.length}</span> نتيجة
+                                    </p>
+                                </div>
+                                <div className="flex gap-2">
+                                    <button
+                                        onClick={() => handlePageChange(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                        className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        السابق
+                                    </button>
+                                    <span className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-gray-50 text-sm font-medium rounded-md text-gray-700">
+                                        صفحة {currentPage} من {totalPages}
+                                    </span>
+                                    <button
+                                        onClick={() => handlePageChange(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                        className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium rounded-md text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        التالي
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </div>
             ) : (
                 /* Tree View (Graphical) */
