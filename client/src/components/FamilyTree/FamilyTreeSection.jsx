@@ -30,15 +30,26 @@ const FamilyTreeSection = () => {
     return (
         <section className="py-20 bg-gradient-to-b from-white to-green-50" id="family-tree">
             <div className="max-w-7xl mx-auto px-4 text-center">
-                <div className="mb-8">
-                    <span className="inline-block p-3 bg-green-100 rounded-full mb-4">
-                        <span className="text-4xl">🌳</span>
+                <div className="mb-12 relative z-10">
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-green-50 rounded-full filter blur-3xl opacity-50 -z-10"></div>
+
+                    <span className="inline-flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm text-palestine-green text-sm font-bold mb-6 border border-green-50">
+                        <span className="text-xl">🌳</span>
+                        <span>تراثنا فخرنا</span>
                     </span>
-                    <h2 className="text-4xl font-bold text-palestine-black mb-6">
-                        شجرة العائلة
+
+                    <h2 className="text-4xl md:text-5xl font-extrabold text-palestine-black mb-2 tracking-tight">
+                        شجرة عائلة الشاعر
                     </h2>
-                    <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                        اكتشف تاريخ ونسب عائلة الشاعر العريقة. تصفح شجرة العائلة التفاعلية، وتعرف على الأجداد والأحفاد، وتواصل مع جذورك.
+
+                    <h3 className="text-xl md:text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-palestine-green to-emerald-700 mb-6 font-kufi">
+                        المنصة الرقمية لشجرة عائلة الشاعر الإلكترونية
+                    </h3>
+
+                    <div className="h-1.5 w-32 bg-gradient-to-r from-palestine-red via-white to-palestine-green mx-auto rounded-full shadow-sm mb-8"></div>
+
+                    <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-loose font-medium">
+                        اكتشف تاريخ ونسب عائلة الشاعر العريقة. تصفح شجرة العائلة التفاعلية، وتعرف على الأجداد والأحفاد، وتواصل مع جذورك عبر منصتنا الرقمية الحديثة التي تجمع الماضي بالحاضر.
                     </p>
                 </div>
 
