@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useAdmin } from '../../contexts/AdminContext'
 
@@ -8,21 +8,50 @@ const AdminLayout = () => {
   const navigate = useNavigate()
   const location = useLocation()
 
-  const menuItems = [
-    { id: 'dashboard', label: 'لوحة التحكم', path: '/admin/dashboard', icon: '📊' },
-    { id: 'news', label: 'الأخبار', path: '/admin/news', icon: '📰' },
-    { id: 'conversations', label: 'الحوارات', path: '/admin/conversations', icon: '💬' },
-    { id: 'palestine', label: 'فلسطين', path: '/admin/palestine', icon: '🏛️' },
-    { id: 'articles', label: 'المقالات', path: '/admin/articles', icon: '📝' },
-    { id: 'gallery', label: 'معرض الصور', path: '/admin/gallery', icon: '🖼️' },
-    { id: 'family-tree', label: 'شجرة العائلة', path: '/admin/family-tree', icon: '🌳' },
-    { id: 'family-tree-content', label: 'محتوى الشجرة', path: '/admin/family-tree-content', icon: '📄' },
-    { id: 'dev-team', label: 'رسائل التطوير', path: '/admin/dev-team', icon: '👨‍💻' },
-    { id: 'comments', label: 'التعليقات', path: '/admin/comments', icon: '💬' },
-    { id: 'contacts', label: 'الرسائل', path: '/admin/contacts', icon: '📧' },
-    { id: 'tickers', label: 'شريط الأخبار', path: '/admin/tickers', icon: '📺' },
-    { id: 'settings', label: 'الإعدادات', path: '/admin/settings', icon: '⚙️' },
+  // All menu items with their required permissions
+  const allMenuItems = [
+    { id: 'dashboard', label: 'لوحة التحكم', path: '/admin/dashboard', icon: '📊', permissions: [] }, // Everyone can see dashboard
+    { id: 'news', label: 'الأخبار', path: '/admin/news', icon: '📰', permissions: ['news'] },
+    { id: 'conversations', label: 'الحوارات', path: '/admin/conversations', icon: '💬', permissions: ['conversations'] },
+    { id: 'palestine', label: 'فلسطين', path: '/admin/palestine', icon: '🏛️', permissions: ['palestine'] },
+    { id: 'articles', label: 'المقالات', path: '/admin/articles', icon: '📝', permissions: ['articles'] },
+    { id: 'gallery', label: 'معرض الصور', path: '/admin/gallery', icon: '🖼️', permissions: ['gallery'] },
+    { id: 'family-tree', label: 'شجرة العائلة', path: '/admin/family-tree', icon: '🌳', permissions: ['family-tree'] },
+    { id: 'family-tree-content', label: 'محتوى الشجرة', path: '/admin/family-tree-content', icon: '📄', permissions: ['family-tree'] },
+    { id: 'dev-team', label: 'رسائل التطوير', path: '/admin/dev-team', icon: '👨‍💻', permissions: ['dev-team'] },
+    { id: 'comments', label: 'التعليقات', path: '/admin/comments', icon: '💬', permissions: ['articles', 'news', 'conversations'] },
+    { id: 'contacts', label: 'الرسائل', path: '/admin/contacts', icon: '📧', permissions: ['contacts'] },
+    { id: 'tickers', label: 'شريط الأخبار', path: '/admin/tickers', icon: '📺', permissions: ['news', 'palestine'] },
+    { id: 'settings', label: 'الإعدادات', path: '/admin/settings', icon: '⚙️', permissions: ['settings'] },
+    { id: 'users', label: 'إدارة المستخدمين', path: '/admin/users', icon: '👥', roles: ['super-admin'] },
   ]
+
+  // Filter menu items based on user role and permissions
+  const menuItems = useMemo(() => {
+    if (!user) return [];
+
+    // Super-admin and admin see everything
+    if (user.role === 'super-admin' || user.role === 'admin') {
+      return allMenuItems;
+    }
+
+    // Editor sees only items they have permission for
+    const userPermissions = user.permissions || [];
+    return allMenuItems.filter(item => {
+      // Check if item requires specific roles
+      if (item.roles && item.roles.length > 0) {
+        return item.roles.includes(user.role);
+      }
+
+      // No permissions required (like dashboard)
+      if (!item.permissions || item.permissions.length === 0) {
+        return true;
+      }
+
+      // Check if user has any of the required permissions
+      return item.permissions.some(p => userPermissions.includes(p));
+    });
+  }, [user]);
 
   const handleLogout = () => {
     logout()
@@ -30,11 +59,23 @@ const AdminLayout = () => {
 
   const isActive = (path) => location.pathname === path
 
+  // Get role display info
+  const getRoleDisplay = (role) => {
+    switch (role) {
+      case 'super-admin': return { label: 'مدير أعلى', color: 'bg-purple-500' };
+      case 'admin': return { label: 'مدير', color: 'bg-blue-500' };
+      case 'editor': return { label: 'محرر', color: 'bg-teal-500' };
+      default: return { label: role, color: 'bg-gray-500' };
+    }
+  }
+
+  const roleDisplay = getRoleDisplay(user?.role);
+
   return (
     <div className="min-h-screen bg-gray-50 flex">
       {/* Sidebar */}
       <div className={`fixed inset-y-0 right-0 z-50 w-64 bg-palestine-black transform ${sidebarOpen ? 'translate-x-0' : 'translate-x-full'
-        } transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0`}>
+        } transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 overflow-y-auto`}>
 
         {/* Sidebar Header */}
         <div className="flex items-center justify-between h-16 px-6 bg-palestine-green">
@@ -52,20 +93,22 @@ const AdminLayout = () => {
         {/* User Info */}
         <div className="px-6 py-4 bg-palestine-green/10 border-b border-gray-700">
           <div className="flex items-center">
-            <div className="w-10 h-10 bg-palestine-green rounded-full flex items-center justify-center">
+            <div className={`w-10 h-10 ${roleDisplay.color} rounded-full flex items-center justify-center`}>
               <span className="text-white font-bold">
-                {user?.username?.charAt(0)?.toUpperCase()}
+                {(user?.displayName || user?.username)?.charAt(0)?.toUpperCase()}
               </span>
             </div>
             <div className="mr-3">
-              <p className="text-white font-medium">{user?.username}</p>
-              <p className="text-gray-300 text-sm">{user?.role}</p>
+              <p className="text-white font-medium">{user?.displayName || user?.username}</p>
+              <span className={`text-xs px-2 py-0.5 rounded-full ${roleDisplay.color} text-white`}>
+                {roleDisplay.label}
+              </span>
             </div>
           </div>
         </div>
 
         {/* Navigation */}
-        <nav className="mt-6">
+        <nav className="mt-6 pb-24">
           {menuItems.map((item) => (
             <button
               key={item.id}
@@ -85,7 +128,7 @@ const AdminLayout = () => {
         </nav>
 
         {/* Logout Button */}
-        <div className="absolute bottom-0 w-full p-6">
+        <div className="absolute bottom-0 w-full p-6 bg-palestine-black">
           <button
             onClick={handleLogout}
             className="w-full flex items-center px-4 py-3 text-right text-gray-300 hover:bg-palestine-red hover:text-white rounded-lg transition-colors duration-200"
@@ -124,9 +167,12 @@ const AdminLayout = () => {
 
               <div className="w-px h-6 bg-gray-300"></div>
 
-              <div className="flex items-center">
-                <span className="text-sm text-gray-600 ml-2">مرحباً،</span>
-                <span className="text-sm font-medium text-palestine-black">{user?.username}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">مرحباً،</span>
+                <span className="text-sm font-medium text-palestine-black">{user?.displayName || user?.username}</span>
+                <span className={`text-xs px-2 py-0.5 rounded-full ${roleDisplay.color} text-white`}>
+                  {roleDisplay.label}
+                </span>
               </div>
             </div>
           </div>

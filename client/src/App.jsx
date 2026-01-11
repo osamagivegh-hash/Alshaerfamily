@@ -36,6 +36,7 @@ import AdminTickers from './components/admin/AdminTickers'
 import AdminFamilyTree from './components/admin/AdminFamilyTree'
 import AdminFamilyTreeContent from './components/admin/AdminFamilyTreeContent'
 import AdminDevTeamMessages from './components/admin/AdminDevTeamMessages'
+import AdminUserManagement from './components/admin/AdminUserManagement'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 
 function App() {
@@ -82,6 +83,7 @@ function App() {
               <Route path="family-tree" element={<AdminFamilyTree />} />
               <Route path="family-tree-content" element={<AdminFamilyTreeContent />} />
               <Route path="dev-team" element={<AdminDevTeamMessages />} />
+              <Route path="users" element={<AdminUserManagement />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
             <Route path="*" element={<NotFound />} />

@@ -1,7 +1,18 @@
 const express = require('express');
 const fs = require('fs-extra');
 const path = require('path');
-const { authenticateToken, requireAdmin, login, changePassword } = require('../middleware/auth');
+const {
+  authenticateToken,
+  requireAdmin,
+  requireSuperAdmin,
+  login,
+  changePassword,
+  getAllUsers,
+  createUser,
+  updateUser,
+  deleteUser,
+  resetUserPassword
+} = require('../middleware/auth');
 const {
   News,
   Conversations,
@@ -1258,5 +1269,36 @@ router.delete('/persons/clear-all', authenticateToken, requireAdmin, async (req,
   }
 });
 
-module.exports = router;
+// ==================== USER MANAGEMENT ROUTES (Super Admin Only) ====================
 
+/**
+ * GET /api/admin/users
+ * Get all users (Super Admin only)
+ */
+router.get('/users', authenticateToken, requireSuperAdmin, getAllUsers);
+
+/**
+ * POST /api/admin/users
+ * Create a new user (Super Admin only)
+ */
+router.post('/users', authenticateToken, requireSuperAdmin, createUser);
+
+/**
+ * PUT /api/admin/users/:id
+ * Update a user (Super Admin only)
+ */
+router.put('/users/:id', authenticateToken, requireSuperAdmin, updateUser);
+
+/**
+ * DELETE /api/admin/users/:id
+ * Delete a user (Super Admin only)
+ */
+router.delete('/users/:id', authenticateToken, requireSuperAdmin, deleteUser);
+
+/**
+ * POST /api/admin/users/:id/reset-password
+ * Reset user password (Super Admin only)
+ */
+router.post('/users/:id/reset-password', authenticateToken, requireSuperAdmin, resetUserPassword);
+
+module.exports = router;

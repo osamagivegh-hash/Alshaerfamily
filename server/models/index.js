@@ -14,12 +14,24 @@ const connectDB = async () => {
   }
 };
 
-// Admin Schema
+// Admin Schema with Role-Based Access Control
 const adminSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
-  role: { type: String, default: 'admin' },
+  role: {
+    type: String,
+    enum: ['super-admin', 'admin', 'editor'],
+    default: 'admin'
+  },
+  // Permissions for editor role
+  permissions: [{
+    type: String,
+    enum: ['family-tree', 'dev-team', 'news', 'articles', 'conversations', 'gallery', 'contacts', 'palestine', 'settings']
+  }],
+  displayName: { type: String },
+  isActive: { type: Boolean, default: true },
+  createdBy: { type: String },
   lastLogin: { type: Date },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
