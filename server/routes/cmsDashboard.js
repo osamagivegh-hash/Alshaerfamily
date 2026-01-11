@@ -31,7 +31,8 @@ const {
     HeroSlide,
     Backup,
     BackupSettings,
-    AuditLog
+    AuditLog,
+    Visitor
 } = require('../models');
 const BackupService = require('../services/BackupService');
 
@@ -89,9 +90,23 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
         const recentNews = await News.countDocuments({ createdAt: { $gte: sevenDaysAgo } });
         const recentArticles = await Articles.countDocuments({ createdAt: { $gte: sevenDaysAgo } });
 
+        // Get Visitor Stats
+        const today = new Date().toISOString().slice(0, 10);
+        const visitorsTodayDoc = await Visitor.findOne({ date: today });
+        const visitorsToday = visitorsTodayDoc ? visitorsTodayDoc.count : 0;
+
+        const totalVisitorsAgg = await Visitor.aggregate([
+            { $group: { _id: null, total: { $sum: '$count' } } }
+        ]);
+        const totalVisitors = totalVisitorsAgg.length > 0 ? totalVisitorsAgg[0].total : 0;
+
         res.json({
             success: true,
             data: {
+                visitors: {
+                    today: visitorsToday,
+                    total: totalVisitors
+                },
                 content: {
                     news: newsCount,
                     articles: articlesCount,

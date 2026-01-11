@@ -6,7 +6,7 @@ import Hero from './Hero'
 import LoadingSpinner from './LoadingSpinner'
 import LazySection from './common/LazySection'
 import { FamilyTreeSection } from './FamilyTree'
-import { fetchSectionsData } from '../utils/api'
+import { fetchSectionsData, api } from '../utils/api'
 
 // Lazy load components
 const News = lazy(() => import('./News'))
@@ -25,8 +25,12 @@ const PublicApp = () => {
   useEffect(() => {
     const loadData = async () => {
       try {
+        // Fetch sections data
         const data = await fetchSectionsData()
         setSectionsData(data)
+
+        // Record visit (fire and forget)
+        api.post('/visits').catch(err => console.error('Visit recording failed:', err))
       } catch (err) {
         setError('فشل في تحميل البيانات')
         console.error('Error loading data:', err)

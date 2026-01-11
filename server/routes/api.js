@@ -1,23 +1,65 @@
 const express = require('express');
-const { 
-  News, 
-  Conversations, 
-  Articles, 
-  Palestine, 
-  Gallery, 
+const {
+  News,
+  Conversations,
+  Articles,
+  Palestine,
+  Gallery,
   Contacts,
   Comments,
   FamilyTickerNews,
   PalestineTickerNews,
   TickerSettings,
-  HeroSlide
+  HeroSlide,
+  Visitor
 } = require('../models');
 const { asyncHandler } = require('../middleware/errorHandler');
-const { 
-  validate, 
-  contactValidation, 
+
+// ... (existing imports)
+
+// Record a new visit
+router.post('/visits', asyncHandler(async (req, res) => {
+  const ip = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+  try {
+    let visitor = await Visitor.findOne({ date: today });
+
+    if (!visitor) {
+      // First visit of the day
+      visitor = new Visitor({
+        date: today,
+        count: 1,
+        ips: [ip]
+      });
+    } else {
+      // Check if IP already visited today (optional check, but good for unique visitors)
+      // For simple "hits", we just increment. But user asked for "Visitors" (Zowwar).
+      // Let's count unique IPs as visitors.
+      if (!visitor.ips.includes(ip)) {
+        visitor.count += 1;
+        visitor.ips.push(ip);
+      }
+      // If we wanted "Page Views", we would increment count regardless.
+      // But typically "Visitor Count" implies User sessions or Unique IPs.
+      // Let's stick to Unique IPs for accurate "People" count.
+    }
+
+    await visitor.save();
+    res.success(200, 'تم تسجيل الزيارة', { count: visitor.count });
+  } catch (error) {
+    logger.error('Error recording visit:', error);
+    // Don't fail the client request just because stats failed
+    res.success(200, 'تم تسجيل الزيارة (مع خطأ بسيط)', { count: 0 });
+  }
+}));
+
+// Get all sections data
+const {
+  validate,
+  contactValidation,
   commentValidation,
-  sanitizeInput 
+  sanitizeInput
 } = require('../middleware/validation');
 const logger = require('../middleware/logger');
 const router = express.Router();
@@ -72,14 +114,14 @@ const normalizeDocument = (doc) => {
 // Get all sections data
 router.get('/sections', asyncHandler(async (req, res) => {
   const sections = {};
-  
+
   // Fetch data from MongoDB collections - removed limit to show all items
   sections.news = normalizeDocument(await News.find({ isArchived: { $ne: true } }).sort({ date: -1 }));
   sections.conversations = normalizeDocument(await Conversations.find().sort({ date: -1 }).limit(10));
   sections.articles = normalizeDocument(await Articles.find().sort({ date: -1 }).limit(10));
   sections.palestine = normalizeDocument(await Palestine.find().sort({ createdAt: -1 }));
   sections.gallery = normalizeDocument(await Gallery.find().sort({ createdAt: -1 }));
-  
+
   logger.info('Fetched all sections data');
   res.success(200, 'تم جلب البيانات بنجاح', sections);
 }));
@@ -88,7 +130,7 @@ router.get('/sections', asyncHandler(async (req, res) => {
 router.get('/sections/:section', asyncHandler(async (req, res) => {
   const { section } = req.params;
   let data = [];
-  
+
   switch (section) {
     case 'news':
       data = normalizeDocument(await News.find({ isArchived: { $ne: true } }).sort({ date: -1 }));
@@ -108,7 +150,7 @@ router.get('/sections/:section', asyncHandler(async (req, res) => {
     default:
       return res.error(404, 'القسم غير موجود');
   }
-  
+
   logger.info(`Fetched section: ${section}`);
   res.success(200, 'تم جلب البيانات بنجاح', data);
 }));
@@ -116,16 +158,16 @@ router.get('/sections/:section', asyncHandler(async (req, res) => {
 // Handle contact form submissions
 router.post('/contact', sanitizeInput, validate(contactValidation), asyncHandler(async (req, res) => {
   const { name, email, message } = req.body;
-  
+
   const newContact = new Contacts({
     name,
     email,
     message,
     status: 'new'
   });
-  
+
   await newContact.save();
-  
+
   logger.info('New contact message received', { email, name });
   res.success(201, 'تم إرسال رسالتك بنجاح', { id: newContact._id });
 }));
@@ -139,34 +181,34 @@ router.get('/contacts', asyncHandler(async (req, res) => {
 // Get single article by ID
 router.get('/articles/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
-  
+
   // Try to find by MongoDB _id first, then by custom id field
   let article = await Articles.findById(id).catch(() => null);
   if (!article) {
     article = await Articles.findOne({ id: id });
   }
-  
+
   if (!article) {
     return res.error(404, 'المقال غير موجود');
   }
-  
+
   res.success(200, 'تم جلب المقال بنجاح', normalizeDocument(article));
 }));
 
 // Get single conversation by ID
 router.get('/conversations/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
-  
+
   // Try to find by MongoDB _id first, then by custom id field
   let conversation = await Conversations.findById(id).catch(() => null);
   if (!conversation) {
     conversation = await Conversations.findOne({ id: id });
   }
-  
+
   if (!conversation) {
     return res.error(404, 'الحوار غير موجود');
   }
-  
+
   res.success(200, 'تم جلب الحوار بنجاح', normalizeDocument(conversation));
 }));
 
@@ -212,17 +254,17 @@ router.get('/news/category/:category', asyncHandler(async (req, res) => {
 // Get single news by ID
 router.get('/news/:id', asyncHandler(async (req, res) => {
   const { id } = req.params;
-  
+
   // Try to find by MongoDB _id first, then by custom id field
   let news = await News.findById(id).catch(() => null);
   if (!news) {
     news = await News.findOne({ id: id });
   }
-  
+
   if (!news) {
     return res.error(404, 'الخبر غير موجود');
   }
-  
+
   res.success(200, 'تم جلب الخبر بنجاح', normalizeDocument(news));
 }));
 
@@ -231,25 +273,25 @@ router.get('/news/:id', asyncHandler(async (req, res) => {
 // Get comments for a specific content item
 router.get('/comments/:contentType/:contentId', asyncHandler(async (req, res) => {
   const { contentType, contentId } = req.params;
-  
+
   // Validate contentType
   if (!['article', 'news', 'conversation'].includes(contentType)) {
     return res.error(400, 'نوع المحتوى غير صحيح');
   }
-  
+
   const comments = await Comments.find({
     contentType,
     contentId,
     approved: true // Only return approved comments
   }).sort({ createdAt: -1 });
-  
+
   res.success(200, 'تم جلب التعليقات بنجاح', comments);
 }));
 
 // Create a new comment
 router.post('/comments', sanitizeInput, validate(commentValidation), asyncHandler(async (req, res) => {
   const { contentType, contentId, name, email, comment } = req.body;
-  
+
   // Create new comment (auto-approved)
   const newComment = new Comments({
     contentType,
@@ -259,9 +301,9 @@ router.post('/comments', sanitizeInput, validate(commentValidation), asyncHandle
     comment: comment.trim(),
     approved: true
   });
-  
+
   const savedComment = await newComment.save();
-  
+
   logger.info('New comment created', { contentType, contentId, name });
   res.success(201, 'تم إضافة التعليق بنجاح', {
     ...savedComment.toObject(),
@@ -272,17 +314,17 @@ router.post('/comments', sanitizeInput, validate(commentValidation), asyncHandle
 // Get comment count for content (for admin purposes)
 router.get('/comments/:contentType/:contentId/count', asyncHandler(async (req, res) => {
   const { contentType, contentId } = req.params;
-  
+
   const totalCount = await Comments.countDocuments({ contentType, contentId });
-  const approvedCount = await Comments.countDocuments({ 
-    contentType, 
-    contentId, 
-    approved: true 
+  const approvedCount = await Comments.countDocuments({
+    contentType,
+    contentId,
+    approved: true
   });
-  
-  res.success(200, 'تم جلب عدد التعليقات بنجاح', { 
-    total: totalCount, 
-    approved: approvedCount 
+
+  res.success(200, 'تم جلب عدد التعليقات بنجاح', {
+    total: totalCount,
+    approved: approvedCount
   });
 }));
 
@@ -293,7 +335,7 @@ router.get('/hero-slides', asyncHandler(async (req, res) => {
   const slides = await HeroSlide.find({ active: true })
     .sort({ order: 1, createdAt: -1 })
     .select('title subtitle image link linkText order');
-  
+
   res.success(200, 'تم جلب شرائح البطل بنجاح', normalizeDocument(slides));
 }));
 
@@ -304,9 +346,9 @@ router.get('/ticker/family-news', asyncHandler(async (req, res) => {
   const items = await FamilyTickerNews.find({ active: true })
     .sort({ order: 1, createdAt: -1 })
     .select('headline');
-  
+
   const headlines = items.map(item => item.headline);
-  
+
   // Fallback to default headlines if database is empty
   if (headlines.length === 0) {
     const defaultHeadlines = [
@@ -316,7 +358,7 @@ router.get('/ticker/family-news', asyncHandler(async (req, res) => {
     ];
     return res.success(200, 'تم جلب أخبار الشريط العائلي', defaultHeadlines);
   }
-  
+
   res.success(200, 'تم جلب أخبار الشريط العائلي', headlines);
 }));
 
@@ -387,10 +429,10 @@ router.get('/ticker/palestine-news', asyncHandler(async (req, res) => {
               const title = (article.title || '').toLowerCase();
               const desc = (article.description || '').toLowerCase();
               return title.includes('palestine') ||
-                     title.includes('gaza') ||
-                     title.includes('west bank') ||
-                     desc.includes('palestine') ||
-                     desc.includes('gaza');
+                title.includes('gaza') ||
+                title.includes('west bank') ||
+                desc.includes('palestine') ||
+                desc.includes('gaza');
             })
             .map(article => article.title?.trim())
             .filter(title => title && title.length > 10 && title.length < 200)
@@ -435,12 +477,12 @@ router.get('/ticker/palestine-news', asyncHandler(async (req, res) => {
               const title = (article.title || '').toLowerCase();
               const desc = (article.description || '').toLowerCase();
               return title.includes('palestine') ||
-                     title.includes('gaza') ||
-                     title.includes('west bank') ||
-                     title.includes('palestinian') ||
-                     title.includes('فلسطين') ||
-                     desc.includes('palestine') ||
-                     desc.includes('gaza');
+                title.includes('gaza') ||
+                title.includes('west bank') ||
+                title.includes('palestinian') ||
+                title.includes('فلسطين') ||
+                desc.includes('palestine') ||
+                desc.includes('gaza');
             })
             .map(article => article.title?.trim())
             .filter(title => title && title.length > 10 && title.length < 200)
@@ -490,12 +532,12 @@ router.get('/ticker/palestine-news', asyncHandler(async (req, res) => {
                 const title = (article.title || '').toLowerCase();
                 const desc = (article.description || '').toLowerCase();
                 return title.includes('palestine') ||
-                       title.includes('gaza') ||
-                       title.includes('west bank') ||
-                       title.includes('palestinian') ||
-                       title.includes('فلسطين') ||
-                       desc.includes('palestine') ||
-                       desc.includes('gaza');
+                  title.includes('gaza') ||
+                  title.includes('west bank') ||
+                  title.includes('palestinian') ||
+                  title.includes('فلسطين') ||
+                  desc.includes('palestine') ||
+                  desc.includes('gaza');
               })
               .map(article => article.title?.trim())
               .filter(title => title && title.length > 10 && title.length < 200);

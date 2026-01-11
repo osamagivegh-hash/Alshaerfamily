@@ -41,6 +41,14 @@ const AdminDashboard = () => {
   // All possible stat cards with their required permissions
   const allStatCards = [
     {
+      title: 'زوار اليوم',
+      value: stats?.visitorsToday || 0,
+      icon: '👥',
+      color: 'bg-indigo-600',
+      path: '#',
+      permission: 'news' // Visible to editors too
+    },
+    {
       title: 'الأخبار',
       value: stats?.news || 0,
       icon: '📰',
@@ -304,6 +312,13 @@ const AdminDashboard = () => {
           <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-xl font-bold text-palestine-black mb-4">إحصائيات سريعة</h3>
             <div className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-600">إجمالي الزوار</span>
+                <span className="text-2xl font-bold text-indigo-600">
+                  {stats?.visitorsTotal || 0}
+                </span>
+              </div>
+
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">إجمالي المحتوى</span>
                 <span className="text-2xl font-bold text-palestine-green">

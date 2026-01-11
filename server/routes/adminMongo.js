@@ -25,41 +25,11 @@ const {
   FamilyTickerNews,
   PalestineTickerNews,
   TickerSettings,
-  HeroSlide
+  HeroSlide,
+  Visitor
 } = require('../models');
 
-// Import storage configuration
-const { upload, isCloudinaryConfigured, cloudinaryFolder, uploadsDir } = require('../config/storage');
-
-// Import Cloudinary utilities
-const cloudinaryUtils = require('../utils/cloudinary');
-
-const router = express.Router();
-
-// Helper function to normalize MongoDB documents (convert _id to id)
-const normalizeDocument = (doc) => {
-  if (!doc) return null;
-  if (Array.isArray(doc)) {
-    return doc.map(item => normalizeDocument(item));
-  }
-  const normalized = doc.toObject ? doc.toObject() : { ...doc };
-  if (normalized._id) {
-    normalized.id = normalized._id.toString();
-  }
-  return normalized;
-};
-
-// Auth routes
-router.post('/login', login);
-router.post('/change-password', authenticateToken, requireAdmin, changePassword);
-
-// Verify token
-router.get('/verify', authenticateToken, (req, res) => {
-  res.json({
-    valid: true,
-    user: req.user
-  });
-});
+// ...
 
 // Dashboard stats
 router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
@@ -87,6 +57,22 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
       stats.devTeamMessages = await DevTeamMessage.countDocuments({ status: 'new' });
     } catch (e) {
       stats.devTeamMessages = 0;
+    }
+
+    // Count Visitors
+    try {
+      const today = new Date().toISOString().slice(0, 10);
+      const visitorsTodayDoc = await Visitor.findOne({ date: today });
+      stats.visitorsToday = visitorsTodayDoc ? visitorsTodayDoc.count : 0;
+
+      const totalVisitorsAgg = await Visitor.aggregate([
+        { $group: { _id: null, total: { $sum: '$count' } } }
+      ]);
+      stats.visitorsTotal = totalVisitorsAgg.length > 0 ? totalVisitorsAgg[0].total : 0;
+    } catch (e) {
+      console.error('Visitor stats error:', e);
+      stats.visitorsToday = 0;
+      stats.visitorsTotal = 0;
     }
 
     res.json(stats);
