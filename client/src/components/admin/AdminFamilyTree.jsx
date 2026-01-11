@@ -34,6 +34,12 @@ const AdminFamilyTree = () => {
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'tree'
     const [tree, setTree] = useState(null);
 
+    // Delete confirmation modal state
+    const [personToDelete, setPersonToDelete] = useState(null);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteStep, setDeleteStep] = useState(1); // 1 = first confirm, 2 = final confirm
+    const [deleteLoading, setDeleteLoading] = useState(false);
+
     const [formData, setFormData] = useState({
         fullName: '',
         nickname: '',
@@ -211,15 +217,9 @@ const AdminFamilyTree = () => {
         }
     };
 
-    const handleDelete = async (person) => {
-        // Log current user state for debugging
-        console.log('[AdminFamilyTree] Delete attempt:', {
-            personId: person.id || person._id,
-            personName: person.fullName,
-            currentUser: user?.username,
-            currentRole: user?.role,
-            isFTSuperAdmin: isFTSuperAdmin
-        });
+    // Open delete confirmation modal
+    const openDeleteModal = (person) => {
+        console.log('[AdminFamilyTree] Opening delete modal for:', person.fullName);
 
         // Strict Role Check
         if (!isFTSuperAdmin) {
@@ -227,59 +227,54 @@ const AdminFamilyTree = () => {
                 actualRole: user?.role
             });
             toast.error(`غير مصرح لك بحذف البيانات. هذه الصلاحية للمدير الأعلى فقط. (دورك الحالي: ${user?.role || 'غير محدد'})`);
-            return false;
+            return;
         }
 
-        // First confirmation
-        console.log('[AdminFamilyTree] Showing first confirmation dialog...');
-        const confirmMsg = `هل أنت متأكد من حذف "${person.fullName}"؟`;
-        let firstConfirm;
-        try {
-            firstConfirm = window.confirm(confirmMsg);
-            console.log('[AdminFamilyTree] First confirmation result:', firstConfirm);
-        } catch (err) {
-            console.error('[AdminFamilyTree] Error in first confirmation:', err);
-            toast.error('خطأ في عرض نافذة التأكيد');
-            return false;
-        }
+        setPersonToDelete(person);
+        setDeleteStep(1);
+        setShowDeleteModal(true);
+    };
 
-        if (!firstConfirm) {
-            console.log('[AdminFamilyTree] User cancelled first confirmation');
-            return false;
-        }
+    // Close delete modal and reset state
+    const closeDeleteModal = () => {
+        setShowDeleteModal(false);
+        setPersonToDelete(null);
+        setDeleteStep(1);
+        setDeleteLoading(false);
+    };
 
-        // Second confirmation
-        console.log('[AdminFamilyTree] Showing second confirmation dialog...');
-        const doubleConfirmMsg = `تأكيد نهائي: هل أنت متأكد تماماً؟ هذا الإجراء لا يمكن التراجع عنه.`;
-        let secondConfirm;
-        try {
-            secondConfirm = window.confirm(doubleConfirmMsg);
-            console.log('[AdminFamilyTree] Second confirmation result:', secondConfirm);
-        } catch (err) {
-            console.error('[AdminFamilyTree] Error in second confirmation:', err);
-            toast.error('خطأ في عرض نافذة التأكيد الثانية');
-            return false;
+    // Handle confirmation step progression
+    const confirmDelete = () => {
+        if (deleteStep === 1) {
+            console.log('[AdminFamilyTree] First confirmation passed, moving to final confirmation');
+            setDeleteStep(2);
+        } else if (deleteStep === 2) {
+            console.log('[AdminFamilyTree] Final confirmation passed, executing delete');
+            executeDelete(false);
         }
+    };
 
-        if (!secondConfirm) {
-            console.log('[AdminFamilyTree] User cancelled second confirmation');
-            return false;
-        }
+    // Execute the actual delete
+    const executeDelete = async (cascade = false) => {
+        if (!personToDelete) return;
+
+        const personId = personToDelete.id || personToDelete._id;
+        console.log('[AdminFamilyTree] Executing delete for:', personId, 'cascade:', cascade);
+
+        setDeleteLoading(true);
 
         try {
-            console.log('[AdminFamilyTree] Calling delete API for:', person.id || person._id);
-            const response = await familyTreeDashboardApi.deletePerson(person.id || person._id);
-
+            const response = await familyTreeDashboardApi.deletePerson(personId, cascade);
             console.log('[AdminFamilyTree] Delete response:', response);
 
             if (response?.success) {
-                toast.success('تم حذف الشخص بنجاح');
+                toast.success(cascade ? 'تم حذف الشخص وأبنائه بنجاح' : 'تم حذف الشخص بنجاح');
+                closeDeleteModal();
+                setShowModal(false); // Close edit modal if open
                 fetchData();
-                return true;
             } else {
                 console.error('[AdminFamilyTree] Delete failed:', response);
                 toast.error(response?.message || 'خطأ في الحذف');
-                return false;
             }
         } catch (error) {
             console.error('[AdminFamilyTree] Delete error:', error);
@@ -287,43 +282,29 @@ const AdminFamilyTree = () => {
 
             // Check for specific permission errors
             if (errorMessage.includes('403') || errorMessage.includes('غير مصرح') || errorMessage.includes('SUPER_ADMIN_REQUIRED')) {
-                console.error('[AdminFamilyTree] Permission denied by server');
-                toast.error('رفض الخادم طلب الحذف: صلاحيات المدير الأعلى مطلوبة. تأكد أن حسابك هو ft-super-admin.');
-                return false;
+                toast.error('رفض الخادم طلب الحذف: صلاحيات المدير الأعلى مطلوبة.');
             }
-
             // Check for authentication errors
-            if (errorMessage.includes('401') || errorMessage.includes('غير مصدق') || errorMessage.includes('TOKEN')) {
-                console.error('[AdminFamilyTree] Authentication error');
+            else if (errorMessage.includes('401') || errorMessage.includes('غير مصدق') || errorMessage.includes('TOKEN')) {
                 toast.error('خطأ في المصادقة. يرجى تسجيل الخروج وإعادة تسجيل الدخول.');
-                return false;
             }
-
             // Handle cascading delete suggestion
-            if (errorMessage.includes('أبناء') || errorMessage.includes('لا يمكن حذف') || errorMessage.includes('cascade')) {
-                console.log('[AdminFamilyTree] Person has children, prompting for cascade delete');
-                if (window.confirm(`هذا الشخص لديه أبناء. هل تريد حذفهم جميعاً؟`)) {
-                    try {
-                        console.log('[AdminFamilyTree] Attempting cascade delete');
-                        const cascadeRes = await familyTreeDashboardApi.deletePerson(person.id || person._id, true);
-                        console.log('[AdminFamilyTree] Cascade delete response:', cascadeRes);
-                        if (cascadeRes?.success) {
-                            toast.success('تم حذف الشخص وأبنائه بنجاح');
-                            fetchData();
-                            return true;
-                        } else {
-                            toast.error(cascadeRes?.message || 'خطأ في الحذف المتسلسل');
-                        }
-                    } catch (cascadeError) {
-                        console.error('[AdminFamilyTree] Cascade delete error:', cascadeError);
-                        toast.error(cascadeError.message || 'خطأ في الحذف المتسلسل');
-                    }
-                }
+            else if (errorMessage.includes('أبناء') || errorMessage.includes('لا يمكن حذف') || errorMessage.includes('cascade')) {
+                // Show cascade option
+                setDeleteStep(3); // Special step for cascade confirmation
+                return; // Don't close modal, show cascade option
             } else {
-                toast.error(error.message || 'خطأ في حذف الشخص');
+                toast.error(errorMessage || 'خطأ في حذف الشخص');
             }
-            return false;
+        } finally {
+            setDeleteLoading(false);
         }
+    };
+
+    // Legacy handleDelete for backward compatibility (used by modal delete button)
+    const handleDelete = (person) => {
+        openDeleteModal(person);
+        return false; // Return false to prevent modal from closing immediately
     };
 
     const getGenerationOptions = () => {
@@ -814,6 +795,127 @@ const AdminFamilyTree = () => {
                                 )}
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && personToDelete && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black bg-opacity-50">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+                        {/* Header */}
+                        <div className="bg-red-600 text-white p-4 flex items-center gap-3">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                            <h2 className="text-xl font-bold">
+                                {deleteStep === 3 ? '⚠️ تحذير: يوجد أبناء' : '🗑️ تأكيد الحذف'}
+                            </h2>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-6" dir="rtl">
+                            {deleteStep === 1 && (
+                                <div className="text-center">
+                                    <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+                                        <svg className="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                    </div>
+                                    <p className="text-lg font-medium text-gray-800 mb-2">
+                                        هل أنت متأكد من حذف
+                                    </p>
+                                    <p className="text-xl font-bold text-red-600 mb-4">
+                                        "{personToDelete.fullName}"
+                                    </p>
+                                    <p className="text-sm text-gray-500">
+                                        الجيل {personToDelete.generation}
+                                    </p>
+                                </div>
+                            )}
+
+                            {deleteStep === 2 && (
+                                <div className="text-center">
+                                    <div className="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center animate-pulse">
+                                        <span className="text-3xl">⚠️</span>
+                                    </div>
+                                    <p className="text-lg font-bold text-red-600 mb-2">
+                                        تأكيد نهائي!
+                                    </p>
+                                    <p className="text-gray-700 mb-4">
+                                        أنت على وشك حذف <strong>"{personToDelete.fullName}"</strong> نهائياً.
+                                    </p>
+                                    <p className="text-sm text-red-500 font-medium">
+                                        ⚠️ هذا الإجراء لا يمكن التراجع عنه!
+                                    </p>
+                                </div>
+                            )}
+
+                            {deleteStep === 3 && (
+                                <div className="text-center">
+                                    <div className="w-16 h-16 mx-auto mb-4 bg-amber-100 rounded-full flex items-center justify-center">
+                                        <span className="text-3xl">👨‍👦‍👦</span>
+                                    </div>
+                                    <p className="text-lg font-bold text-amber-600 mb-2">
+                                        يوجد أبناء!
+                                    </p>
+                                    <p className="text-gray-700 mb-4">
+                                        <strong>"{personToDelete.fullName}"</strong> لديه أبناء في الشجرة.
+                                    </p>
+                                    <p className="text-sm text-gray-600">
+                                        هل تريد حذف هذا الشخص وجميع أبنائه؟
+                                    </p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="bg-gray-50 px-6 py-4 flex gap-3 justify-end" dir="rtl">
+                            <button
+                                onClick={closeDeleteModal}
+                                disabled={deleteLoading}
+                                className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50"
+                            >
+                                إلغاء
+                            </button>
+
+                            {deleteStep === 3 ? (
+                                <button
+                                    onClick={() => executeDelete(true)}
+                                    disabled={deleteLoading}
+                                    className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium disabled:opacity-50 flex items-center gap-2"
+                                >
+                                    {deleteLoading ? (
+                                        <>
+                                            <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                                            جاري الحذف...
+                                        </>
+                                    ) : (
+                                        <>🗑️ حذف الكل</>
+                                    )}
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={confirmDelete}
+                                    disabled={deleteLoading}
+                                    className={`px-5 py-2.5 rounded-lg transition-colors font-medium disabled:opacity-50 flex items-center gap-2 ${deleteStep === 2
+                                        ? 'bg-red-600 text-white hover:bg-red-700'
+                                        : 'bg-amber-500 text-white hover:bg-amber-600'
+                                        }`}
+                                >
+                                    {deleteLoading ? (
+                                        <>
+                                            <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                                            جاري الحذف...
+                                        </>
+                                    ) : deleteStep === 1 ? (
+                                        <>متابعة ←</>
+                                    ) : (
+                                        <>🗑️ تأكيد الحذف</>
+                                    )}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
             )}
