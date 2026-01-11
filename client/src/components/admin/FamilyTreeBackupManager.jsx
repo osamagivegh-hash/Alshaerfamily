@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { useAdmin } from '../../contexts/AdminContext'
-import { familyTreeDashboardApi } from '../../utils/adminApi'
+import { useFamilyTreeAuth } from '../../contexts/FamilyTreeAuthContext'
+import { familyTreeDashboardApi, familyTreeBackupApi } from '../../utils/familyTreeApi'
 import toast from 'react-hot-toast'
 
 /**
@@ -9,12 +9,12 @@ import toast from 'react-hot-toast'
  * Features:
  * - List all Family Tree backups
  * - Create manual backups
- * - Restore from backup (Super Admin only)
- * - Delete backups (Super Admin only)
+ * - Restore from backup (FT Super Admin only)
+ * - Delete backups (FT Super Admin only)
  * - View backup settings
  */
 const FamilyTreeBackupManager = () => {
-    const { user } = useAdmin()
+    const { user, isFTSuperAdmin } = useFamilyTreeAuth()
     const [backups, setBackups] = useState([])
     const [loading, setLoading] = useState(true)
     const [creating, setCreating] = useState(false)
@@ -22,14 +22,12 @@ const FamilyTreeBackupManager = () => {
     const [confirmingRestore, setConfirmingRestore] = useState(null)
     const [stats, setStats] = useState(null)
 
-    const isSuperAdmin = user?.role === 'super-admin'
-
     // Fetch backups
     const fetchBackups = useCallback(async () => {
         try {
             setLoading(true)
             const [backupsRes, statsRes] = await Promise.all([
-                familyTreeDashboardApi.getBackups(20),
+                familyTreeBackupApi.getBackups(20),
                 familyTreeDashboardApi.getStats()
             ])
             setBackups(backupsRes.data || [])
@@ -51,7 +49,7 @@ const FamilyTreeBackupManager = () => {
 
         try {
             setCreating(true)
-            const result = await familyTreeDashboardApi.createBackup()
+            const result = await familyTreeBackupApi.createBackup()
             toast.success(result.message || 'تم إنشاء النسخة الاحتياطية بنجاح')
             fetchBackups()
         } catch (error) {
@@ -63,8 +61,8 @@ const FamilyTreeBackupManager = () => {
 
     // Initiate restore (first confirmation)
     const handleInitiateRestore = (backupId) => {
-        if (!isSuperAdmin) {
-            toast.error('فقط المدير الأعلى يمكنه استعادة النسخ الاحتياطية')
+        if (!isFTSuperAdmin) {
+            toast.error('فقط مدير شجرة العائلة الأعلى يمكنه استعادة النسخ الاحتياطية')
             return
         }
         setConfirmingRestore(backupId)
@@ -72,11 +70,11 @@ const FamilyTreeBackupManager = () => {
 
     // Confirm and execute restore
     const handleConfirmRestore = async () => {
-        if (!confirmingRestore || !isSuperAdmin) return
+        if (!confirmingRestore || !isFTSuperAdmin) return
 
         try {
             setRestoring(confirmingRestore)
-            const result = await familyTreeDashboardApi.restoreBackup(confirmingRestore, true)
+            const result = await familyTreeBackupApi.restoreBackup(confirmingRestore, true)
             toast.success(
                 `${result.message}\n` +
                 `تمت استعادة ${result.restoredRecords} سجل.\n` +
@@ -93,15 +91,15 @@ const FamilyTreeBackupManager = () => {
 
     // Delete backup
     const handleDeleteBackup = async (backupId) => {
-        if (!isSuperAdmin) {
-            toast.error('فقط المدير الأعلى يمكنه حذف النسخ الاحتياطية')
+        if (!isFTSuperAdmin) {
+            toast.error('فقط مدير شجرة العائلة الأعلى يمكنه حذف النسخ الاحتياطية')
             return
         }
 
         if (!window.confirm('هل أنت متأكد من حذف هذه النسخة الاحتياطية؟')) return
 
         try {
-            await familyTreeDashboardApi.deleteBackup(backupId)
+            await familyTreeBackupApi.deleteBackup(backupId)
             toast.success('تم حذف النسخة الاحتياطية بنجاح')
             fetchBackups()
         } catch (error) {
@@ -291,7 +289,7 @@ const FamilyTreeBackupManager = () => {
                                     </td>
                                     <td className="px-4 py-3">
                                         <div className="flex items-center justify-center gap-2">
-                                            {isSuperAdmin && (
+                                            {isFTSuperAdmin && (
                                                 <>
                                                     <button
                                                         onClick={() => handleInitiateRestore(backup.backupId)}
@@ -320,11 +318,11 @@ const FamilyTreeBackupManager = () => {
             )}
 
             {/* Role Notice */}
-            {!isSuperAdmin && (
+            {!isFTSuperAdmin && (
                 <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
                     <div className="flex items-center gap-2 text-yellow-700">
                         <span className="text-xl">ℹ️</span>
-                        <p>يمكنك إنشاء نسخ احتياطية، لكن الاستعادة والحذف متاحة فقط للمدير الأعلى.</p>
+                        <p>يمكنك إنشاء نسخ احتياطية، لكن الاستعادة والحذف متاحة فقط لمدير شجرة العائلة الأعلى.</p>
                     </div>
                 </div>
             )}

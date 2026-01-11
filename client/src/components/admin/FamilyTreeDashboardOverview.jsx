@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { familyTreeDashboardApi } from '../../utils/adminApi'
+import { familyTreeDashboardApi, familyTreeBackupApi } from '../../utils/familyTreeApi'
 import toast from 'react-hot-toast'
 
 /**
@@ -35,7 +35,7 @@ const FamilyTreeDashboardOverview = () => {
         if (creatingBackup) return
         try {
             setCreatingBackup(true)
-            await familyTreeDashboardApi.createBackup()
+            await familyTreeBackupApi.createBackup()
             toast.success('تم إنشاء النسخة الاحتياطية بنجاح')
             fetchStats()
         } catch (error) {
