@@ -12,6 +12,7 @@ const { errorHandler } = require('./middleware/errorHandler');
 const logger = require('./middleware/logger');
 const newsRouter = require('./routes/news');
 const { startNewsJob } = require('./jobs/newsJob');
+const { startBackupScheduler } = require('./jobs/backupScheduler');
 require('dotenv').config();
 
 const app = express();
@@ -21,6 +22,9 @@ const PORT = process.env.PORT || 5000;
 connectDB().then(() => {
   // Initialize admin user after DB connection
   initializeAdmin();
+
+  // Start backup scheduler after DB connection
+  startBackupScheduler();
 });
 
 // General rate limiting
@@ -137,6 +141,10 @@ app.use('/api', require('./routes/api'));
 // Apply strict rate limiting to login endpoint
 app.use('/api/admin/login', authLimiter);
 app.use('/api/admin', require('./routes/adminMongo'));
+
+// Separate Dashboard Routes
+app.use('/api/dashboard/family-tree', require('./routes/familyTreeDashboard'));
+app.use('/api/dashboard/cms', require('./routes/cmsDashboard'));
 
 // Serve React app for all non-API routes
 app.get('*', (req, res) => {

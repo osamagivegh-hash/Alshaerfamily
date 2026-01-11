@@ -9,21 +9,34 @@ const AdminLayout = () => {
   const location = useLocation()
 
   // All menu items with their required permissions
+  // Organized into sections: Family Tree Dashboard and CMS Dashboard
   const allMenuItems = [
-    { id: 'dashboard', label: 'لوحة التحكم', path: '/admin/dashboard', icon: '📊', permissions: [] }, // Everyone can see dashboard
-    { id: 'news', label: 'الأخبار', path: '/admin/news', icon: '📰', permissions: ['news'] },
-    { id: 'conversations', label: 'الحوارات', path: '/admin/conversations', icon: '💬', permissions: ['conversations'] },
-    { id: 'palestine', label: 'فلسطين', path: '/admin/palestine', icon: '🏛️', permissions: ['palestine'] },
-    { id: 'articles', label: 'المقالات', path: '/admin/articles', icon: '📝', permissions: ['articles'] },
-    { id: 'gallery', label: 'معرض الصور', path: '/admin/gallery', icon: '🖼️', permissions: ['gallery'] },
-    { id: 'family-tree', label: 'شجرة العائلة', path: '/admin/family-tree', icon: '🌳', permissions: ['family-tree'] },
-    { id: 'family-tree-content', label: 'محتوى الشجرة', path: '/admin/family-tree-content', icon: '📄', permissions: ['family-tree'] },
-    { id: 'dev-team', label: 'رسائل التطوير', path: '/admin/dev-team', icon: '👨‍💻', permissions: ['dev-team'] },
-    { id: 'comments', label: 'التعليقات', path: '/admin/comments', icon: '💬', permissions: ['articles', 'news', 'conversations'] },
-    { id: 'contacts', label: 'الرسائل', path: '/admin/contacts', icon: '📧', permissions: ['contacts'] },
-    { id: 'tickers', label: 'شريط الأخبار', path: '/admin/tickers', icon: '📺', permissions: ['news', 'palestine'] },
-    { id: 'settings', label: 'الإعدادات', path: '/admin/settings', icon: '⚙️', permissions: ['settings'] },
-    { id: 'users', label: 'إدارة المستخدمين', path: '/admin/users', icon: '👥', roles: ['super-admin'] },
+    // Dashboard Overview (everyone sees this)
+    { id: 'dashboard', label: 'لوحة التحكم', path: '/admin/dashboard', icon: '📊', permissions: [], section: 'main' },
+
+    // ===== FAMILY TREE DASHBOARD SECTION =====
+    { id: 'ft-divider', label: '── شجرة العائلة ──', type: 'divider', permissions: ['family-tree'], section: 'family-tree' },
+    { id: 'family-tree', label: 'إدارة الشجرة', path: '/admin/family-tree', icon: '🌳', permissions: ['family-tree'], section: 'family-tree' },
+    { id: 'family-tree-content', label: 'محتوى الشجرة', path: '/admin/family-tree-content', icon: '📄', permissions: ['family-tree'], section: 'family-tree' },
+    { id: 'family-tree-backups', label: 'النسخ الاحتياطية', path: '/admin/family-tree-backups', icon: '💾', permissions: ['family-tree'], section: 'family-tree' },
+
+    // ===== CMS DASHBOARD SECTION =====
+    { id: 'cms-divider', label: '── إدارة المحتوى ──', type: 'divider', permissions: ['news', 'articles', 'conversations', 'palestine', 'gallery'], section: 'cms' },
+    { id: 'news', label: 'الأخبار', path: '/admin/news', icon: '📰', permissions: ['news'], section: 'cms' },
+    { id: 'conversations', label: 'الحوارات', path: '/admin/conversations', icon: '💬', permissions: ['conversations'], section: 'cms' },
+    { id: 'palestine', label: 'فلسطين', path: '/admin/palestine', icon: '🏛️', permissions: ['palestine'], section: 'cms' },
+    { id: 'articles', label: 'المقالات', path: '/admin/articles', icon: '📝', permissions: ['articles'], section: 'cms' },
+    { id: 'gallery', label: 'معرض الصور', path: '/admin/gallery', icon: '🖼️', permissions: ['gallery'], section: 'cms' },
+    { id: 'comments', label: 'التعليقات', path: '/admin/comments', icon: '💬', permissions: ['articles', 'news', 'conversations'], section: 'cms' },
+    { id: 'contacts', label: 'الرسائل', path: '/admin/contacts', icon: '📧', permissions: ['contacts'], section: 'cms' },
+    { id: 'tickers', label: 'شريط الأخبار', path: '/admin/tickers', icon: '📺', permissions: ['news', 'palestine'], section: 'cms' },
+    { id: 'cms-backups', label: 'النسخ الاحتياطية', path: '/admin/cms-backups', icon: '💾', permissions: [], roles: ['super-admin', 'admin'], section: 'cms' },
+
+    // ===== SYSTEM SECTION =====
+    { id: 'sys-divider', label: '── النظام ──', type: 'divider', permissions: [], roles: ['super-admin', 'admin'], section: 'system' },
+    { id: 'dev-team', label: 'رسائل التطوير', path: '/admin/dev-team', icon: '👨‍💻', permissions: ['dev-team'], section: 'system' },
+    { id: 'settings', label: 'الإعدادات', path: '/admin/settings', icon: '⚙️', permissions: ['settings'], section: 'system' },
+    { id: 'users', label: 'إدارة المستخدمين', path: '/admin/users', icon: '👥', roles: ['super-admin'], section: 'system' },
   ]
 
   // Filter menu items based on user role and permissions
@@ -110,20 +123,30 @@ const AdminLayout = () => {
         {/* Navigation */}
         <nav className="mt-6 pb-24">
           {menuItems.map((item) => (
-            <button
-              key={item.id}
-              onClick={() => {
-                navigate(item.path)
-                setSidebarOpen(false)
-              }}
-              className={`w-full flex items-center px-6 py-3 text-right transition-colors duration-200 ${isActive(item.path)
-                ? 'bg-palestine-green text-white border-l-4 border-palestine-red'
-                : 'text-gray-300 hover:bg-gray-700 hover:text-white'
-                }`}
-            >
-              <span className="text-xl ml-3">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-            </button>
+            item.type === 'divider' ? (
+              // Section Divider
+              <div key={item.id} className="px-6 py-2 mt-2">
+                <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                  {item.label}
+                </span>
+              </div>
+            ) : (
+              // Menu Button
+              <button
+                key={item.id}
+                onClick={() => {
+                  navigate(item.path)
+                  setSidebarOpen(false)
+                }}
+                className={`w-full flex items-center px-6 py-3 text-right transition-colors duration-200 ${isActive(item.path)
+                  ? 'bg-palestine-green text-white border-l-4 border-palestine-red'
+                  : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                  }`}
+              >
+                <span className="text-xl ml-3">{item.icon}</span>
+                <span className="font-medium">{item.label}</span>
+              </button>
+            )
           ))}
         </nav>
 

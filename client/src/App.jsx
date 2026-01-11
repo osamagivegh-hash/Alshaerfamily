@@ -37,6 +37,8 @@ import AdminFamilyTree from './components/admin/AdminFamilyTree'
 import AdminFamilyTreeContent from './components/admin/AdminFamilyTreeContent'
 import AdminDevTeamMessages from './components/admin/AdminDevTeamMessages'
 import AdminUserManagement from './components/admin/AdminUserManagement'
+import FamilyTreeBackupManager from './components/admin/FamilyTreeBackupManager'
+import CMSBackupManager from './components/admin/CMSBackupManager'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import PermissionGuard from './components/admin/PermissionGuard'
 
@@ -145,6 +147,13 @@ function App() {
                 </PermissionGuard>
               } />
 
+              {/* Family Tree Backups - requires 'family-tree' permission */}
+              <Route path="family-tree-backups" element={
+                <PermissionGuard permission="family-tree">
+                  <FamilyTreeBackupManager />
+                </PermissionGuard>
+              } />
+
               {/* Dev Team - requires 'dev-team' permission */}
               <Route path="dev-team" element={
                 <PermissionGuard permission="dev-team">
@@ -154,6 +163,9 @@ function App() {
 
               {/* User Management - handled internally (super-admin only) */}
               <Route path="users" element={<AdminUserManagement />} />
+
+              {/* CMS Backups - admin/super-admin only */}
+              <Route path="cms-backups" element={<CMSBackupManager />} />
 
               {/* Settings - requires 'settings' permission */}
               <Route path="settings" element={

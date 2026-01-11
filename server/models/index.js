@@ -304,6 +304,11 @@ const HeroSlide = mongoose.model('HeroSlide', heroSlideSchema);
 // Import Person model
 const Person = require('./Person');
 
+// Import Backup models
+const Backup = require('./Backup');
+const AuditLog = require('./AuditLog');
+const BackupSettings = require('./BackupSettings');
+
 module.exports = {
   connectDB,
   Admin,
@@ -318,5 +323,8 @@ module.exports = {
   PalestineTickerNews,
   TickerSettings,
   HeroSlide,
-  Person
+  Person,
+  Backup,
+  AuditLog,
+  BackupSettings
 };

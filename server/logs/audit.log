@@ -1,2 +1,3 @@
 {"timestamp":"2026-01-11T00:42:48.983Z","action":"LOGIN_FAILED","resource":"auth","user":"admin","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7462","details":{"reason":"Invalid password"}}
 {"timestamp":"2026-01-11T01:52:49.998Z","action":"LOGIN_FAILED","resource":"auth","user":"admin","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36","details":{"reason":"Invalid password"}}
+{"timestamp":"2026-01-11T10:36:56.927Z","action":"LOGIN_SUCCESS","resource":"auth","user":"tree_editor","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36","details":null}

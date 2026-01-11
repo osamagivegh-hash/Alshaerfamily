@@ -66,3 +66,13 @@
 {"method":"POST","url":"/login","status":401,"duration":"581ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7462"}
 [ERROR] 2026-01-11T01:52:50.026Z - Request failed
 {"method":"POST","url":"/login","status":401,"duration":"459ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-11T10:25:44.246Z - Request failed
+{"method":"POST","url":"/login","status":400,"duration":"12ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-11T10:56:33.470Z - Request failed
+{"method":"DELETE","url":"/persons/6960609b515b7b4e370f689b","status":400,"duration":"356ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-11T10:57:10.929Z - Request failed
+{"method":"DELETE","url":"/persons/6960609b515b7b4e370f689b","status":404,"duration":"1475ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-11T10:58:40.154Z - Request failed
+{"method":"DELETE","url":"/persons/6960609b515b7b4e370f689b","status":404,"duration":"199ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-11T11:27:55.504Z - Request failed
+{"method":"GET","url":"/persons?limit=5","status":401,"duration":"4ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7462"}

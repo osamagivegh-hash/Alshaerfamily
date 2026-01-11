@@ -532,5 +532,249 @@ const adminApiWrapper = {
   }
 }
 
+// ==================== FAMILY TREE DASHBOARD API ====================
+
+export const familyTreeDashboardApi = {
+  // Get Family Tree Dashboard Stats
+  getStats: async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/dashboard/family-tree/stats`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+      })
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب إحصائيات شجرة العائلة')
+    }
+  },
+
+  // Get Family Tree Backups
+  getBackups: async (limit = 20) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/dashboard/family-tree/backups?limit=${limit}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+      })
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب النسخ الاحتياطية')
+    }
+  },
+
+  // Get Backup Details
+  getBackupDetails: async (backupId, includeData = false) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/dashboard/family-tree/backups/${backupId}?includeData=${includeData}`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب تفاصيل النسخة الاحتياطية')
+    }
+  },
+
+  // Create Manual Backup
+  createBackup: async () => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/dashboard/family-tree/backups/create`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في إنشاء النسخة الاحتياطية')
+    }
+  },
+
+  // Restore from Backup (Super Admin only)
+  restoreBackup: async (backupId, confirmRestore = false) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/dashboard/family-tree/backups/${backupId}/restore`,
+        { confirmRestore },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في استعادة النسخة الاحتياطية')
+    }
+  },
+
+  // Delete Backup (Super Admin only)
+  deleteBackup: async (backupId) => {
+    try {
+      const response = await axios.delete(
+        `${API_BASE_URL}/api/dashboard/family-tree/backups/${backupId}`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في حذف النسخة الاحتياطية')
+    }
+  },
+
+  // Get Backup Settings (Super Admin only)
+  getBackupSettings: async () => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/dashboard/family-tree/backup-settings`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب إعدادات النسخ الاحتياطي')
+    }
+  },
+
+  // Update Backup Settings (Super Admin only)
+  updateBackupSettings: async (settings) => {
+    try {
+      const response = await axios.put(
+        `${API_BASE_URL}/api/dashboard/family-tree/backup-settings`,
+        settings,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في تحديث إعدادات النسخ الاحتياطي')
+    }
+  },
+
+  // Get Audit Logs (Super Admin only)
+  getAuditLogs: async (limit = 100) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/dashboard/family-tree/audit-logs?limit=${limit}`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب سجلات التدقيق')
+    }
+  }
+}
+
+// ==================== CMS DASHBOARD API ====================
+
+export const cmsDashboardApi = {
+  // Get CMS Dashboard Stats
+  getStats: async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/dashboard/cms/stats`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+      })
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب إحصائيات لوحة الإدارة')
+    }
+  },
+
+  // Get CMS Backups
+  getBackups: async (limit = 20) => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/dashboard/cms/backups?limit=${limit}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` }
+      })
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب النسخ الاحتياطية')
+    }
+  },
+
+  // Get Backup Details
+  getBackupDetails: async (backupId, includeData = false) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/dashboard/cms/backups/${backupId}?includeData=${includeData}`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب تفاصيل النسخة الاحتياطية')
+    }
+  },
+
+  // Create Manual Backup
+  createBackup: async () => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/dashboard/cms/backups/create`,
+        {},
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في إنشاء النسخة الاحتياطية')
+    }
+  },
+
+  // Restore from Backup (Super Admin only)
+  restoreBackup: async (backupId, confirmRestore = false) => {
+    try {
+      const response = await axios.post(
+        `${API_BASE_URL}/api/dashboard/cms/backups/${backupId}/restore`,
+        { confirmRestore },
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في استعادة النسخة الاحتياطية')
+    }
+  },
+
+  // Delete Backup (Super Admin only)
+  deleteBackup: async (backupId) => {
+    try {
+      const response = await axios.delete(
+        `${API_BASE_URL}/api/dashboard/cms/backups/${backupId}`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في حذف النسخة الاحتياطية')
+    }
+  },
+
+  // Get Backup Settings (Super Admin only)
+  getBackupSettings: async () => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/dashboard/cms/backup-settings`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب إعدادات النسخ الاحتياطي')
+    }
+  },
+
+  // Update Backup Settings (Super Admin only)
+  updateBackupSettings: async (settings) => {
+    try {
+      const response = await axios.put(
+        `${API_BASE_URL}/api/dashboard/cms/backup-settings`,
+        settings,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في تحديث إعدادات النسخ الاحتياطي')
+    }
+  },
+
+  // Get Audit Logs (Super Admin only)
+  getAuditLogs: async (limit = 100) => {
+    try {
+      const response = await axios.get(
+        `${API_BASE_URL}/api/dashboard/cms/audit-logs?limit=${limit}`,
+        { headers: { Authorization: `Bearer ${localStorage.getItem('adminToken')}` } }
+      )
+      return response.data
+    } catch (error) {
+      throw new Error(error.response?.data?.message || 'خطأ في جلب سجلات التدقيق')
+    }
+  }
+}
+
 export default adminApiWrapper
 
