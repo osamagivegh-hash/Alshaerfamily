@@ -22,12 +22,12 @@ const FamilyTreeDashboardLayout = () => {
         { id: 'overview', label: 'نظرة عامة', path: '/family-dashboard', icon: '📊' },
         { id: 'members', label: 'أفراد العائلة', path: '/family-dashboard/members', icon: '👥' },
         { id: 'tree-structure', label: 'هيكل الشجرة', path: '/family-dashboard/tree', icon: '🌳' },
-        { id: 'content', label: 'محتوى الشجرة', path: '/family-dashboard/content', icon: '📄' },
-        { id: 'backups', label: 'النسخ الاحتياطية', path: '/family-dashboard/backups', icon: '💾' },
     ]
 
     // FT Super Admin only items
     const superAdminItems = [
+        { id: 'content', label: 'محتوى الشجرة', path: '/family-dashboard/content', icon: '📄' },
+        { id: 'backups', label: 'النسخ الاحتياطية', path: '/family-dashboard/backups', icon: '💾' },
         { id: 'users', label: 'إدارة المستخدمين', path: '/family-dashboard/users', icon: '👥' },
         { id: 'audit-logs', label: 'سجلات التدقيق', path: '/family-dashboard/audit-logs', icon: '📋' },
         { id: 'settings', label: 'الإعدادات', path: '/family-dashboard/settings', icon: '⚙️' },

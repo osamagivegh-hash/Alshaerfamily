@@ -10,7 +10,11 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const { authenticateToken, requirePermission } = require('../middleware/auth');
+const fs = require('fs-extra');
+const path = require('path');
+const { authenticateFTToken, requireFTSuperAdmin } = require('../middleware/familyTreeAuth');
+const { upload, isCloudinaryConfigured, cloudinaryFolder, uploadsDir } = require('../config/storage');
+const cloudinaryUtils = require('../utils/cloudinary');
 const {
     FounderAppreciation,
     FounderDiscussion,
@@ -33,6 +37,23 @@ const normalizeDocument = (doc) => {
 
 // Validate ObjectId
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// Helper function for local storage upload
+const saveToLocalStorage = async (req, res) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const filename = req.file.fieldname + '-' + uniqueSuffix + path.extname(req.file.originalname);
+    const filePath = path.join(uploadsDir, filename);
+
+    // Write file to disk
+    await fs.writeFile(filePath, req.file.buffer);
+
+    const fileUrl = `/uploads/${filename}`;
+    res.json({
+        message: 'تم رفع الملف بنجاح',
+        filename: filename,
+        url: fileUrl
+    });
+};
 
 // ==================== PUBLIC ROUTES ====================
 
@@ -154,7 +175,7 @@ router.get('/tree-display', async (req, res) => {
 // ---------- Settings Management ----------
 
 // GET Settings (Admin)
-router.get('/admin/settings', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.get('/admin/settings', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         let settings = await FamilyTreeSettings.findOne();
 
@@ -171,7 +192,7 @@ router.get('/admin/settings', authenticateToken, requirePermission('family-tree'
 });
 
 // PUT Update Settings (Admin)
-router.put('/admin/settings', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.put('/admin/settings', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const updateData = { ...req.body, updatedAt: new Date() };
 
@@ -199,7 +220,7 @@ router.put('/admin/settings', authenticateToken, requirePermission('family-tree'
 // ---------- Founder Appreciation Management ----------
 
 // GET Appreciation (Admin - includes unpublished)
-router.get('/admin/appreciation', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.get('/admin/appreciation', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         let appreciation = await FounderAppreciation.findOne();
 
@@ -221,7 +242,7 @@ router.get('/admin/appreciation', authenticateToken, requirePermission('family-t
 });
 
 // PUT Update Appreciation (Admin)
-router.put('/admin/appreciation', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.put('/admin/appreciation', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const updateData = { ...req.body, updatedAt: new Date() };
 
@@ -249,7 +270,7 @@ router.put('/admin/appreciation', authenticateToken, requirePermission('family-t
 // ---------- Founder Discussions Management ----------
 
 // GET All Discussions (Admin - includes unpublished)
-router.get('/admin/discussions', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.get('/admin/discussions', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const discussions = await FounderDiscussion.find()
             .sort({ discussionDate: -1, order: 1 });
@@ -262,7 +283,7 @@ router.get('/admin/discussions', authenticateToken, requirePermission('family-tr
 });
 
 // GET Single Discussion (Admin)
-router.get('/admin/discussions/:id', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.get('/admin/discussions/:id', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -284,7 +305,7 @@ router.get('/admin/discussions/:id', authenticateToken, requirePermission('famil
 });
 
 // POST Create Discussion (Admin)
-router.post('/admin/discussions', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.post('/admin/discussions', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const { title, content, discussionDate } = req.body;
 
@@ -317,7 +338,7 @@ router.post('/admin/discussions', authenticateToken, requirePermission('family-t
 });
 
 // PUT Update Discussion (Admin)
-router.put('/admin/discussions/:id', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.put('/admin/discussions/:id', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -347,7 +368,7 @@ router.put('/admin/discussions/:id', authenticateToken, requirePermission('famil
 });
 
 // DELETE Discussion (Admin)
-router.delete('/admin/discussions/:id', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.delete('/admin/discussions/:id', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -369,7 +390,7 @@ router.delete('/admin/discussions/:id', authenticateToken, requirePermission('fa
 });
 
 // PATCH Toggle Discussion Published Status (Admin)
-router.patch('/admin/discussions/:id/publish', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.patch('/admin/discussions/:id/publish', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const { id } = req.params;
         const { isPublished } = req.body;
@@ -402,7 +423,7 @@ router.patch('/admin/discussions/:id/publish', authenticateToken, requirePermiss
 // ---------- Family Tree Display Management ----------
 
 // GET Tree Display (Admin)
-router.get('/admin/tree-display', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.get('/admin/tree-display', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         let display = await FamilyTreeDisplay.findOne();
 
@@ -423,7 +444,7 @@ router.get('/admin/tree-display', authenticateToken, requirePermission('family-t
 });
 
 // PUT Update Tree Display (Admin)
-router.put('/admin/tree-display', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.put('/admin/tree-display', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const updateData = { ...req.body, updatedAt: new Date() };
 
@@ -451,7 +472,7 @@ router.put('/admin/tree-display', authenticateToken, requirePermission('family-t
 // ---------- Stats Endpoint ----------
 
 // GET Family Tree Content Stats (Admin)
-router.get('/admin/stats', authenticateToken, requirePermission('family-tree'), async (req, res) => {
+router.get('/admin/stats', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const [appreciationExists, discussionsCount, displayExists] = await Promise.all([
             FounderAppreciation.exists({ isPublished: true }),
@@ -473,6 +494,55 @@ router.get('/admin/stats', authenticateToken, requirePermission('family-tree'), 
     } catch (error) {
         console.error('Get content stats error:', error);
         res.status(500).json({ success: false, message: 'خطأ في جلب الإحصائيات' });
+    }
+});
+
+// File upload endpoint (FT Super Admin)
+router.post('/admin/upload', authenticateFTToken, requireFTSuperAdmin, upload.single('image'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'لم يتم اختيار ملف' });
+        }
+
+        if (isCloudinaryConfigured) {
+            // Upload to Cloudinary
+            try {
+                const result = await cloudinaryUtils.uploadImage(req.file.buffer, cloudinaryFolder);
+
+                // Validate the response
+                if (!result || !result.secure_url) {
+                    throw new Error('Cloudinary upload returned invalid response');
+                }
+
+                // Ensure URL is complete and valid
+                const imageUrl = result.secure_url;
+                if (!imageUrl.startsWith('http')) {
+                    throw new Error(`Invalid Cloudinary URL format: ${imageUrl}`);
+                }
+
+                console.log('Image uploaded successfully:', {
+                    public_id: result.public_id,
+                    url: imageUrl,
+                    format: result.format
+                });
+
+                res.json({
+                    message: 'تم رفع الملف بنجاح إلى Cloudinary',
+                    filename: result.public_id,
+                    url: imageUrl
+                });
+            } catch (cloudinaryError) {
+                console.error('Cloudinary upload error:', cloudinaryError);
+                // Fallback to local storage
+                await saveToLocalStorage(req, res);
+            }
+        } else {
+            // Upload to local storage
+            await saveToLocalStorage(req, res);
+        }
+    } catch (error) {
+        console.error('Upload error:', error);
+        res.status(500).json({ message: 'خطأ في رفع الملف' });
     }
 });
 

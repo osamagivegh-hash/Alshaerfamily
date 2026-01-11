@@ -130,7 +130,11 @@ router.get('/persons/:id', authenticateFTToken, requireFTPermission('manage-memb
  */
 router.post('/persons', authenticateFTToken, requireFTPermission('manage-members'), async (req, res) => {
     try {
-        const personData = { ...req.body };
+        const personData = {
+            ...req.body,
+            createdBy: req.ftUser.username,
+            lastModifiedBy: req.ftUser.username
+        };
 
         const person = new Person(personData);
         await person.save();
@@ -166,35 +170,57 @@ router.post('/persons', authenticateFTToken, requireFTPermission('manage-members
  */
 router.put('/persons/:id', authenticateFTToken, requireFTPermission('manage-members'), async (req, res) => {
     try {
-        const person = await Person.findByIdAndUpdate(
-            req.params.id,
-            { $set: req.body },
-            { new: true, runValidators: true }
-        );
+        const person = await Person.findById(req.params.id);
 
         if (!person) {
             return res.status(404).json({ success: false, message: 'الشخص غير موجود' });
         }
+
+        // Check ownership for non-super-admins
+        if (req.ftUser.role !== 'ft-super-admin') {
+            if (person.createdBy && person.createdBy !== req.ftUser.username) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'غير مصرح لك بتعديل هذا السجل. يمكنك فقط تعديل السجلات التي قمت بإضافتها.'
+                });
+            }
+            // Strict check for legacy records (no createdBy) - Optional: Disable editing for Editors
+            if (!person.createdBy) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'غير مصرح لك بتعديل السجلات القديمة.'
+                });
+            }
+        }
+
+        // Add lastModifiedBy
+        const updateData = { ...req.body, lastModifiedBy: req.ftUser.username };
+
+        const updatedPerson = await Person.findByIdAndUpdate(
+            req.params.id,
+            { $set: updateData },
+            { new: true, runValidators: true }
+        );
 
         // Log the action
         await AuditLog.logAction({
             action: 'FT_PERSON_UPDATED',
             category: 'data-management',
             resource: 'person',
-            resourceId: person._id.toString(),
+            resourceId: updatedPerson._id.toString(),
             user: req.ftUser.username,
             userRole: req.ftUser.role,
             ipAddress: getClientIP(req),
             userAgent: req.headers['user-agent'],
             dashboard: 'family-tree-dashboard',
-            details: { fullName: person.fullName, changes: Object.keys(req.body) },
+            details: { fullName: updatedPerson.fullName, changes: Object.keys(req.body) },
             success: true
         });
 
         res.json({
             success: true,
             message: 'تم تحديث بيانات الشخص بنجاح',
-            data: person
+            data: updatedPerson
         });
     } catch (error) {
         console.error('[FT-DASHBOARD] Update person error:', error);

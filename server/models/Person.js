@@ -147,6 +147,15 @@ const personSchema = new mongoose.Schema({
     trim: true
   },
 
+  // Ownership audit
+  createdBy: {
+    type: String,
+    default: 'system'
+  },
+  lastModifiedBy: {
+    type: String
+  },
+
   createdAt: {
     type: Date,
     default: Date.now

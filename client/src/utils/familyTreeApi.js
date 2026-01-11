@@ -72,9 +72,9 @@ export const familyTreeDashboardApi = {
     },
 
     // Get All Persons
-    getPersons: async () => {
+    getPersons: async (search = '', generation = '') => {
         try {
-            const response = await ftApi.get('/api/dashboard/family-tree/persons')
+            const response = await ftApi.get(`/api/dashboard/family-tree/persons?search=${search}&generation=${generation}`)
             return response.data
         } catch (error) {
             throw new Error(error.response?.data?.message || 'خطأ في جلب أفراد العائلة')
@@ -112,9 +112,10 @@ export const familyTreeDashboardApi = {
     },
 
     // Delete Person (ft-super-admin only)
-    deletePerson: async (id) => {
+    deletePerson: async (id, cascade = false) => {
         try {
-            const response = await ftApi.delete(`/api/dashboard/family-tree/persons/${id}`)
+            const url = `/api/dashboard/family-tree/persons/${id}${cascade ? '?cascade=true' : ''}`
+            const response = await ftApi.delete(url)
             return response.data
         } catch (error) {
             throw new Error(error.response?.data?.message || 'خطأ في حذف الشخص')
@@ -267,9 +268,132 @@ export const familyTreeUserApi = {
     }
 }
 
+// ==================== CONTENT MANAGEMENT API ====================
+
+export const familyTreeContentApi = {
+    // Settings
+    getSettings: async () => {
+        try {
+            const response = await ftApi.get('/api/family-tree-content/admin/settings')
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في جلب الإعدادات')
+        }
+    },
+    updateSettings: async (settings) => {
+        try {
+            const response = await ftApi.put('/api/family-tree-content/admin/settings', settings)
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في تحديث الإعدادات')
+        }
+    },
+
+    // Appreciation
+    getAppreciation: async () => {
+        try {
+            const response = await ftApi.get('/api/family-tree-content/admin/appreciation')
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في جلب محتوى التقدير')
+        }
+    },
+    updateAppreciation: async (data) => {
+        try {
+            const response = await ftApi.put('/api/family-tree-content/admin/appreciation', data)
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في تحديث محتوى التقدير')
+        }
+    },
+
+    // Discussions
+    getDiscussions: async () => {
+        try {
+            const response = await ftApi.get('/api/family-tree-content/admin/discussions')
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في جلب الحوارات')
+        }
+    },
+    createDiscussion: async (data) => {
+        try {
+            const response = await ftApi.post('/api/family-tree-content/admin/discussions', data)
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في إنشاء الحوار')
+        }
+    },
+    updateDiscussion: async (id, data) => {
+        try {
+            const response = await ftApi.put(`/api/family-tree-content/admin/discussions/${id}`, data)
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في تحديث الحوار')
+        }
+    },
+    deleteDiscussion: async (id) => {
+        try {
+            const response = await ftApi.delete(`/api/family-tree-content/admin/discussions/${id}`)
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في حذف الحوار')
+        }
+    },
+    toggleDiscussionPublish: async (id, isPublished) => {
+        try {
+            const response = await ftApi.patch(`/api/family-tree-content/admin/discussions/${id}/publish`, { isPublished })
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في تحديث حالة النشر')
+        }
+    },
+
+    // Tree Display
+    getTreeDisplay: async () => {
+        try {
+            const response = await ftApi.get('/api/family-tree-content/admin/tree-display')
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في جلب إعدادات العرض')
+        }
+    },
+    updateTreeDisplay: async (data) => {
+        try {
+            const response = await ftApi.put('/api/family-tree-content/admin/tree-display', data)
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في تحديث إعدادات العرض')
+        }
+    },
+
+    // Stats
+    getStats: async () => {
+        try {
+            const response = await ftApi.get('/api/family-tree-content/admin/stats')
+            return response.data
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في جلب الإحصائيات')
+        }
+    },
+
+    // Upload
+    upload: async (formData) => {
+        try {
+            const response = await ftApi.post('/api/family-tree-content/admin/upload', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            return response.data;
+        } catch (error) {
+            throw new Error(error.response?.data?.message || 'خطأ في رفع الملف')
+        }
+    }
+}
+
 export default {
     dashboard: familyTreeDashboardApi,
     backup: familyTreeBackupApi,
     audit: familyTreeAuditApi,
-    users: familyTreeUserApi
+    users: familyTreeUserApi,
+    content: familyTreeContentApi
 }

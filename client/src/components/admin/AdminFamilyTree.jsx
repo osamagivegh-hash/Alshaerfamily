@@ -4,15 +4,15 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAdmin } from '../../contexts/AdminContext';
+import { useFamilyTreeAuth } from '../../contexts/FamilyTreeAuthContext';
 import toast from 'react-hot-toast';
-import adminApi from '../../utils/adminApi';
+import { familyTreeDashboardApi } from '../../utils/familyTreeApi';
 import TreeVisualization from '../FamilyTree/TreeVisualization';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
 const AdminFamilyTree = () => {
-    const { token } = useAdmin();
+    const { isFTSuperAdmin } = useFamilyTreeAuth(); // Only need permission check, token handled by API utility
     const [persons, setPersons] = useState([]);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -47,25 +47,19 @@ const AdminFamilyTree = () => {
             setLoading(true);
 
             // Fetch persons list
-            // Note: adminApiWrapper returns response.data directly, so personsRes is already the unwrapped response
             try {
-                const personsRes = await adminApi.get(`/persons?search=${searchTerm}&generation=${selectedGeneration}`);
-                console.log('Persons response:', personsRes);
-                // personsRes is already { success: true, data: [...], pagination: {...} }
+                const personsRes = await familyTreeDashboardApi.getPersons(searchTerm, selectedGeneration);
                 if (personsRes?.success) {
                     setPersons(personsRes.data || []);
-                    console.log('Set persons:', personsRes.data?.length || 0);
-                } else {
-                    console.error('Persons fetch failed:', personsRes);
                 }
             } catch (err) {
                 console.error('Persons fetch error:', err);
+                toast.error('خطأ في جلب القائمة');
             }
 
             // Fetch stats
             try {
-                const statsRes = await adminApi.get(`/persons/stats`);
-                // statsRes is already { success: true, data: {...} }
+                const statsRes = await familyTreeDashboardApi.getStats();
                 if (statsRes?.success) {
                     setStats(statsRes.data);
                 }
@@ -187,13 +181,11 @@ const AdminFamilyTree = () => {
 
             let response;
             if (editingPerson) {
-                response = await adminApi.put(`/persons/${editingPerson.id || editingPerson._id}`, payload);
+                response = await familyTreeDashboardApi.updatePerson(editingPerson.id || editingPerson._id, payload);
             } else {
-                response = await adminApi.post('/persons', payload);
+                response = await familyTreeDashboardApi.createPerson(payload);
             }
 
-            // adminApiWrapper returns response.data directly
-            console.log('Save response:', response);
             if (response?.success) {
                 toast.success(editingPerson ? 'تم تحديث البيانات بنجاح' : 'تمت إضافة الشخص بنجاح');
                 setShowModal(false);
@@ -211,32 +203,39 @@ const AdminFamilyTree = () => {
     };
 
     const handleDelete = async (person) => {
+        // Strict Role Check
+        if (!isFTSuperAdmin) {
+            toast.error('غير مصرح لك بحذف البيانات. هذه الصلاحية للمدير الأعلى فقط.');
+            return false;
+        }
+
         const confirmMsg = `هل أنت متأكد من حذف "${person.fullName}"؟`;
-        if (!window.confirm(confirmMsg)) return;
+        if (!window.confirm(confirmMsg)) return false;
 
         try {
-            // adminApiWrapper returns response.data directly
-            const response = await adminApi.delete(`/persons/${person.id || person._id}`);
-            console.log('Delete response:', response);
+            const response = await familyTreeDashboardApi.deletePerson(person.id || person._id);
 
             if (response?.success) {
                 toast.success('تم حذف الشخص بنجاح');
                 fetchData();
+                return true;
             } else {
                 toast.error(response?.message || 'خطأ في الحذف');
+                return false;
             }
         } catch (error) {
             console.error('Error deleting person:', error);
-            // For errors, we need to check if it's a cascade suggestion
-            // The error.message will contain the message from the thrown error
             const errorMessage = error.message || '';
+
+            // Handle cascading delete suggestion
             if (errorMessage.includes('أبناء') || errorMessage.includes('cascade')) {
                 if (window.confirm(`هذا الشخص لديه أبناء. هل تريد حذفهم جميعاً؟`)) {
                     try {
-                        const cascadeRes = await adminApi.delete(`/persons/${person.id || person._id}?cascade=true`);
+                        const cascadeRes = await familyTreeDashboardApi.deletePerson(person.id || person._id, true);
                         if (cascadeRes?.success) {
                             toast.success('تم حذف الشخص وأبنائه بنجاح');
                             fetchData();
+                            return true;
                         }
                     } catch (cascadeError) {
                         toast.error(cascadeError.message || 'خطأ في الحذف');
@@ -245,6 +244,7 @@ const AdminFamilyTree = () => {
             } else {
                 toast.error(error.message || 'خطأ في حذف الشخص');
             }
+            return false;
         }
     };
 
@@ -441,6 +441,7 @@ const AdminFamilyTree = () => {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center justify-center gap-2">
+
                                                     <button
                                                         onClick={() => openEditModal(person)}
                                                         className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -450,15 +451,17 @@ const AdminFamilyTree = () => {
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                         </svg>
                                                     </button>
-                                                    <button
-                                                        onClick={() => handleDelete(person)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                        title="حذف"
-                                                    >
-                                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                                        </svg>
-                                                    </button>
+                                                    {isFTSuperAdmin && (
+                                                        <button
+                                                            onClick={() => handleDelete(person)}
+                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                            title="حذف"
+                                                        >
+                                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                            </svg>
+                                                        </button>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>
@@ -702,6 +705,20 @@ const AdminFamilyTree = () => {
                                 >
                                     إلغاء
                                 </button>
+                                {editingPerson && isFTSuperAdmin && (
+                                    <button
+                                        type="button"
+                                        onClick={async () => {
+                                            const success = await handleDelete(editingPerson);
+                                            if (success) {
+                                                setShowModal(false);
+                                            }
+                                        }}
+                                        className="px-6 py-3 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium border border-red-200"
+                                    >
+                                        حذف
+                                    </button>
+                                )}
                             </div>
                         </form>
                     </div>

@@ -8,9 +8,9 @@
  */
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useAdmin } from '../../contexts/AdminContext';
+import { useFamilyTreeAuth } from '../../contexts/FamilyTreeAuthContext';
 import toast from 'react-hot-toast';
-import adminApi from '../../utils/adminApi';
+import familyTreeApi from '../../utils/familyTreeApi';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -19,8 +19,8 @@ const TabButton = ({ active, onClick, icon, label, color }) => (
     <button
         onClick={onClick}
         className={`flex items-center gap-2 px-4 py-3 rounded-lg font-medium transition-all ${active
-                ? `bg-${color}-600 text-white shadow-lg`
-                : `bg-gray-100 text-gray-700 hover:bg-gray-200`
+            ? `bg-${color}-600 text-white shadow-lg`
+            : `bg-gray-100 text-gray-700 hover:bg-gray-200`
             }`}
         style={active ? { backgroundColor: color === 'black' ? '#1a1a1a' : undefined } : {}}
     >
@@ -42,7 +42,7 @@ const ImageUploader = ({ label, value, onChange, className = '' }) => {
 
         setUploading(true);
         try {
-            const response = await adminApi.upload(formData);
+            const response = await familyTreeApi.content.upload(formData);
             if (response?.url) {
                 onChange(response.url);
                 toast.success('تم رفع الصورة بنجاح');
@@ -117,7 +117,7 @@ const RichTextEditor = ({ value, onChange, placeholder }) => {
 
 // Main Component
 const AdminFamilyTreeContent = () => {
-    const { isAuthenticated } = useAdmin();
+    const { isFTSuperAdmin } = useFamilyTreeAuth();
     const [activeTab, setActiveTab] = useState('appreciation');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -190,9 +190,9 @@ const AdminFamilyTreeContent = () => {
 
     const fetchAppreciation = async () => {
         try {
-            const res = await adminApi.get('/family-tree-content/admin/appreciation');
-            if (res?.data) {
-                setAppreciation(res.data);
+            const res = await familyTreeApi.content.getAppreciation();
+            if (res) {
+                setAppreciation(res?.data || res);
             }
         } catch (error) {
             console.error('Error fetching appreciation:', error);
@@ -201,9 +201,9 @@ const AdminFamilyTreeContent = () => {
 
     const fetchDiscussions = async () => {
         try {
-            const res = await adminApi.get('/family-tree-content/admin/discussions');
-            if (res?.data) {
-                setDiscussions(res.data);
+            const res = await familyTreeApi.content.getDiscussions();
+            if (res) {
+                setDiscussions(res?.data || res);
             }
         } catch (error) {
             console.error('Error fetching discussions:', error);
@@ -212,9 +212,9 @@ const AdminFamilyTreeContent = () => {
 
     const fetchTreeDisplay = async () => {
         try {
-            const res = await adminApi.get('/family-tree-content/admin/tree-display');
-            if (res?.data) {
-                setTreeDisplay(res.data);
+            const res = await familyTreeApi.content.getTreeDisplay();
+            if (res) {
+                setTreeDisplay(res?.data || res);
             }
         } catch (error) {
             console.error('Error fetching tree display:', error);
@@ -223,9 +223,9 @@ const AdminFamilyTreeContent = () => {
 
     const fetchSettings = async () => {
         try {
-            const res = await adminApi.get('/family-tree-content/admin/settings');
-            if (res?.data) {
-                setSettings(res.data);
+            const res = await familyTreeApi.content.getSettings();
+            if (res) {
+                setSettings(res?.data || res);
             }
         } catch (error) {
             console.error('Error fetching settings:', error);
@@ -234,9 +234,9 @@ const AdminFamilyTreeContent = () => {
 
     const fetchStats = async () => {
         try {
-            const res = await adminApi.get('/family-tree-content/admin/stats');
-            if (res?.data) {
-                setStats(res.data);
+            const res = await familyTreeApi.content.getStats();
+            if (res) {
+                setStats(res?.data || res);
             }
         } catch (error) {
             console.error('Error fetching stats:', error);
@@ -247,7 +247,7 @@ const AdminFamilyTreeContent = () => {
     const saveAppreciation = async () => {
         setSaving(true);
         try {
-            const res = await adminApi.put('/family-tree-content/admin/appreciation', appreciation);
+            const res = await familyTreeApi.content.updateAppreciation(appreciation);
             if (res?.success) {
                 toast.success('تم حفظ محتوى التقدير بنجاح');
                 fetchStats();
@@ -263,7 +263,7 @@ const AdminFamilyTreeContent = () => {
     const saveTreeDisplay = async () => {
         setSaving(true);
         try {
-            const res = await adminApi.put('/family-tree-content/admin/tree-display', treeDisplay);
+            const res = await familyTreeApi.content.updateTreeDisplay(treeDisplay);
             if (res?.success) {
                 toast.success('تم حفظ إعدادات العرض بنجاح');
                 fetchStats();
@@ -279,7 +279,7 @@ const AdminFamilyTreeContent = () => {
     const saveSettings = async () => {
         setSaving(true);
         try {
-            const res = await adminApi.put('/family-tree-content/admin/settings', settings);
+            const res = await familyTreeApi.content.updateSettings(settings);
             if (res?.success) {
                 toast.success('تم حفظ الإعدادات بنجاح');
             }
@@ -297,9 +297,9 @@ const AdminFamilyTreeContent = () => {
         try {
             let res;
             if (editingDiscussion) {
-                res = await adminApi.put(`/family-tree-content/admin/discussions/${editingDiscussion.id || editingDiscussion._id}`, discussionData);
+                res = await familyTreeApi.content.updateDiscussion(editingDiscussion.id || editingDiscussion._id, discussionData);
             } else {
-                res = await adminApi.post('/family-tree-content/admin/discussions', discussionData);
+                res = await familyTreeApi.content.createDiscussion(discussionData);
             }
 
             if (res?.success) {
@@ -321,7 +321,7 @@ const AdminFamilyTreeContent = () => {
         if (!confirm('هل أنت متأكد من حذف هذا الحوار؟')) return;
 
         try {
-            const res = await adminApi.delete(`/family-tree-content/admin/discussions/${id}`);
+            const res = await familyTreeApi.content.deleteDiscussion(id);
             if (res?.success) {
                 toast.success('تم حذف الحوار بنجاح');
                 fetchDiscussions();
@@ -336,9 +336,7 @@ const AdminFamilyTreeContent = () => {
     const toggleDiscussionPublish = async (discussion) => {
         try {
             const id = discussion.id || discussion._id;
-            const res = await adminApi.patch(`/family-tree-content/admin/discussions/${id}/publish`, {
-                isPublished: !discussion.isPublished
-            });
+            const res = await familyTreeApi.content.toggleDiscussionPublish(id, !discussion.isPublished);
             if (res?.success) {
                 toast.success(discussion.isPublished ? 'تم إلغاء النشر' : 'تم النشر');
                 fetchDiscussions();
@@ -560,8 +558,8 @@ const AdminFamilyTreeContent = () => {
                                                     <div className="flex items-center gap-2 mb-2">
                                                         <h3 className="font-bold text-gray-900">{discussion.title}</h3>
                                                         <span className={`text-xs px-2 py-1 rounded-full ${discussion.isPublished
-                                                                ? 'bg-green-100 text-green-700'
-                                                                : 'bg-gray-100 text-gray-600'
+                                                            ? 'bg-green-100 text-green-700'
+                                                            : 'bg-gray-100 text-gray-600'
                                                             }`}>
                                                             {discussion.isPublished ? 'منشور' : 'مسودة'}
                                                         </span>
@@ -581,8 +579,8 @@ const AdminFamilyTreeContent = () => {
                                                     <button
                                                         onClick={() => toggleDiscussionPublish(discussion)}
                                                         className={`p-2 rounded-lg ${discussion.isPublished
-                                                                ? 'bg-gray-100 hover:bg-gray-200'
-                                                                : 'bg-green-100 hover:bg-green-200'
+                                                            ? 'bg-gray-100 hover:bg-gray-200'
+                                                            : 'bg-green-100 hover:bg-green-200'
                                                             }`}
                                                         title={discussion.isPublished ? 'إلغاء النشر' : 'نشر'}
                                                     >
@@ -653,8 +651,8 @@ const AdminFamilyTreeContent = () => {
                                     <label
                                         key={mode.value}
                                         className={`flex-1 p-4 border-2 rounded-lg cursor-pointer transition-all ${treeDisplay.displayMode === mode.value
-                                                ? 'border-green-500 bg-green-50'
-                                                : 'border-gray-200 hover:border-gray-300'
+                                            ? 'border-green-500 bg-green-50'
+                                            : 'border-gray-200 hover:border-gray-300'
                                             }`}
                                     >
                                         <input
