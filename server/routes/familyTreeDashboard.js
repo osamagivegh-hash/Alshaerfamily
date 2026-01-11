@@ -228,6 +228,15 @@ router.put('/persons/:id', authenticateFTToken, requireFTPermission('manage-memb
     }
 });
 
+// Helper for recursive delete
+async function deletePersonRecursively(id) {
+    const children = await Person.find({ fatherId: id });
+    for (const child of children) {
+        await deletePersonRecursively(child._id);
+    }
+    await Person.findByIdAndDelete(id);
+}
+
 /**
  * Delete person (ft-super-admin only)
  */
@@ -239,16 +248,22 @@ router.delete('/persons/:id', authenticateFTToken, requireFTSuperAdmin, async (r
             return res.status(404).json({ success: false, message: 'الشخص غير موجود' });
         }
 
+        const isCascade = req.query.cascade === 'true';
+
         // Check if person has children
         const hasChildren = await Person.countDocuments({ fatherId: req.params.id });
-        if (hasChildren > 0) {
+        if (hasChildren > 0 && !isCascade) {
             return res.status(400).json({
                 success: false,
                 message: 'لا يمكن حذف شخص له أبناء في الشجرة'
             });
         }
 
-        await Person.findByIdAndDelete(req.params.id);
+        if (isCascade) {
+            await deletePersonRecursively(req.params.id);
+        } else {
+            await Person.findByIdAndDelete(req.params.id);
+        }
 
         // Log the action
         await AuditLog.logAction({
@@ -261,7 +276,7 @@ router.delete('/persons/:id', authenticateFTToken, requireFTSuperAdmin, async (r
             ipAddress: getClientIP(req),
             userAgent: req.headers['user-agent'],
             dashboard: 'family-tree-dashboard',
-            details: { fullName: person.fullName, generation: person.generation },
+            details: { fullName: person.fullName, generation: person.generation, cascade: isCascade },
             success: true
         });
 
@@ -274,6 +289,7 @@ router.delete('/persons/:id', authenticateFTToken, requireFTSuperAdmin, async (r
         res.status(500).json({ success: false, message: 'خطأ في حذف الشخص' });
     }
 });
+
 
 // ==================== BACKUP MANAGEMENT ====================
 

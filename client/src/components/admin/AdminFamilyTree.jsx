@@ -212,6 +212,9 @@ const AdminFamilyTree = () => {
         const confirmMsg = `هل أنت متأكد من حذف "${person.fullName}"؟`;
         if (!window.confirm(confirmMsg)) return false;
 
+        const doubleConfirmMsg = `تأكيد نهائي: هل أنت متأكد تماماً؟ هذا الإجراء لا يمكن التراجع عنه.`;
+        if (!window.confirm(doubleConfirmMsg)) return false;
+
         try {
             const response = await familyTreeDashboardApi.deletePerson(person.id || person._id);
 
