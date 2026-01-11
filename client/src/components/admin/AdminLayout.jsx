@@ -17,6 +17,7 @@ const AdminLayout = () => {
     { id: 'gallery', label: 'معرض الصور', path: '/admin/gallery', icon: '🖼️' },
     { id: 'family-tree', label: 'شجرة العائلة', path: '/admin/family-tree', icon: '🌳' },
     { id: 'family-tree-content', label: 'محتوى الشجرة', path: '/admin/family-tree-content', icon: '📄' },
+    { id: 'dev-team', label: 'رسائل التطوير', path: '/admin/dev-team', icon: '👨‍💻' },
     { id: 'comments', label: 'التعليقات', path: '/admin/comments', icon: '💬' },
     { id: 'contacts', label: 'الرسائل', path: '/admin/contacts', icon: '📧' },
     { id: 'tickers', label: 'شريط الأخبار', path: '/admin/tickers', icon: '📺' },

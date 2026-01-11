@@ -18,6 +18,7 @@ import FamilyTreeGateway from './pages/FamilyTreeGateway'
 import FounderAppreciation from './pages/FounderAppreciation'
 import FounderDiscussions from './pages/FounderDiscussions'
 import FamilyTreeDisplayPage from './pages/FamilyTreeDisplayPage'
+import DevTeamPage from './pages/DevTeamPage'
 
 // Admin Components
 import AdminLogin from './components/admin/AdminLogin'
@@ -34,6 +35,7 @@ import AdminSettings from './components/admin/AdminSettings'
 import AdminTickers from './components/admin/AdminTickers'
 import AdminFamilyTree from './components/admin/AdminFamilyTree'
 import AdminFamilyTreeContent from './components/admin/AdminFamilyTreeContent'
+import AdminDevTeamMessages from './components/admin/AdminDevTeamMessages'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 
 function App() {
@@ -53,6 +55,7 @@ function App() {
             <Route path="/family-tree/discussions" element={<FounderDiscussions />} />
             <Route path="/family-tree/discussions/:id" element={<FounderDiscussions />} />
             <Route path="/family-tree/tree" element={<FamilyTreeDisplayPage />} />
+            <Route path="/family-tree/dev-team" element={<DevTeamPage />} />
             {/* Legacy route - redirects to gateway */}
             <Route path="/family-tree-old" element={<FamilyTreePage />} />
 
@@ -78,6 +81,7 @@ function App() {
               <Route path="tickers" element={<AdminTickers />} />
               <Route path="family-tree" element={<AdminFamilyTree />} />
               <Route path="family-tree-content" element={<AdminFamilyTreeContent />} />
+              <Route path="dev-team" element={<AdminDevTeamMessages />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
             <Route path="*" element={<NotFound />} />

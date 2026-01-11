@@ -42,12 +42,14 @@ const FamilyTreeGateway = () => {
         buttonLabels: {
             appreciation: 'تقدير ووفاء للمؤسس',
             discussions: 'حوارات مع المؤسس',
-            tree: 'شجرة العائلة'
+            tree: 'شجرة العائلة',
+            devTeam: 'فريق التطوير'
         },
         buttonColors: {
             appreciation: '#1a1a1a',
             discussions: '#CE1126',
-            tree: '#007A3D'
+            tree: '#007A3D',
+            devTeam: '#0d9488'
         }
     };
 
@@ -77,6 +79,14 @@ const FamilyTreeGateway = () => {
             icon: '🌳',
             description: 'استكشف شجرة العائلة التفاعلية',
             path: '/family-tree/tree'
+        },
+        {
+            id: 'devTeam',
+            label: currentSettings.buttonLabels?.devTeam || defaultSettings.buttonLabels.devTeam,
+            color: currentSettings.buttonColors?.devTeam || defaultSettings.buttonColors.devTeam,
+            icon: '👨‍💻',
+            description: 'تواصل مع فريق التطوير وشاركنا اقتراحاتك',
+            path: '/family-tree/dev-team'
         }
     ];
 
@@ -135,7 +145,7 @@ const FamilyTreeGateway = () => {
                 </div>
 
                 {/* Button Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-5xl w-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl w-full">
                     {buttons.map((button, index) => (
                         <button
                             key={button.id}

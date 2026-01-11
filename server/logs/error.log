@@ -60,3 +60,7 @@
 {"method":"GET","url":"/verify","status":403,"duration":"449ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
 [ERROR] 2026-01-09T13:40:25.835Z - Request failed
 {"method":"GET","url":"/verify","status":403,"duration":"126ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-11T00:29:22.341Z - Request failed
+{"method":"POST","url":"/login","status":400,"duration":"7ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
+[ERROR] 2026-01-11T00:42:48.993Z - Request failed
+{"method":"POST","url":"/login","status":401,"duration":"581ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7462"}

@@ -132,6 +132,7 @@ app.get('/api/storage/status', (req, res) => {
 app.use('/api/news', newsRouter);
 app.use('/api/persons', require('./routes/persons'));
 app.use('/api/family-tree-content', require('./routes/familyTreeContent'));
+app.use('/api/dev-team', require('./routes/devTeam'));
 app.use('/api', require('./routes/api'));
 // Apply strict rate limiting to login endpoint
 app.use('/api/admin/login', authLimiter);
