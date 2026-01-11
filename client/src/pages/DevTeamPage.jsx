@@ -1,10 +1,13 @@
 /**
  * Development Team Page
- * Contact form and posts from the development team
+ * Enhanced with:
+ * - Rich Alert Box at top for important announcements
+ * - Rich-text posts with author info
+ * - Contact form for messaging
  */
 
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
@@ -17,7 +20,66 @@ const CATEGORIES = [
     { value: 'other', label: 'أخرى', icon: '📝' }
 ];
 
-// Post Component
+// Alert Box Component
+const AlertBox = ({ alert, onDismiss }) => {
+    const navigate = useNavigate();
+
+    const alertStyles = {
+        info: { bg: 'bg-teal-600', border: 'border-teal-400' },
+        success: { bg: 'bg-green-600', border: 'border-green-400' },
+        warning: { bg: 'bg-yellow-500', border: 'border-yellow-400' },
+        danger: { bg: 'bg-red-600', border: 'border-red-400' },
+        announcement: { bg: 'bg-purple-600', border: 'border-purple-400' }
+    };
+
+    const style = alertStyles[alert.alertType] || alertStyles.info;
+
+    return (
+        <div
+            className={`${alert.isSticky ? 'sticky top-0 z-50' : ''} ${style.bg} border-b-4 ${style.border} shadow-xl`}
+            style={{
+                backgroundColor: alert.backgroundColor || undefined,
+                color: alert.textColor || '#ffffff'
+            }}
+        >
+            <div className="max-w-7xl mx-auto px-4 py-4">
+                <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4 flex-1">
+                        <span className="text-3xl flex-shrink-0">{alert.icon}</span>
+                        <div className="flex-1">
+                            <h3 className="font-bold text-lg mb-1">{alert.title}</h3>
+                            <div
+                                className="text-sm opacity-90 prose-invert"
+                                dangerouslySetInnerHTML={{ __html: alert.content }}
+                            />
+                            {alert.showButton && (
+                                <button
+                                    onClick={() => navigate(alert.buttonLink || '/family-tree/dev-team')}
+                                    className="mt-3 px-4 py-2 bg-white/20 hover:bg-white/30 rounded-lg font-medium transition-colors text-sm inline-flex items-center gap-2"
+                                >
+                                    {alert.buttonText || 'عرض التفاصيل'}
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                                    </svg>
+                                </button>
+                            )}
+                        </div>
+                    </div>
+                    {alert.isDismissible && (
+                        <button
+                            onClick={() => onDismiss(alert.id)}
+                            className="text-white/70 hover:text-white text-2xl font-bold leading-none p-1"
+                        >
+                            ×
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// Post Component with Rich Text
 const PostCard = ({ post }) => {
     const [expanded, setExpanded] = useState(false);
 
@@ -50,14 +112,42 @@ const PostCard = ({ post }) => {
         }
     };
 
+    const getSpacingClass = (spacing) => {
+        switch (spacing) {
+            case 'compact': return 'prose-sm leading-snug';
+            case 'spacious': return 'prose-lg leading-loose';
+            default: return 'leading-relaxed';
+        }
+    };
+
+    const getAlignmentClass = (alignment) => {
+        switch (alignment) {
+            case 'center': return 'text-center';
+            case 'justify': return 'text-justify';
+            default: return 'text-right';
+        }
+    };
+
     return (
-        <article className={`bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 ${post.isPinned ? 'ring-2 ring-teal-500' : ''}`}>
+        <article className={`bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl ${post.isPinned ? 'ring-2 ring-teal-500' : ''}`}>
+            {/* Featured Image */}
+            {post.featuredImage && (
+                <div className="h-48 w-full overflow-hidden">
+                    <img
+                        src={post.featuredImage}
+                        alt={post.title}
+                        className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+                    />
+                </div>
+            )}
+
             <div className="p-6">
+                {/* Header */}
                 <div className="flex items-start justify-between gap-4 mb-4">
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 flex-1">
                         <span className="text-3xl">{post.icon || '📢'}</span>
-                        <div>
-                            <div className="flex items-center gap-2 mb-1">
+                        <div className="flex-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
                                 {post.isPinned && (
                                     <span className="text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">📌 مثبت</span>
                                 )}
@@ -65,7 +155,7 @@ const PostCard = ({ post }) => {
                                     {getPostTypeLabel(post.postType)}
                                 </span>
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900">{post.title}</h3>
+                            <h3 className="text-xl font-bold text-gray-900">{post.title}</h3>
                         </div>
                     </div>
                     <span className="text-sm text-gray-500 whitespace-nowrap">
@@ -73,28 +163,60 @@ const PostCard = ({ post }) => {
                     </span>
                 </div>
 
+                {/* Summary (collapsed state) */}
                 {post.summary && !expanded && (
                     <p className="text-gray-600 mb-4">{post.summary}</p>
                 )}
 
+                {/* Rich Content (expanded state) */}
                 {expanded && (
                     <div
-                        className="prose prose-sm max-w-none text-gray-700 mb-4"
+                        className={`prose prose-sm max-w-none text-gray-700 mb-4 ${getSpacingClass(post.paragraphSpacing)} ${getAlignmentClass(post.textAlignment)}`}
                         dangerouslySetInnerHTML={{ __html: post.content }}
                     />
                 )}
 
-                {post.content && post.content.length > 200 && (
+                {/* Expand/Collapse Button */}
+                {post.content && (
                     <button
                         onClick={() => setExpanded(!expanded)}
-                        className="text-teal-600 hover:text-teal-700 font-medium text-sm"
+                        className="text-teal-600 hover:text-teal-700 font-medium text-sm flex items-center gap-1"
                     >
-                        {expanded ? 'عرض أقل ▲' : 'عرض المزيد ▼'}
+                        {expanded ? (
+                            <>
+                                <span>عرض أقل</span>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                </svg>
+                            </>
+                        ) : (
+                            <>
+                                <span>قراءة المزيد</span>
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </>
+                        )}
                     </button>
                 )}
 
-                <div className="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-500">
-                    بواسطة: {post.author}
+                {/* Author Info */}
+                <div className="mt-6 pt-4 border-t border-gray-100 flex items-center gap-3">
+                    {post.authorAvatar ? (
+                        <img
+                            src={post.authorAvatar}
+                            alt={post.author}
+                            className="w-10 h-10 rounded-full object-cover"
+                        />
+                    ) : (
+                        <div className="w-10 h-10 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold">
+                            {post.author?.charAt(0) || 'ف'}
+                        </div>
+                    )}
+                    <div>
+                        <p className="font-medium text-gray-900">{post.author}</p>
+                        <p className="text-sm text-gray-500">{post.authorRole || 'فريق التطوير'}</p>
+                    </div>
                 </div>
             </div>
         </article>
@@ -300,13 +422,41 @@ const ContactForm = ({ onSuccess }) => {
 
 // Main Component
 const DevTeamPage = () => {
+    const [alerts, setAlerts] = useState([]);
     const [posts, setPosts] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState('contact');
+    const [activeTab, setActiveTab] = useState('posts');
+    const [dismissedAlerts, setDismissedAlerts] = useState(() => {
+        try {
+            return JSON.parse(localStorage.getItem('dismissedDevAlerts') || '[]');
+        } catch {
+            return [];
+        }
+    });
 
     useEffect(() => {
-        fetchPosts();
+        fetchData();
     }, []);
+
+    const fetchData = async () => {
+        try {
+            await Promise.all([fetchAlerts(), fetchPosts()]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const fetchAlerts = async () => {
+        try {
+            const res = await fetch(`${API_URL}/api/dev-team/alerts`);
+            const data = await res.json();
+            if (data.success) {
+                setAlerts(data.data || []);
+            }
+        } catch (err) {
+            console.error('Error fetching alerts:', err);
+        }
+    };
 
     const fetchPosts = async () => {
         try {
@@ -317,15 +467,34 @@ const DevTeamPage = () => {
             }
         } catch (err) {
             console.error('Error fetching posts:', err);
-        } finally {
-            setLoading(false);
         }
     };
 
+    const handleDismissAlert = (alertId) => {
+        const newDismissed = [...dismissedAlerts, alertId];
+        setDismissedAlerts(newDismissed);
+        localStorage.setItem('dismissedDevAlerts', JSON.stringify(newDismissed));
+    };
+
+    const visibleAlerts = alerts.filter(a => !dismissedAlerts.includes(a.id));
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-teal-50 via-white to-gray-100 rtl-content" dir="rtl">
+            {/* Alert Boxes */}
+            {visibleAlerts.length > 0 && (
+                <div className="space-y-0">
+                    {visibleAlerts.map(alert => (
+                        <AlertBox
+                            key={alert.id}
+                            alert={alert}
+                            onDismiss={handleDismissAlert}
+                        />
+                    ))}
+                </div>
+            )}
+
             {/* Header */}
-            <header className="bg-gradient-to-r from-teal-700 to-teal-600 text-white shadow-xl sticky top-0 z-50">
+            <header className="bg-gradient-to-r from-teal-700 to-teal-600 text-white shadow-xl">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                     <div className="flex items-center justify-between">
                         {/* Breadcrumb */}
@@ -363,22 +532,25 @@ const DevTeamPage = () => {
                     <p className="text-xl text-teal-100 max-w-2xl mx-auto">
                         تواصل معنا لمشاركة اقتراحاتك أو الإبلاغ عن مشكلة أو طرح أي استفسار
                     </p>
+
+                    {/* Show dismissed alerts option */}
+                    {dismissedAlerts.length > 0 && (
+                        <button
+                            onClick={() => {
+                                setDismissedAlerts([]);
+                                localStorage.removeItem('dismissedDevAlerts');
+                            }}
+                            className="mt-4 text-sm text-teal-200 hover:text-white underline"
+                        >
+                            عرض التنبيهات المخفية ({dismissedAlerts.length})
+                        </button>
+                    )}
                 </div>
             </section>
 
             {/* Tab Navigation */}
             <div className="max-w-4xl mx-auto px-4 -mt-8">
                 <div className="bg-white rounded-xl shadow-lg p-2 flex gap-2">
-                    <button
-                        onClick={() => setActiveTab('contact')}
-                        className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${activeTab === 'contact'
-                                ? 'bg-teal-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                    >
-                        <span>✉️</span>
-                        <span>تواصل معنا</span>
-                    </button>
                     <button
                         onClick={() => setActiveTab('posts')}
                         className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${activeTab === 'posts'
@@ -389,25 +561,27 @@ const DevTeamPage = () => {
                         <span>📢</span>
                         <span>منشورات الفريق</span>
                         {posts.length > 0 && (
-                            <span className="bg-teal-700 text-white text-xs px-2 py-0.5 rounded-full">
+                            <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'posts' ? 'bg-teal-700 text-white' : 'bg-gray-200 text-gray-600'}`}>
                                 {posts.length}
                             </span>
                         )}
+                    </button>
+                    <button
+                        onClick={() => setActiveTab('contact')}
+                        className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${activeTab === 'contact'
+                                ? 'bg-teal-600 text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                    >
+                        <span>✉️</span>
+                        <span>تواصل معنا</span>
                     </button>
                 </div>
             </div>
 
             {/* Main Content */}
             <main className="max-w-4xl mx-auto px-4 py-12">
-                {activeTab === 'contact' ? (
-                    <div className="bg-white rounded-2xl shadow-xl p-8">
-                        <div className="text-center mb-8">
-                            <h2 className="text-2xl font-bold text-gray-900 mb-2">أرسل لنا رسالة</h2>
-                            <p className="text-gray-600">نحن هنا للاستماع إليك والرد على استفساراتك</p>
-                        </div>
-                        <ContactForm />
-                    </div>
-                ) : (
+                {activeTab === 'posts' ? (
                     <div className="space-y-6">
                         {loading ? (
                             <div className="text-center py-12">
@@ -425,6 +599,14 @@ const DevTeamPage = () => {
                                 <PostCard key={post.id || post._id} post={post} />
                             ))
                         )}
+                    </div>
+                ) : (
+                    <div className="bg-white rounded-2xl shadow-xl p-8">
+                        <div className="text-center mb-8">
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">أرسل لنا رسالة</h2>
+                            <p className="text-gray-600">نحن هنا للاستماع إليك والرد على استفساراتك</p>
+                        </div>
+                        <ContactForm />
                     </div>
                 )}
             </main>

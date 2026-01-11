@@ -2,6 +2,7 @@
  * Development Team Models
  * - DevTeamMessage: Messages from users to the development team
  * - DevTeamPost: Announcements and posts from the development team
+ * - DevTeamAlert: Alert boxes for important announcements
  */
 
 const mongoose = require('mongoose');
@@ -81,7 +82,7 @@ const DevTeamMessageSchema = new mongoose.Schema({
     timestamps: true
 });
 
-// Post Schema - for team announcements
+// Post Schema - for team announcements with rich text
 const DevTeamPostSchema = new mongoose.Schema({
     title: {
         type: String,
@@ -89,6 +90,7 @@ const DevTeamPostSchema = new mongoose.Schema({
         trim: true,
         maxlength: 200
     },
+    // Rich HTML content
     content: {
         type: String,
         required: true
@@ -105,10 +107,18 @@ const DevTeamPostSchema = new mongoose.Schema({
         default: 'general'
     },
 
-    // Author
+    // Author information
     author: {
         type: String,
         default: 'فريق التطوير'
+    },
+    authorRole: {
+        type: String,
+        default: 'مطور'
+    },
+    authorAvatar: {
+        type: String,
+        default: ''
     },
 
     // Visibility
@@ -131,6 +141,105 @@ const DevTeamPostSchema = new mongoose.Schema({
     icon: {
         type: String,
         default: '📢'
+    },
+
+    // Featured image
+    featuredImage: {
+        type: String,
+        default: ''
+    },
+
+    // Styling options
+    paragraphSpacing: {
+        type: String,
+        enum: ['compact', 'normal', 'spacious'],
+        default: 'normal'
+    },
+    textAlignment: {
+        type: String,
+        enum: ['right', 'center', 'justify'],
+        default: 'right'
+    }
+}, {
+    timestamps: true
+});
+
+// Alert Schema - for important developer alerts at top of page
+const DevTeamAlertSchema = new mongoose.Schema({
+    title: {
+        type: String,
+        required: true,
+        trim: true,
+        maxlength: 200
+    },
+    // Rich HTML content
+    content: {
+        type: String,
+        required: true
+    },
+
+    // Alert type determines styling
+    alertType: {
+        type: String,
+        enum: ['info', 'success', 'warning', 'danger', 'announcement'],
+        default: 'info'
+    },
+
+    // Appearance
+    backgroundColor: {
+        type: String,
+        default: '#0d9488' // teal
+    },
+    textColor: {
+        type: String,
+        default: '#ffffff'
+    },
+    icon: {
+        type: String,
+        default: '📢'
+    },
+
+    // Button options
+    showButton: {
+        type: Boolean,
+        default: true
+    },
+    buttonText: {
+        type: String,
+        default: 'عرض التفاصيل'
+    },
+    buttonLink: {
+        type: String,
+        default: '/family-tree/dev-team'
+    },
+
+    // Visibility & behavior
+    isActive: {
+        type: Boolean,
+        default: true
+    },
+    isDismissible: {
+        type: Boolean,
+        default: true
+    },
+    isSticky: {
+        type: Boolean,
+        default: false
+    },
+
+    // Display order (lower = higher priority)
+    order: {
+        type: Number,
+        default: 0
+    },
+
+    // Scheduling
+    startDate: {
+        type: Date,
+        default: Date.now
+    },
+    endDate: {
+        type: Date
     }
 }, {
     timestamps: true
@@ -144,10 +253,15 @@ DevTeamMessageSchema.index({ senderEmail: 1 });
 DevTeamPostSchema.index({ isPublished: 1, createdAt: -1 });
 DevTeamPostSchema.index({ isPinned: -1, createdAt: -1 });
 
+DevTeamAlertSchema.index({ isActive: 1, order: 1 });
+DevTeamAlertSchema.index({ startDate: 1, endDate: 1 });
+
 const DevTeamMessage = mongoose.model('DevTeamMessage', DevTeamMessageSchema);
 const DevTeamPost = mongoose.model('DevTeamPost', DevTeamPostSchema);
+const DevTeamAlert = mongoose.model('DevTeamAlert', DevTeamAlertSchema);
 
 module.exports = {
     DevTeamMessage,
-    DevTeamPost
+    DevTeamPost,
+    DevTeamAlert
 };

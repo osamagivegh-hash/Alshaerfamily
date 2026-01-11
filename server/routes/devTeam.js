@@ -1,12 +1,12 @@
 /**
  * Development Team Routes
- * Public: Submit messages, view posts
- * Admin: Manage messages and posts
+ * Public: Submit messages, view posts, view alerts
+ * Admin: Manage messages, posts, and alerts
  */
 
 const express = require('express');
 const router = express.Router();
-const { DevTeamMessage, DevTeamPost } = require('../models/DevTeam');
+const { DevTeamMessage, DevTeamPost, DevTeamAlert } = require('../models/DevTeam');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
 // Helper to normalize MongoDB documents
@@ -23,6 +23,35 @@ const normalizeDocument = (doc) => {
 };
 
 // ==================== PUBLIC ROUTES ====================
+
+/**
+ * GET /api/dev-team/alerts
+ * Get active alerts for display
+ */
+router.get('/alerts', async (req, res) => {
+    try {
+        const now = new Date();
+        const alerts = await DevTeamAlert.find({
+            isActive: true,
+            startDate: { $lte: now },
+            $or: [
+                { endDate: null },
+                { endDate: { $gte: now } }
+            ]
+        }).sort({ order: 1 }).limit(5);
+
+        res.json({
+            success: true,
+            data: normalizeDocument(alerts)
+        });
+    } catch (error) {
+        console.error('Error fetching alerts:', error);
+        res.status(500).json({
+            success: false,
+            message: 'خطأ في جلب التنبيهات'
+        });
+    }
+});
 
 /**
  * GET /api/dev-team/posts
@@ -43,6 +72,37 @@ router.get('/posts', async (req, res) => {
         res.status(500).json({
             success: false,
             message: 'خطأ في جلب المنشورات'
+        });
+    }
+});
+
+/**
+ * GET /api/dev-team/posts/:id
+ * Get single post by ID
+ */
+router.get('/posts/:id', async (req, res) => {
+    try {
+        const post = await DevTeamPost.findOne({
+            _id: req.params.id,
+            isPublished: true
+        });
+
+        if (!post) {
+            return res.status(404).json({
+                success: false,
+                message: 'المنشور غير موجود'
+            });
+        }
+
+        res.json({
+            success: true,
+            data: normalizeDocument(post)
+        });
+    } catch (error) {
+        console.error('Error fetching post:', error);
+        res.status(500).json({
+            success: false,
+            message: 'خطأ في جلب المنشور'
         });
     }
 });
@@ -103,7 +163,7 @@ router.post('/messages', async (req, res) => {
     }
 });
 
-// ==================== ADMIN ROUTES ====================
+// ==================== ADMIN MESSAGES ROUTES ====================
 
 /**
  * GET /api/dev-team/admin/messages
@@ -308,11 +368,15 @@ router.get('/admin/posts', authenticateToken, requireAdmin, async (req, res) => 
 
 /**
  * POST /api/dev-team/admin/posts
- * Create a new post
+ * Create a new post with rich text
  */
 router.post('/admin/posts', authenticateToken, requireAdmin, async (req, res) => {
     try {
-        const { title, content, summary, postType, icon, isPublished, isPinned } = req.body;
+        const {
+            title, content, summary, postType, icon, isPublished, isPinned,
+            author, authorRole, authorAvatar, featuredImage,
+            paragraphSpacing, textAlignment
+        } = req.body;
 
         if (!title || !content) {
             return res.status(400).json({
@@ -327,9 +391,14 @@ router.post('/admin/posts', authenticateToken, requireAdmin, async (req, res) =>
             summary: summary || '',
             postType: postType || 'general',
             icon: icon || '📢',
-            author: req.user.username,
+            author: author || req.user.username,
+            authorRole: authorRole || 'مطور',
+            authorAvatar: authorAvatar || '',
+            featuredImage: featuredImage || '',
             isPublished: isPublished !== false,
-            isPinned: isPinned || false
+            isPinned: isPinned || false,
+            paragraphSpacing: paragraphSpacing || 'normal',
+            textAlignment: textAlignment || 'right'
         });
 
         await newPost.save();
@@ -354,7 +423,11 @@ router.post('/admin/posts', authenticateToken, requireAdmin, async (req, res) =>
  */
 router.put('/admin/posts/:id', authenticateToken, requireAdmin, async (req, res) => {
     try {
-        const { title, content, summary, postType, icon, isPublished, isPinned } = req.body;
+        const {
+            title, content, summary, postType, icon, isPublished, isPinned,
+            author, authorRole, authorAvatar, featuredImage,
+            paragraphSpacing, textAlignment
+        } = req.body;
 
         const post = await DevTeamPost.findById(req.params.id);
 
@@ -372,6 +445,12 @@ router.put('/admin/posts/:id', authenticateToken, requireAdmin, async (req, res)
         if (icon) post.icon = icon;
         if (isPublished !== undefined) post.isPublished = isPublished;
         if (isPinned !== undefined) post.isPinned = isPinned;
+        if (author) post.author = author;
+        if (authorRole !== undefined) post.authorRole = authorRole;
+        if (authorAvatar !== undefined) post.authorAvatar = authorAvatar;
+        if (featuredImage !== undefined) post.featuredImage = featuredImage;
+        if (paragraphSpacing) post.paragraphSpacing = paragraphSpacing;
+        if (textAlignment) post.textAlignment = textAlignment;
 
         await post.save();
 
@@ -413,6 +492,165 @@ router.delete('/admin/posts/:id', authenticateToken, requireAdmin, async (req, r
         res.status(500).json({
             success: false,
             message: 'خطأ في حذف المنشور'
+        });
+    }
+});
+
+// ==================== ADMIN ALERTS ROUTES ====================
+
+/**
+ * GET /api/dev-team/admin/alerts
+ * Get all alerts
+ */
+router.get('/admin/alerts', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const alerts = await DevTeamAlert.find().sort({ order: 1, createdAt: -1 });
+
+        res.json({
+            success: true,
+            data: normalizeDocument(alerts)
+        });
+    } catch (error) {
+        console.error('Error fetching alerts:', error);
+        res.status(500).json({
+            success: false,
+            message: 'خطأ في جلب التنبيهات'
+        });
+    }
+});
+
+/**
+ * POST /api/dev-team/admin/alerts
+ * Create a new alert
+ */
+router.post('/admin/alerts', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const {
+            title, content, alertType, backgroundColor, textColor, icon,
+            showButton, buttonText, buttonLink,
+            isActive, isDismissible, isSticky,
+            order, startDate, endDate
+        } = req.body;
+
+        if (!title || !content) {
+            return res.status(400).json({
+                success: false,
+                message: 'العنوان والمحتوى مطلوبان'
+            });
+        }
+
+        const newAlert = new DevTeamAlert({
+            title,
+            content,
+            alertType: alertType || 'info',
+            backgroundColor: backgroundColor || '#0d9488',
+            textColor: textColor || '#ffffff',
+            icon: icon || '📢',
+            showButton: showButton !== false,
+            buttonText: buttonText || 'عرض التفاصيل',
+            buttonLink: buttonLink || '/family-tree/dev-team',
+            isActive: isActive !== false,
+            isDismissible: isDismissible !== false,
+            isSticky: isSticky || false,
+            order: order || 0,
+            startDate: startDate ? new Date(startDate) : new Date(),
+            endDate: endDate ? new Date(endDate) : null
+        });
+
+        await newAlert.save();
+
+        res.status(201).json({
+            success: true,
+            message: 'تم إنشاء التنبيه بنجاح',
+            data: normalizeDocument(newAlert)
+        });
+    } catch (error) {
+        console.error('Error creating alert:', error);
+        res.status(500).json({
+            success: false,
+            message: 'خطأ في إنشاء التنبيه'
+        });
+    }
+});
+
+/**
+ * PUT /api/dev-team/admin/alerts/:id
+ * Update an alert
+ */
+router.put('/admin/alerts/:id', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const {
+            title, content, alertType, backgroundColor, textColor, icon,
+            showButton, buttonText, buttonLink,
+            isActive, isDismissible, isSticky,
+            order, startDate, endDate
+        } = req.body;
+
+        const alert = await DevTeamAlert.findById(req.params.id);
+
+        if (!alert) {
+            return res.status(404).json({
+                success: false,
+                message: 'التنبيه غير موجود'
+            });
+        }
+
+        if (title) alert.title = title;
+        if (content) alert.content = content;
+        if (alertType) alert.alertType = alertType;
+        if (backgroundColor) alert.backgroundColor = backgroundColor;
+        if (textColor) alert.textColor = textColor;
+        if (icon) alert.icon = icon;
+        if (showButton !== undefined) alert.showButton = showButton;
+        if (buttonText) alert.buttonText = buttonText;
+        if (buttonLink) alert.buttonLink = buttonLink;
+        if (isActive !== undefined) alert.isActive = isActive;
+        if (isDismissible !== undefined) alert.isDismissible = isDismissible;
+        if (isSticky !== undefined) alert.isSticky = isSticky;
+        if (order !== undefined) alert.order = order;
+        if (startDate) alert.startDate = new Date(startDate);
+        if (endDate !== undefined) alert.endDate = endDate ? new Date(endDate) : null;
+
+        await alert.save();
+
+        res.json({
+            success: true,
+            message: 'تم تحديث التنبيه بنجاح',
+            data: normalizeDocument(alert)
+        });
+    } catch (error) {
+        console.error('Error updating alert:', error);
+        res.status(500).json({
+            success: false,
+            message: 'خطأ في تحديث التنبيه'
+        });
+    }
+});
+
+/**
+ * DELETE /api/dev-team/admin/alerts/:id
+ * Delete an alert
+ */
+router.delete('/admin/alerts/:id', authenticateToken, requireAdmin, async (req, res) => {
+    try {
+        const result = await DevTeamAlert.findByIdAndDelete(req.params.id);
+
+        if (!result) {
+            return res.status(404).json({
+                success: false,
+                message: 'التنبيه غير موجود'
+            });
+        }
+
+        res.json({
+            success: true,
+            message: 'تم حذف التنبيه بنجاح'
+        });
+    } catch (error) {
+        console.error('Error deleting alert:', error);
+        res.status(500).json({
+            success: false,
+            message: 'خطأ في حذف التنبيه'
         });
     }
 });
