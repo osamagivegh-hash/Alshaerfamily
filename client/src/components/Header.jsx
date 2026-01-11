@@ -116,15 +116,18 @@ const Header = () => {
         </div>
 
         {/* Center: Navigation (Desktop) */}
-        <div className="hidden lg:flex items-center justify-center flex-1 px-8">
-          <div className="flex items-center space-x-reverse space-x-1 bg-gray-50/80 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-gray-100">
+        <div className="hidden lg:flex items-center justify-center flex-1 px-8 relative z-[60]">
+          <div className="flex items-center space-x-reverse space-x-1 bg-gray-50/80 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-gray-100 relative z-[60]">
             {navItems.map((item) => (
               <button
                 type="button"
                 key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className={`relative px-3 py-1.5 text-sm font-semibold rounded-full transition-all duration-300 cursor-pointer select-none whitespace-nowrap ${activeSection === item.id
-                  ? 'bg-gradient-to-r from-palestine-green to-olive-600 text-white shadow-md transform scale-105'
+                onClick={(e) => {
+                  e.stopPropagation();
+                  scrollToSection(item.id);
+                }}
+                className={`relative px-4 py-2 text-sm font-bold rounded-full transition-all duration-200 cursor-pointer select-none whitespace-nowrap z-[70] hover:scale-105 active:scale-95 ${activeSection === item.id
+                  ? 'bg-gradient-to-r from-palestine-green to-olive-600 text-white shadow-md'
                   : 'text-gray-700 hover:text-palestine-green hover:bg-white hover:shadow-sm'
                   }`}
               >
@@ -135,38 +138,38 @@ const Header = () => {
         </div>
 
         {/* Left Side: Actions (Flags, Search, Mobile Menu) */}
-        <div className="flex items-center gap-3 md:gap-4">
+        <div className="flex items-center gap-3 md:gap-4 relative z-[60]">
 
           {/* Flags Container - Now Inline */}
-          <div className="hidden md:flex items-center gap-2 bg-gray-50/50 rounded-full px-2 py-1 border border-gray-100 hover:bg-white transition-colors">
+          <div className="hidden md:flex items-center gap-2 bg-gray-50/50 rounded-full px-3 py-1.5 border border-gray-100 hover:bg-white transition-colors">
 
             {/* Family Presence Icon */}
-            <div className="text-palestine-green px-1" title="تواجد العائلة">
+            <div className="text-palestine-green px-1 cursor-pointer hover:scale-110 transition-transform" title="تواجد العائلة">
               <FamilyPresenceIcon />
             </div>
 
             {/* Palestine */}
-            <div className="relative group cursor-help">
-              <img src="https://flagcdn.com/w40/ps.png" alt="فلسطين" className="w-6 h-4 rounded shadow-sm object-cover" />
-              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">فلسطين</div>
+            <div className="relative group cursor-pointer hover:-translate-y-1 transition-transform duration-200">
+              <img src="https://flagcdn.com/w40/ps.png" alt="فلسطين" className="w-9 h-6 rounded shadow-sm object-cover border border-gray-200" />
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-lg">فلسطين</div>
             </div>
 
             {/* Egypt */}
-            <div className="relative group cursor-help">
-              <img src="https://flagcdn.com/w40/eg.png" alt="مصر" className="w-6 h-4 rounded shadow-sm object-cover" />
-              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">مصر</div>
+            <div className="relative group cursor-pointer hover:-translate-y-1 transition-transform duration-200">
+              <img src="https://flagcdn.com/w40/eg.png" alt="مصر" className="w-9 h-6 rounded shadow-sm object-cover border border-gray-200" />
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-lg">مصر</div>
             </div>
 
             {/* Jordan */}
-            <div className="relative group cursor-help">
-              <img src="https://flagcdn.com/w40/jo.png" alt="الأردن" className="w-6 h-4 rounded shadow-sm object-cover" />
-              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">الأردن</div>
+            <div className="relative group cursor-pointer hover:-translate-y-1 transition-transform duration-200">
+              <img src="https://flagcdn.com/w40/jo.png" alt="الأردن" className="w-9 h-6 rounded shadow-sm object-cover border border-gray-200" />
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-lg">الأردن</div>
             </div>
 
             {/* KSA */}
-            <div className="relative group cursor-help">
-              <img src="https://flagcdn.com/w40/sa.png" alt="السعودية" className="w-6 h-4 rounded shadow-sm object-cover" />
-              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">السعودية</div>
+            <div className="relative group cursor-pointer hover:-translate-y-1 transition-transform duration-200">
+              <img src="https://flagcdn.com/w40/sa.png" alt="السعودية" className="w-9 h-6 rounded shadow-sm object-cover border border-gray-200" />
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-lg">السعودية</div>
             </div>
 
           </div>
