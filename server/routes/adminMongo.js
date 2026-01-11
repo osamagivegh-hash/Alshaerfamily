@@ -69,6 +69,14 @@ router.get('/stats', authenticateToken, requireAdmin, async (req, res) => {
     const Person = require('../models/Person');
     stats.persons = await Person.countDocuments();
 
+    // Count dev team messages
+    try {
+      const { DevTeamMessage } = require('../models/DevTeam');
+      stats.devTeamMessages = await DevTeamMessage.countDocuments({ status: 'new' });
+    } catch (e) {
+      stats.devTeamMessages = 0;
+    }
+
     res.json(stats);
   } catch (error) {
     console.error('Stats error:', error);

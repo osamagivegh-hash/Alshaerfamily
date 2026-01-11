@@ -84,6 +84,13 @@ const AdminDashboard = () => {
       icon: '🔔',
       color: 'bg-orange-500',
       path: '/admin/contacts'
+    },
+    {
+      title: 'رسائل التطوير',
+      value: stats?.devTeamMessages || 0,
+      icon: '👨‍💻',
+      color: 'bg-teal-600',
+      path: '/admin/dev-team'
     }
   ]
 
@@ -115,6 +122,13 @@ const AdminDashboard = () => {
       icon: '📷',
       color: 'bg-blue-600',
       action: () => navigate('/admin/gallery/new')
+    },
+    {
+      title: 'رسائل فريق التطوير',
+      description: 'إدارة رسائل ومنشورات الفريق',
+      icon: '👨‍💻',
+      color: 'bg-teal-600',
+      action: () => navigate('/admin/dev-team')
     }
   ]
 

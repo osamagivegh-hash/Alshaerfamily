@@ -64,3 +64,5 @@
 {"method":"POST","url":"/login","status":400,"duration":"7ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
 [ERROR] 2026-01-11T00:42:48.993Z - Request failed
 {"method":"POST","url":"/login","status":401,"duration":"581ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.26100.7462"}
+[ERROR] 2026-01-11T01:52:50.026Z - Request failed
+{"method":"POST","url":"/login","status":401,"duration":"459ms","ip":"::1","userAgent":"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36"}
