@@ -1,344 +1,241 @@
-# System Architecture Redesign - Family Tree Project
+# System Architecture - Isolated Dashboards
 
 ## Overview
 
-This document describes the complete system architecture redesign for the Alshaer Family Website, implementing clear separation of responsibilities, dashboards, roles, and backup systems.
-
-## 1. Dashboard Separation
-
-### Family Tree Dashboard
-**Route Base:** `/api/dashboard/family-tree`
-**Frontend Route:** `/admin/family-tree*`
-
-Dedicated to managing:
-- ✅ Family members data (`persons` collection)
-- ✅ Tree structure and relationships
-- ✅ Lineage records
-- ✅ Family Tree specific backups
-
-**Key Features:**
-- Independent statistics endpoint
-- Separate backup creation and restore
-- Audit logging for all operations
-- Permission-based access control
-
-### Main CMS Dashboard
-**Route Base:** `/api/dashboard/cms`
-**Frontend Route:** `/admin/*` (non-family-tree routes)
-
-Manages:
-- ✅ News articles
-- ✅ Conversations/Interviews
-- ✅ General articles
-- ✅ Palestine section
-- ✅ Photo gallery
-- ✅ Contact messages
-- ✅ Comments
-- ✅ Ticker news
-- ✅ Hero slides
-- ✅ CMS specific backups
+This document describes the **completely isolated** architecture for the Alshaer Family Website,implementing full separation between the **CMS Dashboard** and **Family Tree Dashboard**.
 
 ---
 
-## 2. Roles & Permissions (RBAC)
+## 🔐 SECURITY ARCHITECTURE
 
-### User Roles
+### Two Completely Separate Authentication Systems
 
-#### Super Admin
-- **Full access** to both dashboards
-- Can manage users, backups, and system settings
-- Can restore backups
-- Can delete backups
-- Access to audit logs
+| Feature | CMS Dashboard | Family Tree Dashboard |
+|---------|--------------|----------------------|
+| **Login URL** | `/admin/login` | `/family-dashboard/login` |
+| **JWT Secret** | `JWT_SECRET` | `FAMILY_TREE_JWT_SECRET` |
+| **User Collection** | `admins` | `family_tree_admins` |
+| **Token Storage** | `adminToken` | `familyTreeToken` |
+| **Auth Context** | `AdminContext` | `FamilyTreeAuthContext` |
+| **Protected Route** | `ProtectedRoute` | `FamilyTreeProtectedRoute` |
 
-#### Admin
-- Full access to CMS Dashboard
-- Can create CMS backups
-- Cannot restore or delete backups
-- Cannot access user management
+### Security Boundaries
 
-#### Editor (Family Tree Editor)
-- **Can only be added by Super Admin**
-- Access **only** to Family Tree Dashboard
-- Can:
-  - ✅ Add/edit family members
-  - ✅ Update tree structure
-  - ✅ Create Family Tree backups
-- Cannot:
-  - ❌ Delete backups
-  - ❌ Restore backups
-  - ❌ Access CMS Dashboard
-  - ❌ Access user management
-
-### Permission Matrix
-
-| Permission | Super Admin | Admin | Editor (family-tree) |
-|------------|-------------|-------|---------------------|
-| family-tree | ✅ | ❌ | ✅ |
-| news | ✅ | ✅ | ❌ |
-| articles | ✅ | ✅ | ❌ |
-| conversations | ✅ | ✅ | ❌ |
-| palestine | ✅ | ✅ | ❌ |
-| gallery | ✅ | ✅ | ❌ |
-| contacts | ✅ | ✅ | ❌ |
-| settings | ✅ | ✅ | ❌ |
-| dev-team | ✅ | ✅ | ❌ |
-| Create Backup | ✅ | ✅ CMS only | ✅ FT only |
-| Restore Backup | ✅ | ❌ | ❌ |
-| Delete Backup | ✅ | ❌ | ❌ |
-| User Management | ✅ | ❌ | ❌ |
+✅ **No shared tokens** - Each system uses its own JWT secret  
+✅ **No shared users** - Completely separate user collections  
+✅ **No cross-authentication** - CMS tokens rejected by FT API  
+✅ **No shared sessions** - Independent login states  
+✅ **No trust relationship** - Systems operate in isolation  
 
 ---
 
-## 3. Backup Strategy
+## 👥 ROLES & PERMISSIONS
 
-### A. Separate Backups
+### CMS Dashboard Roles
 
-#### Family Tree Data Backup
-**Collection:** `backups` (filtered by `backupType: 'family-tree'`)
+| Role | Description | Access |
+|------|-------------|--------|
+| `super-admin` | Full system access | All CMS features |
+| `admin` | Content management | News, Articles, etc. |
+| `editor` | Limited editing | Specific permissions |
 
-Includes:
-- All `persons` documents
-- Family relationships
-- Lineage data
-- Metadata and checksums
+### Family Tree Dashboard Roles
 
-#### CMS / Main Dashboard Backup
-**Collection:** `backups` (filtered by `backupType: 'cms'`)
+| Role | Description | Access |
+|------|-------------|--------|
+| `ft-super-admin` | Full FT Dashboard access | All FT features + user management |
+| `ft-editor` | Tree editing | Add/edit members, view tree |
 
-Includes:
-- News articles
-- Articles
-- Conversations
-- Palestine content
-- Gallery items
-- Contacts
-- Comments
-- Ticker news (family & palestine)
-- Ticker settings
-- Hero slides
+### Family Tree Permissions
 
-**Backups are fully isolated** - restoring one type does not affect the other.
-
-### B. Automated Backups
-
-**Schedule:** Every 48 hours (configurable)
-
-**Configuration Collection:** `backup_settings`
-
-```javascript
-{
-  familyTreeBackup: {
-    enabled: true,
-    intervalHours: 48,
-    maxBackupsToKeep: 20,
-    lastAutoBackup: Date,
-    nextScheduledBackup: Date
-  },
-  cmsBackup: {
-    enabled: true,
-    intervalHours: 48,
-    maxBackupsToKeep: 20,
-    lastAutoBackup: Date,
-    nextScheduledBackup: Date
-  }
-}
-```
-
-**Backup Properties:**
-- ✅ Timestamped (ISO 8601)
-- ✅ Stored securely in MongoDB
-- ✅ Restorable independently
-- ✅ Automatic cleanup of old backups
-
-### C. Manual Backup Button
-
-Both dashboards include a **"Create Backup Now"** button that:
-1. Immediately generates a full backup
-2. Stores in the `backups` collection
-3. Includes full metadata and statistics
-4. Logs the action in audit trail
+| Permission | ft-super-admin | ft-editor |
+|------------|----------------|-----------|
+| `manage-members` | ✅ | ✅ |
+| `manage-tree` | ✅ | ✅ |
+| `manage-content` | ✅ | ✅ |
+| `create-backups` | ✅ | ✅ |
+| `restore-backups` | ✅ | ❌ |
+| `manage-users` | ✅ | ❌ |
+| `view-audit-logs` | ✅ | ❌ |
+| `manage-settings` | ✅ | ❌ |
 
 ---
 
-## 4. MongoDB Backup Requirements
-
-### Collections Structure
-
-```
-backups (collection)
-├── backupId: String (unique, e.g., "FAMILY-TREE_MANUAL_2024-01-11T15-30-00-000Z_ABC123")
-├── backupType: "family-tree" | "cms"
-├── triggerType: "auto" | "manual"
-├── sourceDashboard: "family-tree-dashboard" | "cms-dashboard" | "system"
-├── createdBy: String (username or "system")
-├── status: "pending" | "in-progress" | "completed" | "failed"
-├── data: Object (full backup data)
-├── stats: {
-│   totalRecords: Number,
-│   collections: [{ name, count }],
-│   sizeInBytes: Number
-│ }
-├── metadata: {
-│   mongodbVersion: String,
-│   nodeVersion: String,
-│   serverTimestamp: Date,
-│   checksumSHA256: String
-│ }
-├── errorInfo: { message, stack, timestamp } (if failed)
-├── createdAt: Date
-└── completedAt: Date
-```
-
-### Naming Convention
-- Backup ID format: `{TYPE}_{TRIGGER}_{TIMESTAMP}_{RANDOM}`
-- Examples:
-  - `FAMILY-TREE_MANUAL_2024-01-11T15-30-00-000Z_XY7K2P`
-  - `CMS_AUTO_2024-01-11T03-00-00-000Z_M8N3QR`
-
----
-
-## 5. Safety & Recovery
-
-### No Backup Overwrites
-- Each backup has a unique ID
-- Old backups are automatically cleaned up (keeps last N)
-- No in-place updates to existing backups
-
-### Restore Restrictions
-- **Super Admin only** can restore backups
-- Confirmation required (`confirmRestore: true`)
-- Pre-restore backup is automatically created
-
-### Confirmation Steps Before Restore
-1. Frontend shows warning modal
-2. User must explicitly confirm
-3. Backend requires `confirmRestore: true` in request body
-4. Pre-restore backup is created before proceeding
-
-### Audit Logging
-
-**Collection:** `audit_logs`
-
-All backup and restore actions are logged:
-- `BACKUP_CREATED`
-- `BACKUP_FAILED`
-- `BACKUP_DELETED`
-- `BACKUP_CLEANUP`
-- `RESTORE_INITIATED`
-- `RESTORE_COMPLETED`
-- `RESTORE_FAILED`
-- `RESTORE_CANCELLED`
-
-**Log Entry Fields:**
-- action
-- category
-- resource
-- resourceId (backupId)
-- user
-- userRole
-- ipAddress
-- userAgent
-- dashboard
-- details
-- success
-- errorMessage
-- createdAt
-
----
-
-## 6. API Endpoints
-
-### Family Tree Dashboard API
-
-```
-GET  /api/dashboard/family-tree/stats           - Dashboard statistics
-GET  /api/dashboard/family-tree/backups         - List backups
-GET  /api/dashboard/family-tree/backups/:id     - Backup details
-POST /api/dashboard/family-tree/backups/create  - Create manual backup
-POST /api/dashboard/family-tree/backups/:id/restore - Restore (Super Admin)
-DELETE /api/dashboard/family-tree/backups/:id   - Delete (Super Admin)
-GET  /api/dashboard/family-tree/backup-settings - Get settings (Super Admin)
-PUT  /api/dashboard/family-tree/backup-settings - Update settings (Super Admin)
-GET  /api/dashboard/family-tree/audit-logs      - Audit logs (Super Admin)
-```
+## 🌐 API ENDPOINTS
 
 ### CMS Dashboard API
 
+Uses `JWT_SECRET` for authentication via `authenticateToken` middleware.
+
 ```
-GET  /api/dashboard/cms/stats                   - Dashboard statistics
-GET  /api/dashboard/cms/backups                 - List backups
-GET  /api/dashboard/cms/backups/:id             - Backup details
-POST /api/dashboard/cms/backups/create          - Create manual backup (Admin+)
-POST /api/dashboard/cms/backups/:id/restore     - Restore (Super Admin)
-DELETE /api/dashboard/cms/backups/:id           - Delete (Super Admin)
-GET  /api/dashboard/cms/backup-settings         - Get settings (Super Admin)
-PUT  /api/dashboard/cms/backup-settings         - Update settings (Super Admin)
-GET  /api/dashboard/cms/audit-logs              - Audit logs (Super Admin)
+POST /api/admin/login          - CMS login
+GET  /api/admin/me             - Current CMS user
+POST /api/admin/logout         - CMS logout
+...other CMS endpoints...
+```
+
+### Family Tree Dashboard API (ISOLATED)
+
+Uses `FAMILY_TREE_JWT_SECRET` for authentication via `authenticateFTToken` middleware.
+
+#### Authentication Routes
+```
+POST /api/family-tree-auth/login           - FT login
+GET  /api/family-tree-auth/me              - Current FT user
+GET  /api/family-tree-auth/verify          - Verify token
+POST /api/family-tree-auth/logout          - FT logout
+PUT  /api/family-tree-auth/change-password - Change password
+GET  /api/family-tree-auth/users           - List FT admins (ft-super-admin)
+POST /api/family-tree-auth/users           - Create FT admin (ft-super-admin)
+PUT  /api/family-tree-auth/users/:id       - Update FT admin (ft-super-admin)
+DELETE /api/family-tree-auth/users/:id     - Delete FT admin (ft-super-admin)
+```
+
+#### Dashboard Routes
+```
+GET  /api/dashboard/family-tree/stats          - Dashboard statistics
+GET  /api/dashboard/family-tree/persons        - List all persons
+GET  /api/dashboard/family-tree/persons/:id    - Get person details
+POST /api/dashboard/family-tree/persons        - Create person
+PUT  /api/dashboard/family-tree/persons/:id    - Update person
+DELETE /api/dashboard/family-tree/persons/:id  - Delete person (ft-super-admin)
+GET  /api/dashboard/family-tree/backups        - List backups
+POST /api/dashboard/family-tree/backups/create - Create backup
+POST /api/dashboard/family-tree/backups/:id/restore - Restore (ft-super-admin)
+DELETE /api/dashboard/family-tree/backups/:id  - Delete backup (ft-super-admin)
+GET  /api/dashboard/family-tree/audit-logs     - Audit logs (ft-super-admin)
 ```
 
 ---
 
-## 7. File Structure
+## 📁 FILE STRUCTURE
 
-### Backend (Server)
+### Backend
 
 ```
 server/
 ├── models/
-│   ├── Backup.js           # Backup schema
-│   ├── AuditLog.js         # Audit log schema
-│   ├── BackupSettings.js   # Backup configuration schema
-│   └── index.js            # Updated exports
+│   ├── Admin.js              # CMS admin model
+│   ├── FamilyTreeAdmin.js    # FT admin model (SEPARATE)
+│   └── index.js              # Model exports
+├── middleware/
+│   ├── auth.js               # CMS authentication
+│   └── familyTreeAuth.js     # FT authentication (SEPARATE)
 ├── routes/
-│   ├── familyTreeDashboard.js  # Family Tree Dashboard API
-│   └── cmsDashboard.js         # CMS Dashboard API
-├── services/
-│   └── BackupService.js    # Backup/restore operations
-├── jobs/
-│   └── backupScheduler.js  # Automated backup scheduler
-└── server.js               # Updated with new routes
+│   ├── adminMongo.js         # CMS admin routes
+│   ├── familyTreeAuth.js     # FT auth routes (SEPARATE)
+│   ├── familyTreeDashboard.js # FT dashboard routes (ISOLATED)
+│   └── cmsDashboard.js       # CMS dashboard routes
+└── server.js                 # Route registration
 ```
 
-### Frontend (Client)
+### Frontend
 
 ```
 client/src/
-├── components/admin/
-│   ├── FamilyTreeBackupManager.jsx  # Family Tree backup UI
-│   ├── CMSBackupManager.jsx         # CMS backup UI
-│   └── AdminLayout.jsx             # Updated navigation
-├── utils/
-│   └── adminApi.js                 # Updated with dashboard APIs
-└── App.jsx                         # Updated with new routes
+├── contexts/
+│   ├── AdminContext.jsx           # CMS auth context
+│   └── FamilyTreeAuthContext.jsx  # FT auth context (SEPARATE)
+├── components/
+│   ├── admin/
+│   │   ├── AdminLogin.jsx         # CMS login
+│   │   ├── AdminLayout.jsx        # CMS layout
+│   │   ├── ProtectedRoute.jsx     # CMS protected route
+│   │   └── FamilyTreeDashboardLayout.jsx # FT layout (uses FT context)
+│   └── familyTree/
+│       ├── FamilyTreeLogin.jsx    # FT login (SEPARATE)
+│       └── FamilyTreeProtectedRoute.jsx # FT protected route (SEPARATE)
+└── App.jsx                        # Route configuration
 ```
 
 ---
 
-## 8. Final Goal Achieved
+## 🔑 ENVIRONMENT VARIABLES
 
-- ✅ **Two fully independent dashboards** - Family Tree and CMS
-- ✅ **Clear role separation** - Super Admin, Admin, Editor
-- ✅ **Zero risk of accidental data loss** - Pre-restore backups, confirmations
-- ✅ **Reliable automatic + manual backup system** - 48-hour schedules, one-click manual
-- ✅ **Scalable and secure architecture** - MongoDB-based, audit-logged
+Add these to your `.env` file:
 
----
+```env
+# CMS Authentication
+JWT_SECRET=your-cms-secret-key-here
+ADMIN_USERNAME=admin
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=SecurePassword123!
 
-## 9. Environment Variables
-
-No new environment variables required. Backup scheduling uses default values that can be modified via the settings API.
-
----
-
-## 10. Migration Notes
-
-1. The system automatically creates the `backups`, `audit_logs`, and `backup_settings` collections on first use
-2. Existing admin users retain their permissions
-3. The backup scheduler starts automatically on server startup
-4. First backup will be triggered ~10 seconds after server start if none exists
+# Family Tree Authentication (SEPARATE)
+FAMILY_TREE_JWT_SECRET=your-ft-secret-key-here-must-be-different
+FAMILY_TREE_ADMIN_USERNAME=ft_admin
+FAMILY_TREE_ADMIN_EMAIL=ft_admin@alshaer.family
+FAMILY_TREE_ADMIN_PASSWORD=FT_SecurePassword123!
+```
 
 ---
 
-*Document created: January 11, 2024*
-*Architecture Version: 2.0*
+## 🚀 ACCESS URLS
+
+### Production
+
+| Dashboard | Login URL | Dashboard URL |
+|-----------|-----------|---------------|
+| **CMS Dashboard** | `https://yoursite.com/admin/login` | `https://yoursite.com/admin/dashboard` |
+| **Family Tree Dashboard** | `https://yoursite.com/family-dashboard/login` | `https://yoursite.com/family-dashboard` |
+
+### Development
+
+| Dashboard | Login URL | Dashboard URL |
+|-----------|-----------|---------------|
+| **CMS Dashboard** | `http://localhost:5173/admin/login` | `http://localhost:5173/admin/dashboard` |
+| **Family Tree Dashboard** | `http://localhost:5173/family-dashboard/login` | `http://localhost:5173/family-dashboard` |
+
+---
+
+## 🛡️ SECURITY GUARANTEES
+
+1. **Authentication Isolation**
+   - CMS tokens CANNOT access FT API endpoints
+   - FT tokens CANNOT access CMS API endpoints
+   - Each system verifies token type before processing
+
+2. **Data Isolation**
+   - User credentials stored in separate collections
+   - No shared session state
+   - Independent audit logs
+
+3. **Authorization Isolation**
+   - CMS Super Admin has NO access to FT Dashboard
+   - FT Super Admin has NO access to CMS Dashboard
+   - Permissions are system-specific
+
+4. **Breach Containment**
+   - Compromise of CMS does NOT affect FT data
+   - Compromise of FT does NOT affect CMS data
+   - Each system has its own recovery procedures
+
+---
+
+## 📋 DEFAULT CREDENTIALS
+
+### CMS Dashboard
+- **Username:** `admin` (or as configured in .env)
+- **Email:** `admin@example.com`
+- **Password:** As configured in `ADMIN_PASSWORD`
+
+### Family Tree Dashboard
+- **Username:** `ft_admin` (or as configured in .env)
+- **Email:** `ft_admin@alshaer.family`
+- **Password:** As configured in `FAMILY_TREE_ADMIN_PASSWORD`
+
+⚠️ **IMPORTANT:** Change default passwords immediately after deployment!
+
+---
+
+## 🔄 INITIAL SETUP
+
+On first server start:
+1. CMS Super Admin is automatically created from `ADMIN_*` env vars
+2. FT Super Admin is automatically created from `FAMILY_TREE_ADMIN_*` env vars
+3. Both systems are immediately usable with default credentials
+
+---
+
+*Document Version: 2.0 - Isolated Authentication Architecture*
+*Last Updated: January 11, 2024*

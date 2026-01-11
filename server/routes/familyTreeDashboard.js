@@ -1,34 +1,41 @@
 /**
- * Family Tree Dashboard Routes
+ * Family Tree Dashboard Routes (ISOLATED)
  * 
- * Dedicated API routes for the Family Tree Dashboard
- * Completely separated from CMS Dashboard routes
+ * COMPLETELY SEPARATE from CMS Dashboard routes.
+ * Uses its own authentication system:
+ * - FamilyTreeAdmin model
+ * - Separate JWT secret (FAMILY_TREE_JWT_SECRET)
+ * - Own permission checks
  * 
- * Features:
- * - Family members CRUD operations
- * - Tree structure management
- * - Lineage records
- * - Family Tree specific backups
- * - Role-based access (family-tree permission required)
+ * SECURITY: This router REJECTS any CMS tokens.
+ * CMS admins CANNOT access these endpoints.
  */
 
 const express = require('express');
 const router = express.Router();
 const {
-    authenticateToken,
-    requireAdmin,
-    requirePermission,
-    requireSuperAdmin
-} = require('../middleware/auth');
+    authenticateFTToken,
+    requireFTSuperAdmin,
+    requireFTPermission
+} = require('../middleware/familyTreeAuth');
 const { Person, Backup, BackupSettings, AuditLog } = require('../models');
 const BackupService = require('../services/BackupService');
 
-// ==================== FAMILY TREE DASHBOARD STATS ====================
+// Helper to get client IP
+const getClientIP = (req) => {
+    return req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+        req.connection?.remoteAddress ||
+        req.ip ||
+        'unknown';
+};
+
+// ==================== DASHBOARD STATS ====================
 
 /**
  * Get Family Tree Dashboard statistics
+ * Requires: Family Tree authentication
  */
-router.get('/stats', authenticateToken, requireAdmin, requirePermission('family-tree'), async (req, res) => {
+router.get('/stats', authenticateFTToken, async (req, res) => {
     try {
         const totalPersons = await Person.countDocuments();
         const totalGenerations = await Person.distinct('generation').then(gens => gens.length);
@@ -70,8 +77,175 @@ router.get('/stats', authenticateToken, requireAdmin, requirePermission('family-
             }
         });
     } catch (error) {
-        console.error('Family Tree stats error:', error);
+        console.error('[FT-DASHBOARD] Stats error:', error);
         res.status(500).json({ success: false, message: 'خطأ في جلب إحصائيات شجرة العائلة' });
+    }
+});
+
+// ==================== PERSON MANAGEMENT ====================
+
+/**
+ * Get all persons
+ */
+router.get('/persons', authenticateFTToken, requireFTPermission('manage-members'), async (req, res) => {
+    try {
+        const persons = await Person.find({})
+            .populate('fatherId', 'fullName generation')
+            .sort({ generation: 1, order: 1 });
+
+        res.json({
+            success: true,
+            data: persons
+        });
+    } catch (error) {
+        console.error('[FT-DASHBOARD] Get persons error:', error);
+        res.status(500).json({ success: false, message: 'خطأ في جلب أفراد العائلة' });
+    }
+});
+
+/**
+ * Get person by ID
+ */
+router.get('/persons/:id', authenticateFTToken, requireFTPermission('manage-members'), async (req, res) => {
+    try {
+        const person = await Person.findById(req.params.id)
+            .populate('fatherId', 'fullName generation');
+
+        if (!person) {
+            return res.status(404).json({ success: false, message: 'الشخص غير موجود' });
+        }
+
+        res.json({
+            success: true,
+            data: person
+        });
+    } catch (error) {
+        console.error('[FT-DASHBOARD] Get person error:', error);
+        res.status(500).json({ success: false, message: 'خطأ في جلب بيانات الشخص' });
+    }
+});
+
+/**
+ * Create new person
+ */
+router.post('/persons', authenticateFTToken, requireFTPermission('manage-members'), async (req, res) => {
+    try {
+        const personData = { ...req.body };
+
+        const person = new Person(personData);
+        await person.save();
+
+        // Log the action
+        await AuditLog.logAction({
+            action: 'FT_PERSON_CREATED',
+            category: 'data-management',
+            resource: 'person',
+            resourceId: person._id.toString(),
+            user: req.ftUser.username,
+            userRole: req.ftUser.role,
+            ipAddress: getClientIP(req),
+            userAgent: req.headers['user-agent'],
+            dashboard: 'family-tree-dashboard',
+            details: { fullName: person.fullName, generation: person.generation },
+            success: true
+        });
+
+        res.status(201).json({
+            success: true,
+            message: 'تمت إضافة الشخص بنجاح',
+            data: person
+        });
+    } catch (error) {
+        console.error('[FT-DASHBOARD] Create person error:', error);
+        res.status(500).json({ success: false, message: 'خطأ في إضافة الشخص' });
+    }
+});
+
+/**
+ * Update person
+ */
+router.put('/persons/:id', authenticateFTToken, requireFTPermission('manage-members'), async (req, res) => {
+    try {
+        const person = await Person.findByIdAndUpdate(
+            req.params.id,
+            { $set: req.body },
+            { new: true, runValidators: true }
+        );
+
+        if (!person) {
+            return res.status(404).json({ success: false, message: 'الشخص غير موجود' });
+        }
+
+        // Log the action
+        await AuditLog.logAction({
+            action: 'FT_PERSON_UPDATED',
+            category: 'data-management',
+            resource: 'person',
+            resourceId: person._id.toString(),
+            user: req.ftUser.username,
+            userRole: req.ftUser.role,
+            ipAddress: getClientIP(req),
+            userAgent: req.headers['user-agent'],
+            dashboard: 'family-tree-dashboard',
+            details: { fullName: person.fullName, changes: Object.keys(req.body) },
+            success: true
+        });
+
+        res.json({
+            success: true,
+            message: 'تم تحديث بيانات الشخص بنجاح',
+            data: person
+        });
+    } catch (error) {
+        console.error('[FT-DASHBOARD] Update person error:', error);
+        res.status(500).json({ success: false, message: 'خطأ في تحديث بيانات الشخص' });
+    }
+});
+
+/**
+ * Delete person (ft-super-admin only)
+ */
+router.delete('/persons/:id', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
+    try {
+        const person = await Person.findById(req.params.id);
+
+        if (!person) {
+            return res.status(404).json({ success: false, message: 'الشخص غير موجود' });
+        }
+
+        // Check if person has children
+        const hasChildren = await Person.countDocuments({ fatherId: req.params.id });
+        if (hasChildren > 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'لا يمكن حذف شخص له أبناء في الشجرة'
+            });
+        }
+
+        await Person.findByIdAndDelete(req.params.id);
+
+        // Log the action
+        await AuditLog.logAction({
+            action: 'FT_PERSON_DELETED',
+            category: 'data-management',
+            resource: 'person',
+            resourceId: req.params.id,
+            user: req.ftUser.username,
+            userRole: req.ftUser.role,
+            ipAddress: getClientIP(req),
+            userAgent: req.headers['user-agent'],
+            dashboard: 'family-tree-dashboard',
+            details: { fullName: person.fullName, generation: person.generation },
+            success: true
+        });
+
+        res.json({
+            success: true,
+            message: 'تم حذف الشخص بنجاح'
+        });
+    } catch (error) {
+        console.error('[FT-DASHBOARD] Delete person error:', error);
+        res.status(500).json({ success: false, message: 'خطأ في حذف الشخص' });
     }
 });
 
@@ -80,7 +254,7 @@ router.get('/stats', authenticateToken, requireAdmin, requirePermission('family-
 /**
  * Get list of Family Tree backups
  */
-router.get('/backups', authenticateToken, requireAdmin, requirePermission('family-tree'), async (req, res) => {
+router.get('/backups', authenticateFTToken, requireFTPermission('create-backups'), async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 20;
         const backups = await BackupService.getBackups('family-tree', limit);
@@ -90,7 +264,7 @@ router.get('/backups', authenticateToken, requireAdmin, requirePermission('famil
             data: backups
         });
     } catch (error) {
-        console.error('Get backups error:', error);
+        console.error('[FT-DASHBOARD] Get backups error:', error);
         res.status(500).json({ success: false, message: 'خطأ في جلب النسخ الاحتياطية' });
     }
 });
@@ -98,7 +272,7 @@ router.get('/backups', authenticateToken, requireAdmin, requirePermission('famil
 /**
  * Get backup details
  */
-router.get('/backups/:backupId', authenticateToken, requireAdmin, requirePermission('family-tree'), async (req, res) => {
+router.get('/backups/:backupId', authenticateFTToken, requireFTPermission('create-backups'), async (req, res) => {
     try {
         const { backupId } = req.params;
         const includeData = req.query.includeData === 'true';
@@ -113,20 +287,19 @@ router.get('/backups/:backupId', authenticateToken, requireAdmin, requirePermiss
             data: backup
         });
     } catch (error) {
-        console.error('Get backup details error:', error);
+        console.error('[FT-DASHBOARD] Get backup details error:', error);
         res.status(500).json({ success: false, message: 'خطأ في جلب تفاصيل النسخة الاحتياطية' });
     }
 });
 
 /**
  * Create manual Family Tree backup
- * Accessible by any user with family-tree permission
  */
-router.post('/backups/create', authenticateToken, requireAdmin, requirePermission('family-tree'), async (req, res) => {
+router.post('/backups/create', authenticateFTToken, requireFTPermission('create-backups'), async (req, res) => {
     try {
         const result = await BackupService.createFamilyTreeBackup(
             'manual',
-            req.user.username,
+            req.ftUser.username,
             req
         );
 
@@ -144,16 +317,16 @@ router.post('/backups/create', authenticateToken, requireAdmin, requirePermissio
             });
         }
     } catch (error) {
-        console.error('Create backup error:', error);
+        console.error('[FT-DASHBOARD] Create backup error:', error);
         res.status(500).json({ success: false, message: 'خطأ في إنشاء النسخة الاحتياطية' });
     }
 });
 
 /**
  * Restore Family Tree from backup
- * Super Admin only - requires confirmation
+ * FT Super Admin only - requires confirmation
  */
-router.post('/backups/:backupId/restore', authenticateToken, requireSuperAdmin, async (req, res) => {
+router.post('/backups/:backupId/restore', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const { backupId } = req.params;
         const { confirmRestore } = req.body;
@@ -169,7 +342,7 @@ router.post('/backups/:backupId/restore', authenticateToken, requireSuperAdmin, 
 
         const result = await BackupService.restoreFamilyTreeBackup(
             backupId,
-            req.user.username,
+            req.ftUser.username,
             req
         );
 
@@ -187,19 +360,19 @@ router.post('/backups/:backupId/restore', authenticateToken, requireSuperAdmin, 
             });
         }
     } catch (error) {
-        console.error('Restore backup error:', error);
+        console.error('[FT-DASHBOARD] Restore backup error:', error);
         res.status(500).json({ success: false, message: 'خطأ في استعادة النسخة الاحتياطية' });
     }
 });
 
 /**
  * Delete a Family Tree backup
- * Super Admin only
+ * FT Super Admin only
  */
-router.delete('/backups/:backupId', authenticateToken, requireSuperAdmin, async (req, res) => {
+router.delete('/backups/:backupId', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const { backupId } = req.params;
-        const result = await BackupService.deleteBackup(backupId, req.user.username, req);
+        const result = await BackupService.deleteBackup(backupId, req.ftUser.username, req);
 
         if (result.success) {
             res.json({
@@ -213,7 +386,7 @@ router.delete('/backups/:backupId', authenticateToken, requireSuperAdmin, async 
             });
         }
     } catch (error) {
-        console.error('Delete backup error:', error);
+        console.error('[FT-DASHBOARD] Delete backup error:', error);
         res.status(500).json({ success: false, message: 'خطأ في حذف النسخة الاحتياطية' });
     }
 });
@@ -221,10 +394,9 @@ router.delete('/backups/:backupId', authenticateToken, requireSuperAdmin, async 
 // ==================== BACKUP SETTINGS ====================
 
 /**
- * Get backup settings
- * Super Admin only
+ * Get backup settings (FT Super Admin only)
  */
-router.get('/backup-settings', authenticateToken, requireSuperAdmin, async (req, res) => {
+router.get('/backup-settings', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const settings = await BackupSettings.getSettings();
         res.json({
@@ -235,16 +407,15 @@ router.get('/backup-settings', authenticateToken, requireSuperAdmin, async (req,
             }
         });
     } catch (error) {
-        console.error('Get backup settings error:', error);
+        console.error('[FT-DASHBOARD] Get backup settings error:', error);
         res.status(500).json({ success: false, message: 'خطأ في جلب إعدادات النسخ الاحتياطي' });
     }
 });
 
 /**
- * Update backup settings
- * Super Admin only
+ * Update backup settings (FT Super Admin only)
  */
-router.put('/backup-settings', authenticateToken, requireSuperAdmin, async (req, res) => {
+router.put('/backup-settings', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const { enabled, intervalHours, maxBackupsToKeep } = req.body;
 
@@ -253,7 +424,7 @@ router.put('/backup-settings', authenticateToken, requireSuperAdmin, async (req,
         if (intervalHours !== undefined) updates['familyTreeBackup.intervalHours'] = intervalHours;
         if (maxBackupsToKeep !== undefined) updates['familyTreeBackup.maxBackupsToKeep'] = maxBackupsToKeep;
 
-        const settings = await BackupSettings.updateSettings(updates, req.user.username);
+        const settings = await BackupSettings.updateSettings(updates, req.ftUser.username);
 
         res.json({
             success: true,
@@ -261,7 +432,7 @@ router.put('/backup-settings', authenticateToken, requireSuperAdmin, async (req,
             data: settings.familyTreeBackup
         });
     } catch (error) {
-        console.error('Update backup settings error:', error);
+        console.error('[FT-DASHBOARD] Update backup settings error:', error);
         res.status(500).json({ success: false, message: 'خطأ في تحديث إعدادات النسخ الاحتياطي' });
     }
 });
@@ -269,18 +440,13 @@ router.put('/backup-settings', authenticateToken, requireSuperAdmin, async (req,
 // ==================== AUDIT LOGS ====================
 
 /**
- * Get Family Tree related audit logs
- * Super Admin only
+ * Get Family Tree related audit logs (FT Super Admin only)
  */
-router.get('/audit-logs', authenticateToken, requireSuperAdmin, async (req, res) => {
+router.get('/audit-logs', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
     try {
         const limit = parseInt(req.query.limit) || 100;
         const logs = await AuditLog.find({
-            $or: [
-                { dashboard: 'family-tree-dashboard' },
-                { resource: 'persons' },
-                { 'details.backupType': 'family-tree' }
-            ]
+            dashboard: 'family-tree-dashboard'
         })
             .sort({ createdAt: -1 })
             .limit(limit);
@@ -290,7 +456,7 @@ router.get('/audit-logs', authenticateToken, requireSuperAdmin, async (req, res)
             data: logs
         });
     } catch (error) {
-        console.error('Get audit logs error:', error);
+        console.error('[FT-DASHBOARD] Get audit logs error:', error);
         res.status(500).json({ success: false, message: 'خطأ في جلب سجلات التدقيق' });
     }
 });

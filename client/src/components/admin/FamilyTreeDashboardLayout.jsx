@@ -1,16 +1,19 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { useAdmin } from '../../contexts/AdminContext'
+import { useFamilyTreeAuth } from '../../contexts/FamilyTreeAuthContext'
 
 /**
  * Family Tree Dashboard Layout
  * 
- * Completely isolated dashboard for Family Tree management only.
- * Separate from the main CMS Dashboard.
+ * COMPLETELY ISOLATED dashboard for Family Tree management.
+ * Uses FamilyTreeAuthContext - SEPARATE from CMS AdminContext.
+ * 
+ * SECURITY: This layout only works with Family Tree authentication.
+ * CMS tokens will NOT work here.
  */
 const FamilyTreeDashboardLayout = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false)
-    const { user, logout } = useAdmin()
+    const { user, logout, isFTSuperAdmin } = useFamilyTreeAuth()
     const navigate = useNavigate()
     const location = useLocation()
 
@@ -23,30 +26,30 @@ const FamilyTreeDashboardLayout = () => {
         { id: 'backups', label: 'النسخ الاحتياطية', path: '/family-dashboard/backups', icon: '💾' },
     ]
 
-    // Super Admin only items
+    // FT Super Admin only items
     const superAdminItems = [
+        { id: 'users', label: 'إدارة المستخدمين', path: '/family-dashboard/users', icon: '👥' },
         { id: 'audit-logs', label: 'سجلات التدقيق', path: '/family-dashboard/audit-logs', icon: '📋' },
         { id: 'settings', label: 'الإعدادات', path: '/family-dashboard/settings', icon: '⚙️' },
     ]
 
-    const handleLogout = () => {
-        logout()
+    const handleLogout = async () => {
+        await logout()
+        navigate('/family-dashboard/login')
     }
 
     const isActive = (path) => location.pathname === path
 
-    // Get role display info
+    // Get role display info for FT roles
     const getRoleDisplay = (role) => {
         switch (role) {
-            case 'super-admin': return { label: 'مدير أعلى', color: 'bg-purple-500' }
-            case 'admin': return { label: 'مدير', color: 'bg-blue-500' }
-            case 'editor': return { label: 'محرر شجرة العائلة', color: 'bg-emerald-500' }
-            default: return { label: role, color: 'bg-gray-500' }
+            case 'ft-super-admin': return { label: 'مدير شجرة العائلة', color: 'bg-purple-500' }
+            case 'ft-editor': return { label: 'محرر الشجرة', color: 'bg-emerald-500' }
+            default: return { label: role || 'مستخدم', color: 'bg-gray-500' }
         }
     }
 
     const roleDisplay = getRoleDisplay(user?.role)
-    const isSuperAdmin = user?.role === 'super-admin'
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-50 flex" dir="rtl">
@@ -114,8 +117,8 @@ const FamilyTreeDashboardLayout = () => {
                         </button>
                     ))}
 
-                    {/* Super Admin Section */}
-                    {isSuperAdmin && (
+                    {/* FT Super Admin Section */}
+                    {isFTSuperAdmin && (
                         <>
                             <div className="px-4 mt-6 mb-2">
                                 <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider">
@@ -141,18 +144,14 @@ const FamilyTreeDashboardLayout = () => {
                         </>
                     )}
 
-                    {/* Switch to CMS Dashboard */}
-                    {(user?.role === 'super-admin' || user?.role === 'admin') && (
-                        <div className="px-4 mt-6">
-                            <button
-                                onClick={() => navigate('/admin/dashboard')}
-                                className="w-full flex items-center justify-center px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all shadow-lg"
-                            >
-                                <span className="text-xl ml-2">🏢</span>
-                                <span className="font-medium">الانتقال لإدارة المحتوى</span>
-                            </button>
+                    {/* Security Notice - Isolated System */}
+                    <div className="px-4 mt-6">
+                        <div className="p-3 bg-emerald-900/50 rounded-lg border border-emerald-700">
+                            <p className="text-emerald-300 text-xs text-center">
+                                🔒 نظام شجرة العائلة المعزول
+                            </p>
                         </div>
-                    )}
+                    </div>
                 </nav>
 
                 {/* Logout Button */}

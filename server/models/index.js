@@ -309,6 +309,9 @@ const Backup = require('./Backup');
 const AuditLog = require('./AuditLog');
 const BackupSettings = require('./BackupSettings');
 
+// Import Family Tree Admin model (SEPARATE from CMS Admin)
+const FamilyTreeAdmin = require('./FamilyTreeAdmin');
+
 module.exports = {
   connectDB,
   Admin,
@@ -326,5 +329,6 @@ module.exports = {
   Person,
   Backup,
   AuditLog,
-  BackupSettings
+  BackupSettings,
+  FamilyTreeAdmin
 };

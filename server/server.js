@@ -13,6 +13,7 @@ const logger = require('./middleware/logger');
 const newsRouter = require('./routes/news');
 const { startNewsJob } = require('./jobs/newsJob');
 const { startBackupScheduler } = require('./jobs/backupScheduler');
+const { initializeFTAdmin } = require('./middleware/familyTreeAuth');
 require('dotenv').config();
 
 const app = express();
@@ -20,8 +21,11 @@ const PORT = process.env.PORT || 5000;
 
 // Connect to MongoDB Atlas
 connectDB().then(() => {
-  // Initialize admin user after DB connection
+  // Initialize CMS admin user after DB connection
   initializeAdmin();
+
+  // Initialize Family Tree admin (SEPARATE from CMS)
+  initializeFTAdmin();
 
   // Start backup scheduler after DB connection
   startBackupScheduler();
@@ -143,8 +147,14 @@ app.use('/api/admin/login', authLimiter);
 app.use('/api/admin', require('./routes/adminMongo'));
 
 // Separate Dashboard Routes
-app.use('/api/dashboard/family-tree', require('./routes/familyTreeDashboard'));
+// CMS Dashboard (uses CMS auth - JWT_SECRET)
 app.use('/api/dashboard/cms', require('./routes/cmsDashboard'));
+
+// ===== FAMILY TREE ISOLATED SYSTEM =====
+// Family Tree Auth (SEPARATE from CMS - uses FAMILY_TREE_JWT_SECRET)
+app.use('/api/family-tree-auth', require('./routes/familyTreeAuth'));
+// Family Tree Dashboard (uses FT auth - completely isolated)
+app.use('/api/dashboard/family-tree', require('./routes/familyTreeDashboard'));
 
 // Serve React app for all non-API routes
 app.get('*', (req, res) => {
