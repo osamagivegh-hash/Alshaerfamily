@@ -159,6 +159,17 @@ const DevTeamPostSchema = new mongoose.Schema({
         type: String,
         enum: ['right', 'center', 'justify'],
         default: 'right'
+    },
+
+    // Article mode - displays full content by default
+    isArticle: {
+        type: Boolean,
+        default: false
+    },
+    // Max height before "Read More" appears (in pixels, 0 = no limit)
+    maxCollapsedHeight: {
+        type: Number,
+        default: 0
     }
 }, {
     timestamps: true

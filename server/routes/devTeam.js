@@ -375,7 +375,7 @@ router.post('/admin/posts', authenticateToken, requireAdmin, async (req, res) =>
         const {
             title, content, summary, postType, icon, isPublished, isPinned,
             author, authorRole, authorAvatar, featuredImage,
-            paragraphSpacing, textAlignment
+            paragraphSpacing, textAlignment, isArticle, maxCollapsedHeight
         } = req.body;
 
         if (!title || !content) {
@@ -398,7 +398,9 @@ router.post('/admin/posts', authenticateToken, requireAdmin, async (req, res) =>
             isPublished: isPublished !== false,
             isPinned: isPinned || false,
             paragraphSpacing: paragraphSpacing || 'normal',
-            textAlignment: textAlignment || 'right'
+            textAlignment: textAlignment || 'right',
+            isArticle: isArticle || false,
+            maxCollapsedHeight: maxCollapsedHeight || 0
         });
 
         await newPost.save();
@@ -426,7 +428,7 @@ router.put('/admin/posts/:id', authenticateToken, requireAdmin, async (req, res)
         const {
             title, content, summary, postType, icon, isPublished, isPinned,
             author, authorRole, authorAvatar, featuredImage,
-            paragraphSpacing, textAlignment
+            paragraphSpacing, textAlignment, isArticle, maxCollapsedHeight
         } = req.body;
 
         const post = await DevTeamPost.findById(req.params.id);
@@ -451,6 +453,8 @@ router.put('/admin/posts/:id', authenticateToken, requireAdmin, async (req, res)
         if (featuredImage !== undefined) post.featuredImage = featuredImage;
         if (paragraphSpacing) post.paragraphSpacing = paragraphSpacing;
         if (textAlignment) post.textAlignment = textAlignment;
+        if (isArticle !== undefined) post.isArticle = isArticle;
+        if (maxCollapsedHeight !== undefined) post.maxCollapsedHeight = maxCollapsedHeight;
 
         await post.save();
 

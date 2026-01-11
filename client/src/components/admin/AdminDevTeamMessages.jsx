@@ -285,7 +285,9 @@ const PostFormModal = ({ post, onClose, onSave }) => {
         isPublished: post?.isPublished ?? true,
         isPinned: post?.isPinned || false,
         paragraphSpacing: post?.paragraphSpacing || 'normal',
-        textAlignment: post?.textAlignment || 'right'
+        textAlignment: post?.textAlignment || 'right',
+        isArticle: post?.isArticle || false,
+        maxCollapsedHeight: post?.maxCollapsedHeight || 0
     });
     const [saving, setSaving] = useState(false);
 
@@ -426,6 +428,39 @@ const PostFormModal = ({ post, onClose, onSave }) => {
                             <input type="checkbox" checked={formData.isPinned} onChange={(e) => setFormData({ ...formData, isPinned: e.target.checked })} className="w-5 h-5 rounded text-teal-600" />
                             <span>تثبيت في الأعلى</span>
                         </label>
+                    </div>
+
+                    {/* Article Mode Section */}
+                    <div className="bg-teal-50 border border-teal-200 rounded-xl p-4 space-y-4">
+                        <div className="flex items-center gap-3">
+                            <span className="text-2xl">📄</span>
+                            <div>
+                                <h4 className="font-bold text-teal-900">وضع المقال</h4>
+                                <p className="text-sm text-teal-700">عرض المحتوى الكامل مباشرة عند فتح الصفحة</p>
+                            </div>
+                        </div>
+                        <label className="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" checked={formData.isArticle} onChange={(e) => setFormData({ ...formData, isArticle: e.target.checked })} className="w-5 h-5 rounded text-teal-600" />
+                            <span className="font-medium">نشر كمقال (عرض كامل افتراضياً)</span>
+                        </label>
+                        {formData.isArticle && (
+                            <div className="mt-3">
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    الحد الأقصى للارتفاع قبل "قراءة المزيد" (بالبكسل)
+                                    <span className="text-gray-500 text-xs mr-2">(اتركه 0 لعرض المحتوى كاملاً)</span>
+                                </label>
+                                <input
+                                    type="number"
+                                    value={formData.maxCollapsedHeight}
+                                    onChange={(e) => setFormData({ ...formData, maxCollapsedHeight: parseInt(e.target.value) || 0 })}
+                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                                    min="0"
+                                    step="50"
+                                    placeholder="0"
+                                />
+                                <p className="text-xs text-gray-500 mt-1">القيم الموصى بها: 500 للمقالات القصيرة، 800 للمتوسطة، 0 لعرض كل شيء</p>
+                            </div>
+                        )}
                     </div>
 
                     {/* Actions */}
@@ -876,6 +911,7 @@ const AdminDevTeamMessages = () => {
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <span className="text-xl">{post.icon}</span>
                                                     <h3 className="font-bold text-gray-900">{post.title}</h3>
+                                                    {post.isArticle && <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">📄 مقال</span>}
                                                     {post.isPinned && <span className="text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full">📌 مثبت</span>}
                                                     <span className={`text-xs px-2 py-0.5 rounded-full ${post.isPublished ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
                                                         {post.isPublished ? 'منشور' : 'مسودة'}

@@ -79,9 +79,20 @@ const AlertBox = ({ alert, onDismiss }) => {
     );
 };
 
-// Post Component with Rich Text
+// Post/Article Component with Rich Text
 const PostCard = ({ post }) => {
-    const [expanded, setExpanded] = useState(false);
+    // Articles start expanded by default, regular posts start collapsed
+    const [expanded, setExpanded] = useState(post.isArticle || false);
+    const [showCollapseButton, setShowCollapseButton] = useState(false);
+    const contentRef = React.useRef(null);
+
+    // Check if content exceeds max height for collapse button
+    useEffect(() => {
+        if (post.isArticle && contentRef.current && post.maxCollapsedHeight > 0) {
+            const contentHeight = contentRef.current.scrollHeight;
+            setShowCollapseButton(contentHeight > post.maxCollapsedHeight);
+        }
+    }, [post.isArticle, post.maxCollapsedHeight]);
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -114,9 +125,9 @@ const PostCard = ({ post }) => {
 
     const getSpacingClass = (spacing) => {
         switch (spacing) {
-            case 'compact': return 'prose-sm leading-snug';
-            case 'spacious': return 'prose-lg leading-loose';
-            default: return 'leading-relaxed';
+            case 'compact': return 'prose-p:mb-2 prose-p:mt-0 leading-snug';
+            case 'spacious': return 'prose-p:mb-6 prose-p:mt-0 leading-loose';
+            default: return 'prose-p:mb-4 prose-p:mt-0 leading-relaxed';
         }
     };
 
@@ -128,6 +139,108 @@ const PostCard = ({ post }) => {
         }
     };
 
+    // Article layout for isArticle posts
+    if (post.isArticle) {
+        return (
+            <article className={`bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 ${post.isPinned ? 'ring-2 ring-teal-500' : ''}`}>
+                {/* Featured Image - Full width for articles */}
+                {post.featuredImage && (
+                    <div className="h-64 md:h-80 w-full overflow-hidden">
+                        <img
+                            src={post.featuredImage}
+                            alt={post.title}
+                            className="w-full h-full object-cover"
+                        />
+                    </div>
+                )}
+
+                <div className="p-8 md:p-10">
+                    {/* Article Header with Author Info Prominently Displayed */}
+                    <header className="mb-8 pb-6 border-b border-gray-200">
+                        {/* Badges */}
+                        <div className="flex flex-wrap items-center gap-2 mb-4">
+                            <span className="text-xs bg-teal-100 text-teal-700 px-3 py-1 rounded-full font-medium">📄 مقال</span>
+                            {post.isPinned && (
+                                <span className="text-xs bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full">📌 مثبت</span>
+                            )}
+                            <span className={`text-xs px-3 py-1 rounded-full ${getPostTypeStyle(post.postType)}`}>
+                                {getPostTypeLabel(post.postType)}
+                            </span>
+                        </div>
+
+                        {/* Title */}
+                        <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">{post.title}</h1>
+
+                        {/* Author Info - Prominent */}
+                        <div className="flex items-center gap-4">
+                            {post.authorAvatar ? (
+                                <img
+                                    src={post.authorAvatar}
+                                    alt={post.author}
+                                    className="w-14 h-14 rounded-full object-cover ring-2 ring-teal-100"
+                                />
+                            ) : (
+                                <div className="w-14 h-14 rounded-full bg-gradient-to-br from-teal-400 to-teal-600 flex items-center justify-center text-white text-xl font-bold shadow-lg">
+                                    {post.author?.charAt(0) || 'ف'}
+                                </div>
+                            )}
+                            <div>
+                                <p className="font-bold text-gray-900 text-lg">{post.author}</p>
+                                <p className="text-teal-600 font-medium">{post.authorRole || 'فريق التطوير'}</p>
+                                <p className="text-sm text-gray-500 mt-1">{formatDate(post.createdAt)}</p>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Article Content - Full Rich Text */}
+                    <div
+                        ref={contentRef}
+                        className={`prose prose-lg max-w-none text-gray-700 article-content ${getSpacingClass(post.paragraphSpacing)} ${getAlignmentClass(post.textAlignment)}`}
+                        style={{
+                            maxHeight: !expanded && post.maxCollapsedHeight > 0 ? `${post.maxCollapsedHeight}px` : 'none',
+                            overflow: !expanded && post.maxCollapsedHeight > 0 ? 'hidden' : 'visible'
+                        }}
+                        dangerouslySetInnerHTML={{ __html: post.content }}
+                    />
+
+                    {/* Gradient overlay for collapsed long articles */}
+                    {!expanded && showCollapseButton && (
+                        <div className="relative">
+                            <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent pointer-events-none" />
+                        </div>
+                    )}
+
+                    {/* Read More / Show Less for long articles */}
+                    {showCollapseButton && (
+                        <div className="mt-6 text-center">
+                            <button
+                                onClick={() => setExpanded(!expanded)}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-teal-50 text-teal-700 rounded-full font-medium hover:bg-teal-100 transition-colors"
+                            >
+                                {expanded ? (
+                                    <>
+                                        <span>عرض أقل</span>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
+                                        </svg>
+                                    </>
+                                ) : (
+                                    <>
+                                        <span>متابعة القراءة</span>
+                                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                                        </svg>
+                                    </>
+                                )}
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </article>
+        );
+    }
+
+    // Regular Post Card Layout
     return (
         <article className={`bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-300 hover:shadow-xl ${post.isPinned ? 'ring-2 ring-teal-500' : ''}`}>
             {/* Featured Image */}
@@ -222,6 +335,7 @@ const PostCard = ({ post }) => {
         </article>
     );
 };
+
 
 // Contact Form Component
 const ContactForm = ({ onSuccess }) => {
@@ -554,8 +668,8 @@ const DevTeamPage = () => {
                     <button
                         onClick={() => setActiveTab('posts')}
                         className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${activeTab === 'posts'
-                                ? 'bg-teal-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-teal-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         <span>📢</span>
@@ -569,8 +683,8 @@ const DevTeamPage = () => {
                     <button
                         onClick={() => setActiveTab('contact')}
                         className={`flex-1 py-3 px-4 rounded-lg font-medium transition-all flex items-center justify-center gap-2 ${activeTab === 'contact'
-                                ? 'bg-teal-600 text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            ? 'bg-teal-600 text-white'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                             }`}
                     >
                         <span>✉️</span>
