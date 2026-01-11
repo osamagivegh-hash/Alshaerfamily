@@ -230,11 +230,41 @@ const AdminFamilyTree = () => {
             return false;
         }
 
+        // First confirmation
+        console.log('[AdminFamilyTree] Showing first confirmation dialog...');
         const confirmMsg = `هل أنت متأكد من حذف "${person.fullName}"؟`;
-        if (!window.confirm(confirmMsg)) return false;
+        let firstConfirm;
+        try {
+            firstConfirm = window.confirm(confirmMsg);
+            console.log('[AdminFamilyTree] First confirmation result:', firstConfirm);
+        } catch (err) {
+            console.error('[AdminFamilyTree] Error in first confirmation:', err);
+            toast.error('خطأ في عرض نافذة التأكيد');
+            return false;
+        }
 
+        if (!firstConfirm) {
+            console.log('[AdminFamilyTree] User cancelled first confirmation');
+            return false;
+        }
+
+        // Second confirmation
+        console.log('[AdminFamilyTree] Showing second confirmation dialog...');
         const doubleConfirmMsg = `تأكيد نهائي: هل أنت متأكد تماماً؟ هذا الإجراء لا يمكن التراجع عنه.`;
-        if (!window.confirm(doubleConfirmMsg)) return false;
+        let secondConfirm;
+        try {
+            secondConfirm = window.confirm(doubleConfirmMsg);
+            console.log('[AdminFamilyTree] Second confirmation result:', secondConfirm);
+        } catch (err) {
+            console.error('[AdminFamilyTree] Error in second confirmation:', err);
+            toast.error('خطأ في عرض نافذة التأكيد الثانية');
+            return false;
+        }
+
+        if (!secondConfirm) {
+            console.log('[AdminFamilyTree] User cancelled second confirmation');
+            return false;
+        }
 
         try {
             console.log('[AdminFamilyTree] Calling delete API for:', person.id || person._id);
@@ -320,8 +350,8 @@ const AdminFamilyTree = () => {
                     {/* User Role Indicator */}
                     <div className="mt-2 flex items-center gap-2">
                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${isFTSuperAdmin
-                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                                : 'bg-amber-100 text-amber-800 border border-amber-300'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : 'bg-amber-100 text-amber-800 border border-amber-300'
                             }`}>
                             {isFTSuperAdmin ? '👑 مدير أعلى' : '✏️ محرر'}
                             <span className="mr-1 text-gray-500">({user?.username || 'غير معروف'})</span>
