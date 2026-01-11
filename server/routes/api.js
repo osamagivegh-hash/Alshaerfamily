@@ -17,42 +17,7 @@ const { asyncHandler } = require('../middleware/errorHandler');
 
 // ... (existing imports)
 
-// Record a new visit
-router.post('/visits', asyncHandler(async (req, res) => {
-  const ip = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
-  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
-  try {
-    let visitor = await Visitor.findOne({ date: today });
-
-    if (!visitor) {
-      // First visit of the day
-      visitor = new Visitor({
-        date: today,
-        count: 1,
-        ips: [ip]
-      });
-    } else {
-      // Check if IP already visited today (optional check, but good for unique visitors)
-      // For simple "hits", we just increment. But user asked for "Visitors" (Zowwar).
-      // Let's count unique IPs as visitors.
-      if (!visitor.ips.includes(ip)) {
-        visitor.count += 1;
-        visitor.ips.push(ip);
-      }
-      // If we wanted "Page Views", we would increment count regardless.
-      // But typically "Visitor Count" implies User sessions or Unique IPs.
-      // Let's stick to Unique IPs for accurate "People" count.
-    }
-
-    await visitor.save();
-    res.success(200, 'تم تسجيل الزيارة', { count: visitor.count });
-  } catch (error) {
-    logger.error('Error recording visit:', error);
-    // Don't fail the client request just because stats failed
-    res.success(200, 'تم تسجيل الزيارة (مع خطأ بسيط)', { count: 0 });
-  }
-}));
 
 // Get all sections data
 const {
@@ -110,6 +75,43 @@ const normalizeDocument = (doc) => {
   }
   return normalized;
 };
+
+// Record a new visit
+router.post('/visits', asyncHandler(async (req, res) => {
+  const ip = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
+  const today = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+
+  try {
+    let visitor = await Visitor.findOne({ date: today });
+
+    if (!visitor) {
+      // First visit of the day
+      visitor = new Visitor({
+        date: today,
+        count: 1,
+        ips: [ip]
+      });
+    } else {
+      // Check if IP already visited today (optional check, but good for unique visitors)
+      // For simple "hits", we just increment. But user asked for "Visitors" (Zowwar).
+      // Let's count unique IPs as visitors.
+      if (!visitor.ips.includes(ip)) {
+        visitor.count += 1;
+        visitor.ips.push(ip);
+      }
+      // If we wanted "Page Views", we would increment count regardless.
+      // But typically "Visitor Count" implies User sessions or Unique IPs.
+      // Let's stick to Unique IPs for accurate "People" count.
+    }
+
+    await visitor.save();
+    res.success(200, 'تم تسجيل الزيارة', { count: visitor.count });
+  } catch (error) {
+    logger.error('Error recording visit:', error);
+    // Don't fail the client request just because stats failed
+    res.success(200, 'تم تسجيل الزيارة (مع خطأ بسيط)', { count: 0 });
+  }
+}));
 
 // Get all sections data
 router.get('/sections', asyncHandler(async (req, res) => {
