@@ -42,6 +42,10 @@ import CMSBackupManager from './components/admin/CMSBackupManager'
 import ProtectedRoute from './components/admin/ProtectedRoute'
 import PermissionGuard from './components/admin/PermissionGuard'
 
+// Isolated Family Tree Dashboard
+import FamilyTreeDashboardLayout from './components/admin/FamilyTreeDashboardLayout'
+import FamilyTreeDashboardOverview from './components/admin/FamilyTreeDashboardOverview'
+
 function App() {
   return (
     <AdminProvider>
@@ -69,6 +73,24 @@ function App() {
 
             {/* Admin Routes */}
             <Route path="/admin/login" element={<AdminLogin />} />
+
+            {/* ===== ISOLATED FAMILY TREE DASHBOARD ===== */}
+            <Route path="/family-dashboard/*" element={
+              <ProtectedRoute>
+                <PermissionGuard permission="family-tree">
+                  <FamilyTreeDashboardLayout />
+                </PermissionGuard>
+              </ProtectedRoute>
+            }>
+              {/* Family Tree Dashboard Overview */}
+              <Route index element={<FamilyTreeDashboardOverview />} />
+              <Route path="members" element={<AdminFamilyTree />} />
+              <Route path="tree" element={<AdminFamilyTree />} />
+              <Route path="content" element={<AdminFamilyTreeContent />} />
+              <Route path="backups" element={<FamilyTreeBackupManager />} />
+            </Route>
+
+            {/* ===== MAIN CMS ADMIN ROUTES ===== */}
             <Route path="/admin/*" element={
               <ProtectedRoute>
                 <AdminLayout />
