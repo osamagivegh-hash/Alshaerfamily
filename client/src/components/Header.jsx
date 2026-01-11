@@ -85,8 +85,8 @@ const Header = () => {
 
   return (
     <header className={`fixed top-0 w-full z-50 transition-all duration-500 ${isScrolled
-        ? 'bg-white/95 shadow-xl backdrop-blur-md border-b border-gray-100'
-        : 'bg-gradient-to-b from-white via-white/98 to-white/95'
+      ? 'bg-white/95 shadow-xl backdrop-blur-md border-b border-gray-100'
+      : 'bg-gradient-to-b from-white via-white/98 to-white/95'
       }`}>
       {/* شريط زخرفي علوي بألوان فلسطين */}
       <div className="absolute top-0 left-0 right-0 h-1 flex">
@@ -159,6 +159,35 @@ const Header = () => {
           </div>
         </div>
 
+        {/* Jordan Flag */}
+        <div className="relative group">
+          <img
+            src="https://flagcdn.com/w40/jo.png"
+            alt="الأردن"
+            className="w-7 h-5 md:w-8 md:h-5 border border-gray-300 shadow-sm rounded object-cover transition-transform duration-300 group-hover:scale-110"
+            title="الأردن"
+            onError={(e) => {
+              e.target.style.display = 'none'
+              e.target.nextSibling.style.display = 'block'
+            }}
+          />
+          <svg
+            className="w-7 h-5 md:w-8 md:h-5 border border-gray-300 shadow-sm rounded"
+            viewBox="0 0 900 600"
+            style={{ display: 'none' }}
+            title="الأردن"
+          >
+            <rect width="900" height="200" fill="#000000" />
+            <rect y="200" width="900" height="200" fill="#FFFFFF" />
+            <rect y="400" width="900" height="200" fill="#007A3D" />
+            <polygon points="0,0 0,600 300,300" fill="#CE1126" />
+            <circle cx="120" cy="300" r="15" fill="#FFFFFF" />
+          </svg>
+          <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+            الأردن
+          </div>
+        </div>
+
         {/* Saudi Arabia Flag */}
         <div className="relative group">
           <img
@@ -221,8 +250,8 @@ const Header = () => {
                   key={item.id}
                   onClick={() => scrollToSection(item.id)}
                   className={`relative px-4 py-2 text-sm font-semibold rounded-full transition-all duration-300 cursor-pointer select-none ${activeSection === item.id
-                      ? 'bg-gradient-to-r from-palestine-green to-olive-600 text-white shadow-lg shadow-palestine-green/30 scale-105'
-                      : 'text-gray-700 hover:text-palestine-green hover:bg-white hover:shadow-md'
+                    ? 'bg-gradient-to-r from-palestine-green to-olive-600 text-white shadow-lg shadow-palestine-green/30 scale-105'
+                    : 'text-gray-700 hover:text-palestine-green hover:bg-white hover:shadow-md'
                     }`}
                   style={{ pointerEvents: 'auto' }}
                 >
