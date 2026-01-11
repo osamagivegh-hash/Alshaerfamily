@@ -38,6 +38,7 @@ import AdminFamilyTreeContent from './components/admin/AdminFamilyTreeContent'
 import AdminDevTeamMessages from './components/admin/AdminDevTeamMessages'
 import AdminUserManagement from './components/admin/AdminUserManagement'
 import ProtectedRoute from './components/admin/ProtectedRoute'
+import PermissionGuard from './components/admin/PermissionGuard'
 
 function App() {
   return (
@@ -71,20 +72,95 @@ function App() {
                 <AdminLayout />
               </ProtectedRoute>
             }>
+              {/* Dashboard - accessible to all logged in users */}
               <Route path="dashboard" element={<AdminDashboard />} />
-              <Route path="news" element={<AdminNews />} />
-              <Route path="conversations" element={<AdminConversations />} />
-              <Route path="articles" element={<AdminArticles />} />
-              <Route path="palestine" element={<AdminPalestine />} />
-              <Route path="gallery" element={<AdminGallery />} />
-              <Route path="comments" element={<AdminComments />} />
-              <Route path="contacts" element={<AdminContacts />} />
-              <Route path="tickers" element={<AdminTickers />} />
-              <Route path="family-tree" element={<AdminFamilyTree />} />
-              <Route path="family-tree-content" element={<AdminFamilyTreeContent />} />
-              <Route path="dev-team" element={<AdminDevTeamMessages />} />
+
+              {/* News - requires 'news' permission */}
+              <Route path="news" element={
+                <PermissionGuard permission="news">
+                  <AdminNews />
+                </PermissionGuard>
+              } />
+
+              {/* Conversations - requires 'conversations' permission */}
+              <Route path="conversations" element={
+                <PermissionGuard permission="conversations">
+                  <AdminConversations />
+                </PermissionGuard>
+              } />
+
+              {/* Articles - requires 'articles' permission */}
+              <Route path="articles" element={
+                <PermissionGuard permission="articles">
+                  <AdminArticles />
+                </PermissionGuard>
+              } />
+
+              {/* Palestine - requires 'palestine' permission */}
+              <Route path="palestine" element={
+                <PermissionGuard permission="palestine">
+                  <AdminPalestine />
+                </PermissionGuard>
+              } />
+
+              {/* Gallery - requires 'gallery' permission */}
+              <Route path="gallery" element={
+                <PermissionGuard permission="gallery">
+                  <AdminGallery />
+                </PermissionGuard>
+              } />
+
+              {/* Comments - requires articles, news, or conversations permission */}
+              <Route path="comments" element={
+                <PermissionGuard permission="articles">
+                  <AdminComments />
+                </PermissionGuard>
+              } />
+
+              {/* Contacts - requires 'contacts' permission */}
+              <Route path="contacts" element={
+                <PermissionGuard permission="contacts">
+                  <AdminContacts />
+                </PermissionGuard>
+              } />
+
+              {/* Tickers - requires 'news' or 'palestine' permission */}
+              <Route path="tickers" element={
+                <PermissionGuard permission="news">
+                  <AdminTickers />
+                </PermissionGuard>
+              } />
+
+              {/* Family Tree - requires 'family-tree' permission */}
+              <Route path="family-tree" element={
+                <PermissionGuard permission="family-tree">
+                  <AdminFamilyTree />
+                </PermissionGuard>
+              } />
+
+              {/* Family Tree Content - requires 'family-tree' permission */}
+              <Route path="family-tree-content" element={
+                <PermissionGuard permission="family-tree">
+                  <AdminFamilyTreeContent />
+                </PermissionGuard>
+              } />
+
+              {/* Dev Team - requires 'dev-team' permission */}
+              <Route path="dev-team" element={
+                <PermissionGuard permission="dev-team">
+                  <AdminDevTeamMessages />
+                </PermissionGuard>
+              } />
+
+              {/* User Management - handled internally (super-admin only) */}
               <Route path="users" element={<AdminUserManagement />} />
-              <Route path="settings" element={<AdminSettings />} />
+
+              {/* Settings - requires 'settings' permission */}
+              <Route path="settings" element={
+                <PermissionGuard permission="settings">
+                  <AdminSettings />
+                </PermissionGuard>
+              } />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
