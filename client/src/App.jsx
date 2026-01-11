@@ -46,8 +46,8 @@ import PermissionGuard from './components/admin/PermissionGuard'
 // ===== ISOLATED FAMILY TREE DASHBOARD (Separate Auth System) =====
 import FamilyTreeDashboardLayout from './components/admin/FamilyTreeDashboardLayout'
 import FamilyTreeDashboardOverview from './components/admin/FamilyTreeDashboardOverview'
-import FamilyTreeLogin from './components/familyTree/FamilyTreeLogin'
-import FamilyTreeProtectedRoute from './components/familyTree/FamilyTreeProtectedRoute'
+import FamilyTreeLogin from './components/FamilyTree/FamilyTreeLogin'
+import FamilyTreeProtectedRoute from './components/FamilyTree/FamilyTreeProtectedRoute'
 
 function App() {
   return (
