@@ -10,7 +10,7 @@
 const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
-const { authenticateToken, requireAdmin } = require('../middleware/auth');
+const { authenticateToken, requirePermission } = require('../middleware/auth');
 const {
     FounderAppreciation,
     FounderDiscussion,
@@ -154,7 +154,7 @@ router.get('/tree-display', async (req, res) => {
 // ---------- Settings Management ----------
 
 // GET Settings (Admin)
-router.get('/admin/settings', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/settings', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         let settings = await FamilyTreeSettings.findOne();
 
@@ -171,7 +171,7 @@ router.get('/admin/settings', authenticateToken, requireAdmin, async (req, res) 
 });
 
 // PUT Update Settings (Admin)
-router.put('/admin/settings', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/admin/settings', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         const updateData = { ...req.body, updatedAt: new Date() };
 
@@ -199,7 +199,7 @@ router.put('/admin/settings', authenticateToken, requireAdmin, async (req, res) 
 // ---------- Founder Appreciation Management ----------
 
 // GET Appreciation (Admin - includes unpublished)
-router.get('/admin/appreciation', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/appreciation', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         let appreciation = await FounderAppreciation.findOne();
 
@@ -221,7 +221,7 @@ router.get('/admin/appreciation', authenticateToken, requireAdmin, async (req, r
 });
 
 // PUT Update Appreciation (Admin)
-router.put('/admin/appreciation', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/admin/appreciation', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         const updateData = { ...req.body, updatedAt: new Date() };
 
@@ -249,7 +249,7 @@ router.put('/admin/appreciation', authenticateToken, requireAdmin, async (req, r
 // ---------- Founder Discussions Management ----------
 
 // GET All Discussions (Admin - includes unpublished)
-router.get('/admin/discussions', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/discussions', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         const discussions = await FounderDiscussion.find()
             .sort({ discussionDate: -1, order: 1 });
@@ -262,7 +262,7 @@ router.get('/admin/discussions', authenticateToken, requireAdmin, async (req, re
 });
 
 // GET Single Discussion (Admin)
-router.get('/admin/discussions/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/discussions/:id', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -284,7 +284,7 @@ router.get('/admin/discussions/:id', authenticateToken, requireAdmin, async (req
 });
 
 // POST Create Discussion (Admin)
-router.post('/admin/discussions', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/admin/discussions', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         const { title, content, discussionDate } = req.body;
 
@@ -317,7 +317,7 @@ router.post('/admin/discussions', authenticateToken, requireAdmin, async (req, r
 });
 
 // PUT Update Discussion (Admin)
-router.put('/admin/discussions/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/admin/discussions/:id', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -347,7 +347,7 @@ router.put('/admin/discussions/:id', authenticateToken, requireAdmin, async (req
 });
 
 // DELETE Discussion (Admin)
-router.delete('/admin/discussions/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/admin/discussions/:id', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         const { id } = req.params;
 
@@ -369,7 +369,7 @@ router.delete('/admin/discussions/:id', authenticateToken, requireAdmin, async (
 });
 
 // PATCH Toggle Discussion Published Status (Admin)
-router.patch('/admin/discussions/:id/publish', authenticateToken, requireAdmin, async (req, res) => {
+router.patch('/admin/discussions/:id/publish', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         const { id } = req.params;
         const { isPublished } = req.body;
@@ -402,7 +402,7 @@ router.patch('/admin/discussions/:id/publish', authenticateToken, requireAdmin, 
 // ---------- Family Tree Display Management ----------
 
 // GET Tree Display (Admin)
-router.get('/admin/tree-display', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/tree-display', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         let display = await FamilyTreeDisplay.findOne();
 
@@ -423,7 +423,7 @@ router.get('/admin/tree-display', authenticateToken, requireAdmin, async (req, r
 });
 
 // PUT Update Tree Display (Admin)
-router.put('/admin/tree-display', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/admin/tree-display', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         const updateData = { ...req.body, updatedAt: new Date() };
 
@@ -451,7 +451,7 @@ router.put('/admin/tree-display', authenticateToken, requireAdmin, async (req, r
 // ---------- Stats Endpoint ----------
 
 // GET Family Tree Content Stats (Admin)
-router.get('/admin/stats', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/stats', authenticateToken, requirePermission('family-tree'), async (req, res) => {
     try {
         const [appreciationExists, discussionsCount, displayExists] = await Promise.all([
             FounderAppreciation.exists({ isPublished: true }),

@@ -5,6 +5,7 @@ const {
   authenticateToken,
   requireAdmin,
   requireSuperAdmin,
+  requirePermission,
   login,
   changePassword,
   getAllUsers,
@@ -838,7 +839,7 @@ async function deleteDescendants(personId) {
 }
 
 // GET all persons (admin view with full details)
-router.get('/persons', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/persons', authenticateToken, requirePermission('family-tree'), async (req, res) => {
   try {
     const { page = 1, limit = 50, search, generation } = req.query;
     const query = {};
@@ -879,7 +880,7 @@ router.get('/persons', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // GET family tree statistics for admin dashboard
-router.get('/persons/stats', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/persons/stats', authenticateToken, requirePermission('family-tree'), async (req, res) => {
   try {
     const totalPersons = await Person.countDocuments();
     const totalGenerations = await Person.distinct('generation');
@@ -911,7 +912,7 @@ router.get('/persons/stats', authenticateToken, requireAdmin, async (req, res) =
 });
 
 // GET single person by ID (admin)
-router.get('/persons/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/persons/:id', authenticateToken, requirePermission('family-tree'), async (req, res) => {
   try {
     const { id } = req.params;
     const person = await Person.findById(id)
@@ -939,7 +940,7 @@ router.get('/persons/:id', authenticateToken, requireAdmin, async (req, res) => 
 });
 
 // POST create new person
-router.post('/persons', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/persons', authenticateToken, requirePermission('family-tree'), async (req, res) => {
   try {
     const {
       fullName,
@@ -1031,7 +1032,7 @@ router.post('/persons', authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // PUT update person
-router.put('/persons/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.put('/persons/:id', authenticateToken, requirePermission('family-tree'), async (req, res) => {
   try {
     const { id } = req.params;
     const mongoose = require('mongoose');
@@ -1147,7 +1148,7 @@ router.put('/persons/:id', authenticateToken, requireAdmin, async (req, res) => 
 });
 
 // DELETE person
-router.delete('/persons/:id', authenticateToken, requireAdmin, async (req, res) => {
+router.delete('/persons/:id', authenticateToken, requirePermission('family-tree'), async (req, res) => {
   try {
     const { id } = req.params;
     const { cascade = false } = req.query;
@@ -1199,7 +1200,7 @@ router.delete('/persons/:id', authenticateToken, requireAdmin, async (req, res) 
 });
 
 // POST bulk add persons
-router.post('/persons/bulk', authenticateToken, requireAdmin, async (req, res) => {
+router.post('/persons/bulk', authenticateToken, requirePermission('family-tree'), async (req, res) => {
   try {
     const { persons } = req.body;
 
