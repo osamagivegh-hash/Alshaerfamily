@@ -12,7 +12,16 @@ import TreeVisualization from '../FamilyTree/TreeVisualization';
 const API_URL = import.meta.env.VITE_API_URL || '';
 
 const AdminFamilyTree = () => {
-    const { isFTSuperAdmin } = useFamilyTreeAuth(); // Only need permission check, token handled by API utility
+    const { isFTSuperAdmin, user } = useFamilyTreeAuth(); // Get user details for debugging
+
+    // Debug logging for role verification
+    React.useEffect(() => {
+        console.log('[AdminFamilyTree] User role check:', {
+            user: user?.username,
+            role: user?.role,
+            isFTSuperAdmin: isFTSuperAdmin
+        });
+    }, [user, isFTSuperAdmin]);
     const [persons, setPersons] = useState([]);
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -203,9 +212,21 @@ const AdminFamilyTree = () => {
     };
 
     const handleDelete = async (person) => {
+        // Log current user state for debugging
+        console.log('[AdminFamilyTree] Delete attempt:', {
+            personId: person.id || person._id,
+            personName: person.fullName,
+            currentUser: user?.username,
+            currentRole: user?.role,
+            isFTSuperAdmin: isFTSuperAdmin
+        });
+
         // Strict Role Check
         if (!isFTSuperAdmin) {
-            toast.error('غير مصرح لك بحذف البيانات. هذه الصلاحية للمدير الأعلى فقط.');
+            console.warn('[AdminFamilyTree] Delete blocked: User is not ft-super-admin', {
+                actualRole: user?.role
+            });
+            toast.error(`غير مصرح لك بحذف البيانات. هذه الصلاحية للمدير الأعلى فقط. (دورك الحالي: ${user?.role || 'غير محدد'})`);
             return false;
         }
 
@@ -216,32 +237,56 @@ const AdminFamilyTree = () => {
         if (!window.confirm(doubleConfirmMsg)) return false;
 
         try {
+            console.log('[AdminFamilyTree] Calling delete API for:', person.id || person._id);
             const response = await familyTreeDashboardApi.deletePerson(person.id || person._id);
+
+            console.log('[AdminFamilyTree] Delete response:', response);
 
             if (response?.success) {
                 toast.success('تم حذف الشخص بنجاح');
                 fetchData();
                 return true;
             } else {
+                console.error('[AdminFamilyTree] Delete failed:', response);
                 toast.error(response?.message || 'خطأ في الحذف');
                 return false;
             }
         } catch (error) {
-            console.error('Error deleting person:', error);
+            console.error('[AdminFamilyTree] Delete error:', error);
             const errorMessage = error.message || '';
 
+            // Check for specific permission errors
+            if (errorMessage.includes('403') || errorMessage.includes('غير مصرح') || errorMessage.includes('SUPER_ADMIN_REQUIRED')) {
+                console.error('[AdminFamilyTree] Permission denied by server');
+                toast.error('رفض الخادم طلب الحذف: صلاحيات المدير الأعلى مطلوبة. تأكد أن حسابك هو ft-super-admin.');
+                return false;
+            }
+
+            // Check for authentication errors
+            if (errorMessage.includes('401') || errorMessage.includes('غير مصدق') || errorMessage.includes('TOKEN')) {
+                console.error('[AdminFamilyTree] Authentication error');
+                toast.error('خطأ في المصادقة. يرجى تسجيل الخروج وإعادة تسجيل الدخول.');
+                return false;
+            }
+
             // Handle cascading delete suggestion
-            if (errorMessage.includes('أبناء') || errorMessage.includes('cascade')) {
+            if (errorMessage.includes('أبناء') || errorMessage.includes('لا يمكن حذف') || errorMessage.includes('cascade')) {
+                console.log('[AdminFamilyTree] Person has children, prompting for cascade delete');
                 if (window.confirm(`هذا الشخص لديه أبناء. هل تريد حذفهم جميعاً؟`)) {
                     try {
+                        console.log('[AdminFamilyTree] Attempting cascade delete');
                         const cascadeRes = await familyTreeDashboardApi.deletePerson(person.id || person._id, true);
+                        console.log('[AdminFamilyTree] Cascade delete response:', cascadeRes);
                         if (cascadeRes?.success) {
                             toast.success('تم حذف الشخص وأبنائه بنجاح');
                             fetchData();
                             return true;
+                        } else {
+                            toast.error(cascadeRes?.message || 'خطأ في الحذف المتسلسل');
                         }
                     } catch (cascadeError) {
-                        toast.error(cascadeError.message || 'خطأ في الحذف');
+                        console.error('[AdminFamilyTree] Cascade delete error:', cascadeError);
+                        toast.error(cascadeError.message || 'خطأ في الحذف المتسلسل');
                     }
                 }
             } else {
@@ -272,6 +317,21 @@ const AdminFamilyTree = () => {
                 <div>
                     <h1 className="text-2xl font-bold text-palestine-black">🌳 إدارة شجرة العائلة</h1>
                     <p className="text-gray-600 mt-1">إضافة وتعديل وإدارة أفراد العائلة</p>
+                    {/* User Role Indicator */}
+                    <div className="mt-2 flex items-center gap-2">
+                        <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${isFTSuperAdmin
+                                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                                : 'bg-amber-100 text-amber-800 border border-amber-300'
+                            }`}>
+                            {isFTSuperAdmin ? '👑 مدير أعلى' : '✏️ محرر'}
+                            <span className="mr-1 text-gray-500">({user?.username || 'غير معروف'})</span>
+                        </span>
+                        {!isFTSuperAdmin && (
+                            <span className="text-xs text-gray-500">
+                                ⚠️ لا تملك صلاحية الحذف
+                            </span>
+                        )}
+                    </div>
                 </div>
                 <button
                     onClick={openAddModal}
