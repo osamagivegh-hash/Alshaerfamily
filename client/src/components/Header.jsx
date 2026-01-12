@@ -8,7 +8,13 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   useEffect(() => {
+    let lastScrollTime = 0
+
     const handleScroll = () => {
+      const now = Date.now()
+      if (now - lastScrollTime < 100) return
+      lastScrollTime = now
+
       setIsScrolled(window.scrollY > 50)
 
       // Update active section based on scroll position
@@ -120,7 +126,10 @@ const Header = () => {
 
         {/* Center: Navigation (Desktop) */}
         <div className="hidden lg:flex items-center justify-center flex-1 px-8 relative z-[60]">
-          <div className="flex items-center space-x-reverse space-x-1 bg-gray-50/80 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-gray-100 relative z-[60]">
+          <div
+            className="flex items-center space-x-reverse space-x-1 bg-gray-50/80 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-gray-100 relative z-[60]"
+            style={{ zIndex: 60, pointerEvents: 'auto' }}
+          >
             {navItems.map((item) => (
               <button
                 type="button"
