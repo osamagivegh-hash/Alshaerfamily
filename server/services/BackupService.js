@@ -403,9 +403,9 @@ class BackupService {
 
             // Insert backup data
             if (personsData.length > 0) {
-                // Remove _id fields to avoid conflicts, let MongoDB generate new ones
+                // Keep _id fields to preserve relationships (fatherId links)
                 const personsToInsert = personsData.map(p => {
-                    const { _id, __v, ...rest } = p;
+                    const { __v, ...rest } = p;
                     return rest;
                 });
                 await Person.insertMany(personsToInsert, { ordered: false });
@@ -489,7 +489,7 @@ class BackupService {
                 if (!dataArray || dataArray.length === 0) return 0;
                 await Model.deleteMany({});
                 const toInsert = dataArray.map(item => {
-                    const { _id, __v, ...rest } = item;
+                    const { __v, ...rest } = item;
                     return rest;
                 });
                 await Model.insertMany(toInsert, { ordered: false });
@@ -511,7 +511,7 @@ class BackupService {
             // Restore ticker settings (single document)
             if (data.tickerSettings) {
                 await TickerSettings.deleteMany({});
-                const { _id, __v, ...tickerData } = data.tickerSettings;
+                const { __v, ...tickerData } = data.tickerSettings;
                 await TickerSettings.create(tickerData);
                 totalRestored += 1;
             }
