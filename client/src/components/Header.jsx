@@ -85,10 +85,13 @@ const Header = () => {
   )
 
   return (
-    <header className={`fixed top-0 w-full z-[80] transition-all duration-500 ${isScrolled
-      ? 'bg-white/95 shadow-xl backdrop-blur-md border-b border-gray-100'
-      : 'bg-gradient-to-b from-white via-white/98 to-white/95'
-      }`}>
+    <header
+      className={`fixed top-0 w-full transition-all duration-500 ${isScrolled
+        ? 'bg-white bg-opacity-95 shadow-xl backdrop-blur-md border-b border-gray-100'
+        : 'bg-gradient-to-b from-white via-white/98 to-white/95'
+        }`}
+      style={{ zIndex: 80 }}
+    >
       {/* شريط زخرفي علوي بألوان فلسطين */}
       <div className="absolute top-0 left-0 right-0 h-1 flex z-50">
         <div className="flex-1 bg-gradient-to-r from-palestine-black to-palestine-black/80"></div>
@@ -180,15 +183,15 @@ const Header = () => {
           </div>
 
           {/* Mobile Menu Button - High Z-Index ensuring it's always clickable */}
-          <div className="lg:hidden relative z-[90]">
+          <div className="lg:hidden relative" style={{ zIndex: 90 }}>
             <button
               onClick={() => setIsMobileMenuOpen(true)}
-              className="group p-2.5 rounded-xl text-gray-700 hover:text-palestine-green hover:bg-gray-100/80 transition-all duration-300 active:scale-95 touch-manipulation"
+              className="group flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 text-black hover:text-palestine-green hover:bg-gray-100 border border-gray-200 shadow-sm transition-all duration-300 active:scale-95 touch-manipulation"
               aria-label="فتح القائمة"
               style={{ pointerEvents: 'auto' }}
             >
               <svg className="h-7 w-7 transition-transform group-hover:rotate-180 duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
               </svg>
             </button>
           </div>

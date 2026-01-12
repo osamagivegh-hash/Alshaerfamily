@@ -36,16 +36,20 @@ const MobileMenu = ({ isOpen, onClose, navItems, activeSection, scrollToSection 
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] md:hidden"
+        className="fixed inset-0 bg-black/60 md:hidden"
+        style={{ zIndex: 90 }}
         onClick={onClose}
       />
 
       {/* Menu Panel */}
-      <div className={`
-        fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-[100] 
-        transform transition-transform duration-300 ease-in-out md:hidden flex flex-col
-        ${isOpen ? 'translate-x-0' : 'translate-x-full'}
-      `}>
+      <div
+        className={`
+          fixed top-0 right-0 w-80 max-w-[85vw] bg-white shadow-2xl 
+          transform transition-transform duration-300 ease-in-out md:hidden flex flex-col
+          ${isOpen ? 'translate-x-0' : 'translate-x-full'}
+        `}
+        style={{ zIndex: 100, height: '100dvh' }}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200">
           <h2 className="text-lg font-bold text-palestine-black">عائلة الشاعر</h2>
