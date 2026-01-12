@@ -35,15 +35,15 @@ const MobileMenu = ({ isOpen, onClose, navItems, activeSection, scrollToSection 
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[90] md:hidden"
         onClick={onClose}
       />
-      
+
       {/* Menu Panel */}
       <div className={`
-        fixed top-0 right-0 h-full w-80 max-w-[90vw] bg-white shadow-xl z-50 
-        transform transition-transform duration-300 ease-in-out md:hidden
+        fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white shadow-2xl z-[100] 
+        transform transition-transform duration-300 ease-in-out md:hidden flex flex-col
         ${isOpen ? 'translate-x-0' : 'translate-x-full'}
       `}>
         {/* Header */}
@@ -74,8 +74,8 @@ const MobileMenu = ({ isOpen, onClose, navItems, activeSection, scrollToSection 
                 onClick={() => handleNavClick(item.id)}
                 className={`
                   w-full text-right px-4 py-3 text-base transition-colors duration-200
-                  ${activeSection === item.id 
-                    ? 'bg-palestine-green text-white border-r-4 border-olive-600' 
+                  ${activeSection === item.id
+                    ? 'bg-palestine-green text-white border-r-4 border-olive-600'
                     : 'text-palestine-black hover:bg-gray-50 hover:text-palestine-green'
                   }
                 `}
