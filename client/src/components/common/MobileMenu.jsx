@@ -36,7 +36,7 @@ const MobileMenu = ({ isOpen, onClose, navItems, activeSection, scrollToSection 
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 md:hidden"
+        className="fixed inset-0 bg-black/60 md:hidden pointer-events-auto"
         style={{ zIndex: 90 }}
         onClick={onClose}
       />
@@ -45,7 +45,7 @@ const MobileMenu = ({ isOpen, onClose, navItems, activeSection, scrollToSection 
       <div
         className={`
           fixed top-0 right-0 w-80 max-w-[85vw] bg-white shadow-2xl 
-          transform transition-transform duration-300 ease-in-out md:hidden flex flex-col
+          transform transition-transform duration-300 ease-in-out md:hidden flex flex-col pointer-events-auto
           ${isOpen ? 'translate-x-0' : 'translate-x-full'}
         `}
         style={{ zIndex: 100, height: '100dvh' }}
