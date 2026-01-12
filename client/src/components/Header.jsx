@@ -92,8 +92,8 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 w-full transition-all duration-500 pointer-events-none ${isScrolled
-        ? 'bg-white bg-opacity-95 shadow-xl backdrop-blur-md border-b border-gray-100'
+      className={`fixed top-0 w-full transition-colors duration-300 pointer-events-none ${isScrolled
+        ? 'bg-white shadow-md border-b border-gray-100'
         : 'bg-gradient-to-b from-white via-white/98 to-white/95'
         }`}
       style={{ zIndex: 80 }}
@@ -127,7 +127,7 @@ const Header = () => {
         {/* Center: Navigation (Desktop) */}
         <div className="hidden lg:flex items-center justify-center flex-1 px-8 relative z-[60]">
           <div
-            className="flex items-center space-x-reverse space-x-1 bg-gray-50/80 backdrop-blur-sm rounded-full px-3 py-1.5 shadow-sm border border-gray-100 relative z-[60]"
+            className="flex items-center space-x-reverse space-x-1 bg-gray-50 rounded-full px-3 py-1.5 shadow-sm border border-gray-100 relative z-[60]"
             style={{ zIndex: 60, pointerEvents: 'auto' }}
           >
             {navItems.map((item) => (
