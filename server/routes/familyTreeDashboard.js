@@ -53,11 +53,16 @@ router.get('/stats', authenticateFTToken, async (req, res) => {
             { $sort: { _id: 1 } }
         ]);
 
+        // Get max generation (for dropdown auto-extend)
+        const maxGenDoc = await Person.findOne().sort({ generation: -1 }).select('generation');
+        const maxGeneration = maxGenDoc ? maxGenDoc.generation : 0;
+
         res.json({
             success: true,
             data: {
                 totalPersons,
                 totalGenerations,
+                maxGeneration,
                 rootAncestors,
                 livingMembers,
                 deceasedMembers,
