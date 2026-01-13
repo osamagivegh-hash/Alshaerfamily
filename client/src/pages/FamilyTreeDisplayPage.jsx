@@ -4,7 +4,7 @@
  * Displays the interactive family tree with customizable display modes
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { TreeVisualization, PersonModal } from '../components/FamilyTree';
 
@@ -18,6 +18,23 @@ const FamilyTreeDisplayPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [zoom, setZoom] = useState(1);
+    const [activeTab, setActiveTab] = useState('general');
+
+    const activeTreeData = useMemo(() => {
+        if (!tree) return null;
+        if (activeTab === 'general') return tree;
+
+        let searchName = '';
+        if (activeTab === 'zahar') searchName = 'زهار';
+        if (activeTab === 'saleh') searchName = 'صالح';
+        if (activeTab === 'ibrahim') searchName = 'براهيم'; // Matches both ابراهيم and إبراهيم
+
+        if (!searchName) return tree;
+
+        // Find the specific branch in the root's children
+        const branch = tree.children?.find(child => child.fullName.includes(searchName));
+        return branch || null;
+    }, [tree, activeTab]);
 
     useEffect(() => {
         fetchData();
@@ -202,16 +219,74 @@ const FamilyTreeDisplayPage = () => {
 
                 {!error && (
                     <>
+                        {/* Branch Navigation Tabs */}
+                        {tree && displayMode === 'visual' && (
+                            <div className="absolute top-4 left-0 right-0 z-10 flex justify-center pointer-events-none">
+                                <div className="bg-white/90 backdrop-blur shadow-lg rounded-full p-1 flex gap-1 pointer-events-auto border border-green-100">
+                                    <button
+                                        onClick={() => { setActiveTab('general'); resetZoom(); }}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'general'
+                                            ? 'bg-palestine-green text-white shadow'
+                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                            }`}
+                                    >
+                                        الشجرة العامة
+                                    </button>
+                                    <button
+                                        onClick={() => { setActiveTab('zahar'); resetZoom(); }}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'zahar'
+                                            ? 'bg-palestine-green text-white shadow'
+                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                            }`}
+                                    >
+                                        فرع زهار
+                                    </button>
+                                    <button
+                                        onClick={() => { setActiveTab('saleh'); resetZoom(); }}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'saleh'
+                                            ? 'bg-palestine-green text-white shadow'
+                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                            }`}
+                                    >
+                                        فرع صالح
+                                    </button>
+                                    <button
+                                        onClick={() => { setActiveTab('ibrahim'); resetZoom(); }}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'ibrahim'
+                                            ? 'bg-palestine-green text-white shadow'
+                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                                            }`}
+                                    >
+                                        فرع إبراهيم
+                                    </button>
+                                </div>
+                            </div>
+                        )}
+
                         {/* Visual Tree Mode */}
-                        {displayMode === 'visual' && tree && (
+                        {displayMode === 'visual' && (
                             <div className="flex-1 relative w-full h-full">
-                                <TreeVisualization
-                                    data={tree}
-                                    onNodeClick={handleNodeClick}
-                                    zoom={zoom}
-                                    className="rounded-none bg-transparent border-none h-full"
-                                    style={{ maxHeight: 'none', height: '100%' }}
-                                />
+                                {activeTreeData ? (
+                                    <TreeVisualization
+                                        data={activeTreeData}
+                                        onNodeClick={handleNodeClick}
+                                        zoom={zoom}
+                                        className="rounded-none bg-transparent border-none h-full"
+                                        style={{ maxHeight: 'none', height: '100%' }}
+                                    />
+                                ) : (
+                                    <div className="flex items-center justify-center h-full">
+                                        <div className="bg-white/80 p-8 rounded-2xl text-center backdrop-blur">
+                                            <p className="text-xl text-gray-600 font-medium">عذراً، هذا الفرع غير متوفر حالياً في الشجرة</p>
+                                            <button
+                                                onClick={() => setActiveTab('general')}
+                                                className="mt-4 text-palestine-green hover:underline"
+                                            >
+                                                العودة للشجرة العامة
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         )}
 
