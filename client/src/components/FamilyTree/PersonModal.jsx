@@ -94,16 +94,7 @@ const PersonModal = ({ person, onClose, onViewFullTree }) => {
                     )}
 
                     {/* Status */}
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                        <span className="text-xl">{person.isAlive ? '💚' : '🕊️'}</span>
-                        <div>
-                            <p className="text-xs text-gray-500">الحالة</p>
-                            <p className="font-medium">
-                                {person.isAlive ? 'على قيد الحياة' : 'متوفى'}
-                                {person.deathDate && ` (${person.deathDate})`}
-                            </p>
-                        </div>
-                    </div>
+
 
                     {/* Children */}
                     {person.children && person.children.length > 0 && (

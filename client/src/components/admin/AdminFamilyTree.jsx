@@ -485,7 +485,6 @@ const AdminFamilyTree = () => {
                                     <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">الأب</th>
                                     <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">الجيل</th>
                                     <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">الجنس</th>
-                                    <th className="px-4 py-3 text-right text-sm font-medium text-gray-700">الحالة</th>
                                     <th className="px-4 py-3 text-center text-sm font-medium text-gray-700">إجراءات</th>
                                 </tr>
                             </thead>
@@ -526,12 +525,7 @@ const AdminFamilyTree = () => {
                                                     {person.gender === 'female' ? '👩' : '👨'}
                                                 </span>
                                             </td>
-                                            <td className="px-4 py-3">
-                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs ${person.isAlive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'
-                                                    }`}>
-                                                    {person.isAlive ? '💚 حي' : '🕊️ متوفى'}
-                                                </span>
-                                            </td>
+
                                             <td className="px-4 py-3">
                                                 <div className="flex items-center justify-center gap-2">
 
@@ -760,31 +754,7 @@ const AdminFamilyTree = () => {
                                 </div>
                             </div>
 
-                            {/* Status */}
-                            <div className="flex items-center gap-4">
-                                <label className="flex items-center gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={formData.isAlive}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, isAlive: e.target.checked }))}
-                                        className="w-5 h-5 text-palestine-green rounded focus:ring-palestine-green"
-                                    />
-                                    <span>على قيد الحياة</span>
-                                </label>
-                            </div>
 
-                            {/* Death Date (if not alive) */}
-                            {!formData.isAlive && (
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">تاريخ الوفاة</label>
-                                    <input
-                                        type="text"
-                                        value={formData.deathDate}
-                                        onChange={(e) => setFormData(prev => ({ ...prev, deathDate: e.target.value }))}
-                                        className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-palestine-green focus:border-transparent"
-                                    />
-                                </div>
-                            )}
 
                             {/* More Info */}
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
