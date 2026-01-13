@@ -5,12 +5,13 @@
  */
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { TreeVisualization, PersonModal } from '../components/FamilyTree';
 
 const API_URL = import.meta.env.VITE_API_URL || '';
 
 const FamilyTreeDisplayPage = () => {
+    const [searchParams] = useSearchParams();
     const [tree, setTree] = useState(null);
     const [stats, setStats] = useState(null);
     const [displaySettings, setDisplaySettings] = useState(null);
@@ -18,7 +19,7 @@ const FamilyTreeDisplayPage = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [zoom, setZoom] = useState(1);
-    const [activeTab, setActiveTab] = useState('general');
+    const [activeTab, setActiveTab] = useState(searchParams.get('branch') || 'general');
 
     const activeTreeData = useMemo(() => {
         if (!tree) return null;
@@ -175,13 +176,13 @@ const FamilyTreeDisplayPage = () => {
 
                             {/* Back Button */}
                             <Link
-                                to="/family-tree"
+                                to="/family-tree/tree"
                                 className="flex items-center gap-2 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                                 </svg>
-                                <span className="hidden sm:inline">رجوع</span>
+                                <span className="hidden sm:inline">تغيير القسم</span>
                             </Link>
                         </div>
                     </div>
@@ -219,50 +220,6 @@ const FamilyTreeDisplayPage = () => {
 
                 {!error && (
                     <>
-                        {/* Branch Navigation Tabs */}
-                        {tree && displayMode === 'visual' && (
-                            <div className="absolute top-4 left-0 right-0 z-10 flex justify-center pointer-events-none">
-                                <div className="bg-white/90 backdrop-blur shadow-lg rounded-full p-1 flex gap-1 pointer-events-auto border border-green-100">
-                                    <button
-                                        onClick={() => { setActiveTab('general'); resetZoom(); }}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'general'
-                                            ? 'bg-palestine-green text-white shadow'
-                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                                            }`}
-                                    >
-                                        الشجرة العامة
-                                    </button>
-                                    <button
-                                        onClick={() => { setActiveTab('zahar'); resetZoom(); }}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'zahar'
-                                            ? 'bg-palestine-green text-white shadow'
-                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                                            }`}
-                                    >
-                                        فرع زهار
-                                    </button>
-                                    <button
-                                        onClick={() => { setActiveTab('saleh'); resetZoom(); }}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'saleh'
-                                            ? 'bg-palestine-green text-white shadow'
-                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                                            }`}
-                                    >
-                                        فرع صالح
-                                    </button>
-                                    <button
-                                        onClick={() => { setActiveTab('ibrahim'); resetZoom(); }}
-                                        className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${activeTab === 'ibrahim'
-                                            ? 'bg-palestine-green text-white shadow'
-                                            : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
-                                            }`}
-                                    >
-                                        فرع إبراهيم
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
                         {/* Visual Tree Mode */}
                         {displayMode === 'visual' && (
                             <div className="flex-1 relative w-full h-full">
