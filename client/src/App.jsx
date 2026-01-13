@@ -20,7 +20,6 @@ import FounderAppreciation from './pages/FounderAppreciation'
 import FounderDiscussions from './pages/FounderDiscussions'
 import FamilyTreeDisplayPage from './pages/FamilyTreeDisplayPage'
 import FamilyTreeBranchSelection from './pages/FamilyTreeBranchSelection'
-import ArtisticTreePage from './pages/ArtisticTreePage'
 import DevTeamPage from './pages/DevTeamPage'
 
 // CMS Admin Components
@@ -72,7 +71,6 @@ function App() {
               <Route path="/family-tree/discussions/:id" element={<FounderDiscussions />} />
               <Route path="/family-tree/tree" element={<FamilyTreeBranchSelection />} />
               <Route path="/family-tree/visual" element={<FamilyTreeDisplayPage />} />
-              <Route path="/family-tree/artistic" element={<ArtisticTreePage />} />
               <Route path="/family-tree/dev-team" element={<DevTeamPage />} />
               {/* Legacy route - redirects to gateway */}
               <Route path="/family-tree-old" element={<FamilyTreePage />} />

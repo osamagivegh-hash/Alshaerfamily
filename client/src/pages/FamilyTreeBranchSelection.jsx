@@ -37,14 +37,6 @@ const FamilyTreeBranchSelection = () => {
             icon: '🌱',
             description: 'عرض شجرة عائلة إبراهيم وأحفاده',
             path: '/family-tree/visual?branch=ibrahim'
-        },
-        {
-            id: 'artistic',
-            label: 'الشجرة الفنية',
-            color: '#8D6E63', // Wood Brown
-            icon: '🎨',
-            description: 'عرض فني يحاكي نمو الشجرة الطبيعية',
-            path: '/family-tree/artistic'
         }
     ];
 
