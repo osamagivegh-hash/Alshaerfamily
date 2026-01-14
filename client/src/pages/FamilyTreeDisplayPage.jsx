@@ -48,6 +48,42 @@ const FamilyTreeDisplayPage = () => {
             return zaharBranch;
         }
 
+        // Handle Saleh Sub-branches
+        if (activeTab.startsWith('saleh_')) {
+            const salehBranch = tree.children?.find(child => child.fullName.includes('صالح'));
+            if (!salehBranch) return null;
+
+            // Direct children of Saleh
+            if (activeTab === 'saleh_ibrahim') {
+                return salehBranch.children?.find(child => child.fullName.includes('براهيم')) || salehBranch;
+            }
+            if (activeTab === 'saleh_salman') {
+                return salehBranch.children?.find(child => child.fullName.includes('سلمان')) || salehBranch;
+            }
+
+            // Children of Salman (Grandchildren of Saleh)
+            if (activeTab.startsWith('saleh_salman_')) {
+                const salmanBranch = salehBranch.children?.find(child => child.fullName.includes('سلمان'));
+                if (!salmanBranch) return salehBranch;
+
+                let subName = '';
+                switch (activeTab) {
+                    case 'saleh_salman_eid': subName = 'عيد'; break;
+                    case 'saleh_salman_muhammad': subName = 'محمد'; break;
+                    case 'saleh_salman_ibrahim': subName = 'براهيم'; break;
+                    default: return salmanBranch;
+                }
+
+                if (subName) {
+                    const subBranch = salmanBranch.children?.find(child => child.fullName.includes(subName));
+                    return subBranch || salmanBranch;
+                }
+                return salmanBranch;
+            }
+
+            return salehBranch;
+        }
+
         let searchName = '';
         if (activeTab === 'zahar') searchName = 'زهار';
         if (activeTab === 'saleh') searchName = 'صالح';
