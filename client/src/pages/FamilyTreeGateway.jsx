@@ -81,6 +81,14 @@ const FamilyTreeGateway = () => {
             path: '/family-tree/tree'
         },
         {
+            id: 'olive',
+            label: 'الشجرة العضوية',
+            color: '#4A3728',
+            icon: '🫒',
+            description: 'شجرة تفاعلية حية مرسومة بأسلوب عضوي',
+            path: '/family-tree/olive'
+        },
+        {
             id: 'devTeam',
             label: currentSettings.buttonLabels?.devTeam || defaultSettings.buttonLabels.devTeam,
             color: currentSettings.buttonColors?.devTeam || defaultSettings.buttonColors.devTeam,
