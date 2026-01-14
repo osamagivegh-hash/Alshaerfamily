@@ -117,17 +117,21 @@ const OliveTreePage = () => {
             </header>
 
             {/* Main Tree Area */}
-            <main className="flex-1 relative overflow-hidden flex flex-col bg-[#e8ebe8]">
+            <main className="flex-1 relative overflow-hidden" style={{ minHeight: '80vh' }}>
                 {error ? (
-                    <div className="flex-1 flex items-center justify-center">
-                        <div className="text-red-500 font-bold">{error}</div>
+                    <div className="flex-1 flex items-center justify-center h-full">
+                        <div className="text-red-500 font-bold bg-white/80 p-6 rounded-lg">{error}</div>
                     </div>
-                ) : (
+                ) : tree ? (
                     <OliveTreeVisualization
                         data={tree}
                         onNodeClick={handleNodeClick}
-                        className="w-full h-full"
+                        style={{ height: '100%', minHeight: '80vh' }}
                     />
+                ) : (
+                    <div className="flex items-center justify-center h-full">
+                        <p className="text-gray-500">لا توجد بيانات</p>
+                    </div>
                 )}
             </main>
 
