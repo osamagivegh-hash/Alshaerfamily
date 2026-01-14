@@ -25,6 +25,29 @@ const FamilyTreeDisplayPage = () => {
         if (!tree) return null;
         if (activeTab === 'general') return tree;
 
+        // Handle Zahar Sub-branches
+        if (activeTab.startsWith('zahar_')) {
+            const zaharBranch = tree.children?.find(child => child.fullName.includes('زهار'));
+            if (!zaharBranch) return null;
+
+            let subName = '';
+            switch (activeTab) {
+                case 'zahar_othman': subName = 'عثمان'; break;
+                case 'zahar_beshiti': subName = 'البشيتي'; break;
+                case 'zahar_barham': subName = 'برهم'; break;
+                case 'zahar_dawood': subName = 'داوود'; break;
+                case 'zahar_awad': subName = 'عواد'; break;
+                default: return zaharBranch;
+            }
+
+            if (subName) {
+                // Search in Zahar's children
+                const subBranch = zaharBranch.children?.find(child => child.fullName.includes(subName));
+                return subBranch || zaharBranch; // Fallback to Zahar if specific sub-branch not found
+            }
+            return zaharBranch;
+        }
+
         let searchName = '';
         if (activeTab === 'zahar') searchName = 'زهار';
         if (activeTab === 'saleh') searchName = 'صالح';
@@ -36,6 +59,13 @@ const FamilyTreeDisplayPage = () => {
         const branch = tree.children?.find(child => child.fullName.includes(searchName));
         return branch || null;
     }, [tree, activeTab]);
+
+    useEffect(() => {
+        const branch = searchParams.get('branch');
+        if (branch) {
+            setActiveTab(branch);
+        }
+    }, [searchParams]);
 
     useEffect(() => {
         fetchData();

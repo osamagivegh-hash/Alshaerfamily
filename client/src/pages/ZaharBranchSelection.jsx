@@ -1,42 +1,58 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-const FamilyTreeBranchSelection = () => {
+const ZaharBranchSelection = () => {
     const navigate = useNavigate();
     const [hoveredButton, setHoveredButton] = useState(null);
 
     const buttons = [
         {
-            id: 'general',
-            label: 'الشجرة العامة',
-            color: '#007A3D', // Palestine Green
-            icon: '🌳',
-            description: 'عرض شجرة العائلة كاملة بجميع فروعها',
-            path: '/family-tree/visual?branch=general'
-        },
-        {
-            id: 'zahar',
-            label: 'فرع زهار',
+            id: 'zahar_main',
+            label: 'شجرة زهار (كاملة)',
             color: '#0d9488', // Teal
             icon: '🌿',
-            description: 'عرض شجرة عائلة زهار وأحفاده',
-            path: '/family-tree/tree/zahar'
+            description: 'عرض شجرة عائلة زهار بكامل فروعها',
+            path: '/family-tree/visual?branch=zahar'
         },
         {
-            id: 'saleh',
-            label: 'فرع صالح',
+            id: 'zahar_othman',
+            label: 'عثمان أبو حلاوه (الحلاوات)',
+            color: '#059669', // Emerald
+            icon: '🍃',
+            description: 'فرع عثمان أبو حلاوه',
+            path: '/family-tree/visual?branch=zahar_othman'
+        },
+        {
+            id: 'zahar_beshiti',
+            label: 'البشيتي (البشاشته)',
+            color: '#0891b2', // Cyan
+            icon: '🌱',
+            description: 'فرع البشيتي',
+            path: '/family-tree/visual?branch=zahar_beshiti'
+        },
+        {
+            id: 'zahar_barham',
+            label: 'برهم (البراهمه)',
+            color: '#7c3aed', // Violet
+            icon: '🎋',
+            description: 'فرع برهم',
+            path: '/family-tree/visual?branch=zahar_barham'
+        },
+        {
+            id: 'zahar_dawood',
+            label: 'داوود القمبز',
             color: '#d97706', // Amber
             icon: '🍂',
-            description: 'عرض شجرة عائلة صالح وأحفاده',
-            path: '/family-tree/visual?branch=saleh'
+            description: 'فرع داوود القمبز',
+            path: '/family-tree/visual?branch=zahar_dawood'
         },
         {
-            id: 'ibrahim',
-            label: 'فرع إبراهيم',
-            color: '#7c3aed', // Violet
-            icon: '🌱',
-            description: 'عرض شجرة عائلة إبراهيم وأحفاده',
-            path: '/family-tree/visual?branch=ibrahim'
+            id: 'zahar_awad',
+            label: 'عواد (العواوده)',
+            color: '#be123c', // Rose
+            icon: '🍁',
+            description: 'فرع عواد',
+            path: '/family-tree/visual?branch=zahar_awad'
         }
     ];
 
@@ -47,16 +63,16 @@ const FamilyTreeBranchSelection = () => {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <Link
-                            to="/family-tree"
+                            to="/family-tree/tree"
                             className="flex items-center gap-2 text-gray-700 hover:text-palestine-green transition-colors duration-300"
                         >
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                             </svg>
-                            <span className="font-medium">العودة للقائمة الرئيسية</span>
+                            <span className="font-medium">العودة للفروع الرئيسية</span>
                         </Link>
                     </div>
-                    <div className="text-2xl">🌳</div>
+                    <div className="text-2xl">🌿</div>
                 </div>
             </header>
 
@@ -64,10 +80,10 @@ const FamilyTreeBranchSelection = () => {
             <main className="flex-1 flex flex-col items-center justify-center px-4 py-12">
                 <div className="text-center mb-16 animate-fade-in">
                     <h1 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4 drop-shadow-lg">
-                        اختر القسم للعرض
+                        فرع زهار
                     </h1>
                     <p className="text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                        يمكنك عرض الشجرة كاملة أو اختيار أحد الفروع الرئيسية
+                        اختر أحد الفروع الداخلية لعرضها
                     </p>
                     <div className="mt-8 flex justify-center">
                         <div className="h-1 w-32 bg-gradient-to-r from-transparent via-palestine-green to-transparent rounded-full"></div>
@@ -75,7 +91,7 @@ const FamilyTreeBranchSelection = () => {
                 </div>
 
                 {/* Button Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl w-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl w-full">
                     {buttons.map((button, index) => (
                         <button
                             key={button.id}
@@ -84,7 +100,7 @@ const FamilyTreeBranchSelection = () => {
                             onMouseLeave={() => setHoveredButton(null)}
                             className="group relative overflow-hidden rounded-2xl shadow-2xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-2 bg-white"
                             style={{
-                                animationDelay: `${index * 150}ms`
+                                animationDelay: `${index * 100}ms`
                             }}
                         >
                             {/* Color Header */}
@@ -125,4 +141,4 @@ const FamilyTreeBranchSelection = () => {
     );
 };
 
-export default FamilyTreeBranchSelection;
+export default ZaharBranchSelection;
