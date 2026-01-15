@@ -31,7 +31,9 @@ const AdminFamilyTree = () => {
     const [editingPerson, setEditingPerson] = useState(null);
     const [eligibleFathers, setEligibleFathers] = useState([]);
     const [selectedBranch, setSelectedBranch] = useState('');
+    const [selectedSubBranch, setSelectedSubBranch] = useState('');
     const [branchCounts, setBranchCounts] = useState(null);
+    const [subBranchCounts, setSubBranchCounts] = useState(null);
     const [formLoading, setFormLoading] = useState(false);
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'tree'
     const [tree, setTree] = useState(null);
@@ -111,10 +113,11 @@ const AdminFamilyTree = () => {
         fetchData();
     }, [fetchData]);
 
-    const fetchEligibleFathers = async (generation, branch = '') => {
+    const fetchEligibleFathers = async (generation, branch = '', subBranch = '') => {
         if (!generation || generation === '0') {
             setEligibleFathers([]);
             setBranchCounts(null);
+            setSubBranchCounts(null);
             return;
         }
         try {
@@ -126,12 +129,16 @@ const AdminFamilyTree = () => {
             if (branch && parseInt(generation) >= 6) {
                 url += `&branch=${branch}`;
             }
+            if (subBranch && parseInt(generation) >= 6) {
+                url += `&subBranch=${subBranch}`;
+            }
 
             const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setEligibleFathers(data.data || []);
                 setBranchCounts(data.branchCounts || null);
+                setSubBranchCounts(data.subBranchCounts || null);
             }
         } catch (error) {
             console.error('Error fetching eligible fathers:', error);
@@ -142,13 +149,21 @@ const AdminFamilyTree = () => {
         const gen = e.target.value;
         setFormData(prev => ({ ...prev, targetGeneration: gen, fatherId: '' }));
         setSelectedBranch('');
-        fetchEligibleFathers(gen, '');
+        setSelectedSubBranch('');
+        fetchEligibleFathers(gen, '', '');
     };
 
     const handleBranchChange = (branch) => {
         setSelectedBranch(branch);
+        setSelectedSubBranch('');
         setFormData(prev => ({ ...prev, fatherId: '' }));
-        fetchEligibleFathers(formData.targetGeneration, branch);
+        fetchEligibleFathers(formData.targetGeneration, branch, '');
+    };
+
+    const handleSubBranchChange = (subBranch) => {
+        setSelectedSubBranch(subBranch);
+        setFormData(prev => ({ ...prev, fatherId: '' }));
+        fetchEligibleFathers(formData.targetGeneration, selectedBranch, subBranch);
     };
 
     const openAddModal = () => {
@@ -784,6 +799,72 @@ const AdminFamilyTree = () => {
                                                     <span className="bg-white/30 px-1.5 rounded-full text-[10px]">{branchCounts.ibrahim}</span>
                                                 </button>
                                             </div>
+
+                                            {/* Sub-branch filter for Zahar */}
+                                            {selectedBranch === 'zahar' && subBranchCounts?.zahar?.length > 0 && (
+                                                <div className="mt-3 pt-3 border-t border-amber-200">
+                                                    <p className="text-xs text-teal-700 mb-2 font-medium">🌿 أبناء زهار:</p>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleSubBranchChange('')}
+                                                            className={`px-2 py-1 text-[11px] rounded-full transition-colors ${selectedSubBranch === ''
+                                                                    ? 'bg-teal-700 text-white'
+                                                                    : 'bg-teal-50 text-teal-600 hover:bg-teal-100'
+                                                                }`}
+                                                        >
+                                                            كل أبناء زهار
+                                                        </button>
+                                                        {subBranchCounts.zahar.map(sub => (
+                                                            <button
+                                                                key={sub.id}
+                                                                type="button"
+                                                                onClick={() => handleSubBranchChange(sub.id)}
+                                                                className={`px-2 py-1 text-[11px] rounded-full transition-colors flex items-center gap-1 ${selectedSubBranch === sub.id
+                                                                        ? 'bg-teal-600 text-white'
+                                                                        : 'bg-teal-50 text-teal-600 hover:bg-teal-100 border border-teal-200'
+                                                                    }`}
+                                                            >
+                                                                {sub.name}
+                                                                <span className="bg-white/40 px-1 rounded-full text-[9px]">{sub.count}</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Sub-branch filter for Saleh */}
+                                            {selectedBranch === 'saleh' && subBranchCounts?.saleh?.length > 0 && (
+                                                <div className="mt-3 pt-3 border-t border-amber-200">
+                                                    <p className="text-xs text-amber-700 mb-2 font-medium">🌿 أبناء صالح:</p>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => handleSubBranchChange('')}
+                                                            className={`px-2 py-1 text-[11px] rounded-full transition-colors ${selectedSubBranch === ''
+                                                                    ? 'bg-amber-700 text-white'
+                                                                    : 'bg-amber-50 text-amber-600 hover:bg-amber-100'
+                                                                }`}
+                                                        >
+                                                            كل أبناء صالح
+                                                        </button>
+                                                        {subBranchCounts.saleh.map(sub => (
+                                                            <button
+                                                                key={sub.id}
+                                                                type="button"
+                                                                onClick={() => handleSubBranchChange(sub.id)}
+                                                                className={`px-2 py-1 text-[11px] rounded-full transition-colors flex items-center gap-1 ${selectedSubBranch === sub.id
+                                                                        ? 'bg-amber-600 text-white'
+                                                                        : 'bg-amber-50 text-amber-600 hover:bg-amber-100 border border-amber-200'
+                                                                    }`}
+                                                            >
+                                                                {sub.name}
+                                                                <span className="bg-white/40 px-1 rounded-full text-[9px]">{sub.count}</span>
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
 

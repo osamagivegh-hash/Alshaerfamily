@@ -147,7 +147,7 @@ router.get('/tree/:id', async (req, res) => {
  */
 router.get('/eligible-fathers', async (req, res) => {
     try {
-        const { generation, excludeId, branch } = req.query;
+        const { generation, excludeId, branch, subBranch } = req.query;
 
         let query = { gender: 'male' };
 
@@ -173,79 +173,128 @@ router.get('/eligible-fathers', async (req, res) => {
             .populate('fatherId', 'fullName')
             .sort({ generation: 1, fullName: 1 });
 
-        // Branch filtering for generations 6+
-        // branch can be: 'zahar', 'saleh', 'ibrahim'
-        if (branch && parseInt(generation) >= 6) {
-            // Get all persons to build ancestry lookup
-            const allPersons = await Person.find({}).select('_id fullName fatherId generation').lean();
-            const personMap = new Map(allPersons.map(p => [p._id.toString(), p]));
+        const targetGen = parseInt(generation);
 
-            // Helper to check if a person descends from a main branch
-            const getMainBranch = (personId) => {
-                let current = personMap.get(personId?.toString());
-                const visited = new Set();
+        // Get all persons for ancestry lookup
+        const allPersons = await Person.find({}).select('_id fullName fatherId generation').lean();
+        const personMap = new Map(allPersons.map(p => [p._id.toString(), p]));
 
-                while (current && current.fatherId && !visited.has(current._id.toString())) {
-                    visited.add(current._id.toString());
+        // Helper to get main branch (generation 1 ancestor)
+        const getMainBranch = (personId) => {
+            let current = personMap.get(personId?.toString());
+            const visited = new Set();
 
-                    // Check if we're at generation 1 (main branches directly under root)
-                    if (current.generation === 1) {
-                        const name = current.fullName || '';
-                        if (name.includes('زهار')) return 'zahar';
-                        if (name.includes('صالح')) return 'saleh';
-                        if (name.includes('براهيم') || name.includes('إبراهيم')) return 'ibrahim';
-                        return 'other';
-                    }
-
-                    current = personMap.get(current.fatherId?.toString());
+            while (current && current.fatherId && !visited.has(current._id.toString())) {
+                visited.add(current._id.toString());
+                if (current.generation === 1) {
+                    const name = current.fullName || '';
+                    if (name.includes('زهار')) return 'zahar';
+                    if (name.includes('صالح')) return 'saleh';
+                    if (name.includes('براهيم') || name.includes('إبراهيم')) return 'ibrahim';
+                    return 'other';
                 }
+                current = personMap.get(current.fatherId?.toString());
+            }
+            return null;
+        };
 
-                return null;
-            };
+        // Helper to get sub-branch (generation 2 ancestor)
+        const getSubBranch = (personId) => {
+            let current = personMap.get(personId?.toString());
+            const visited = new Set();
 
-            // Filter by branch
-            eligibleFathers = eligibleFathers.filter(father => {
-                const fatherBranch = getMainBranch(father._id.toString());
-                return fatherBranch === branch;
-            });
+            while (current && current.fatherId && !visited.has(current._id.toString())) {
+                visited.add(current._id.toString());
+                if (current.generation === 2) {
+                    return current._id.toString();
+                }
+                current = personMap.get(current.fatherId?.toString());
+            }
+            return null;
+        };
+
+        // Get sub-branch info
+        const getSubBranchInfo = (personId) => {
+            let current = personMap.get(personId?.toString());
+            const visited = new Set();
+
+            while (current && current.fatherId && !visited.has(current._id.toString())) {
+                visited.add(current._id.toString());
+                if (current.generation === 2) {
+                    return { id: current._id.toString(), name: current.fullName };
+                }
+                current = personMap.get(current.fatherId?.toString());
+            }
+            return null;
+        };
+
+        // Branch filtering for generations 6+
+        if (targetGen >= 6) {
+            if (branch) {
+                eligibleFathers = eligibleFathers.filter(father => {
+                    const fatherBranch = getMainBranch(father._id.toString());
+                    return fatherBranch === branch;
+                });
+            }
+
+            // Sub-branch filtering
+            if (subBranch) {
+                eligibleFathers = eligibleFathers.filter(father => {
+                    const fatherSubBranch = getSubBranch(father._id.toString());
+                    return fatherSubBranch === subBranch;
+                });
+            }
         }
 
-        // Get branch counts for UI (only for gen 6+)
+        // Get branch and sub-branch counts for UI (only for gen 6+)
         let branchCounts = null;
-        const targetGen = parseInt(generation);
+        let subBranchCounts = null;
+
         if (targetGen >= 6) {
             const allFathersForGen = await Person.find({
                 gender: 'male',
                 generation: targetGen - 1
             }).select('_id fullName fatherId generation').lean();
 
-            const allPersons = await Person.find({}).select('_id fullName fatherId generation').lean();
-            const personMap = new Map(allPersons.map(p => [p._id.toString(), p]));
+            branchCounts = { zahar: 0, saleh: 0, ibrahim: 0 };
 
-            const getMainBranch = (personId) => {
-                let current = personMap.get(personId?.toString());
-                const visited = new Set();
-                while (current && current.fatherId && !visited.has(current._id.toString())) {
-                    visited.add(current._id.toString());
-                    if (current.generation === 1) {
-                        const name = current.fullName || '';
-                        if (name.includes('زهار')) return 'zahar';
-                        if (name.includes('صالح')) return 'saleh';
-                        if (name.includes('براهيم') || name.includes('إبراهيم')) return 'ibrahim';
-                        return 'other';
-                    }
-                    current = personMap.get(current.fatherId?.toString());
-                }
-                return null;
+            // Sub-branch structure
+            const subBranchData = {
+                zahar: {},  // Will contain: { subBranchId: { name, count } }
+                saleh: {}   // Will contain: { subBranchId: { name, count } }
             };
 
-            branchCounts = { zahar: 0, saleh: 0, ibrahim: 0 };
             allFathersForGen.forEach(f => {
                 const b = getMainBranch(f._id.toString());
                 if (b && branchCounts[b] !== undefined) {
                     branchCounts[b]++;
+
+                    // Count sub-branches for zahar and saleh
+                    if (b === 'zahar' || b === 'saleh') {
+                        const subInfo = getSubBranchInfo(f._id.toString());
+                        if (subInfo) {
+                            if (!subBranchData[b][subInfo.id]) {
+                                subBranchData[b][subInfo.id] = { name: subInfo.name, count: 0 };
+                            }
+                            subBranchData[b][subInfo.id].count++;
+                        }
+                    }
                 }
             });
+
+            // Convert sub-branch data to array format
+            subBranchCounts = {
+                zahar: Object.entries(subBranchData.zahar).map(([id, data]) => ({
+                    id,
+                    name: data.name,
+                    count: data.count
+                })),
+                saleh: Object.entries(subBranchData.saleh).map(([id, data]) => ({
+                    id,
+                    name: data.name,
+                    count: data.count
+                }))
+            };
         }
 
         res.json({
@@ -262,6 +311,7 @@ router.get('/eligible-fathers', async (req, res) => {
             })),
             total: eligibleFathers.length,
             branchCounts,
+            subBranchCounts,
             hasBranchFilter: targetGen >= 6
         });
     } catch (error) {
