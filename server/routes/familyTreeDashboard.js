@@ -245,9 +245,11 @@ async function deletePersonRecursively(id) {
 }
 
 /**
- * Delete person (ft-super-admin only)
+ * Delete person
+ * - ft-super-admin: Can delete any person (with cascade option)
+ * - tree_editor: Can only delete persons they created (no cascade)
  */
-router.delete('/persons/:id', authenticateFTToken, requireFTSuperAdmin, async (req, res) => {
+router.delete('/persons/:id', authenticateFTToken, requireFTPermission('manage-members'), async (req, res) => {
     try {
         const person = await Person.findById(req.params.id);
 
@@ -255,18 +257,38 @@ router.delete('/persons/:id', authenticateFTToken, requireFTSuperAdmin, async (r
             return res.status(404).json({ success: false, message: 'الشخص غير موجود' });
         }
 
+        const isSuperAdmin = req.ftUser.role === 'ft-super-admin';
         const isCascade = req.query.cascade === 'true';
+
+        // Editors can only delete records they created
+        if (!isSuperAdmin) {
+            // Check ownership
+            if (!person.createdBy || person.createdBy !== req.ftUser.username) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'غير مصرح لك بحذف هذا السجل. يمكنك فقط حذف السجلات التي قمت بإضافتها.'
+                });
+            }
+
+            // Editors cannot cascade delete
+            if (isCascade) {
+                return res.status(403).json({
+                    success: false,
+                    message: 'الحذف المتسلسل متاح فقط للمدير الأعلى.'
+                });
+            }
+        }
 
         // Check if person has children
         const hasChildren = await Person.countDocuments({ fatherId: req.params.id });
         if (hasChildren > 0 && !isCascade) {
             return res.status(400).json({
                 success: false,
-                message: 'لا يمكن حذف شخص له أبناء في الشجرة'
+                message: 'لا يمكن حذف شخص له أبناء في الشجرة. يجب حذف الأبناء أولاً أو التواصل مع المدير الأعلى للحذف المتسلسل.'
             });
         }
 
-        if (isCascade) {
+        if (isCascade && isSuperAdmin) {
             await deletePersonRecursively(req.params.id);
         } else {
             await Person.findByIdAndDelete(req.params.id);

@@ -242,12 +242,16 @@ const AdminFamilyTree = () => {
     const openDeleteModal = (person) => {
         console.log('[AdminFamilyTree] Opening delete modal for:', person.fullName);
 
-        // Strict Role Check
-        if (!isFTSuperAdmin) {
-            console.warn('[AdminFamilyTree] Delete blocked: User is not ft-super-admin', {
-                actualRole: user?.role
+        // Check if user can delete this record
+        const canDelete = isFTSuperAdmin || (person.createdBy && person.createdBy === user?.username);
+
+        if (!canDelete) {
+            console.warn('[AdminFamilyTree] Delete blocked: User cannot delete this record', {
+                actualRole: user?.role,
+                personCreatedBy: person.createdBy,
+                currentUser: user?.username
             });
-            toast.error(`غير مصرح لك بحذف البيانات. هذه الصلاحية للمدير الأعلى فقط. (دورك الحالي: ${user?.role || 'غير محدد'})`);
+            toast.error('غير مصرح لك بحذف هذا السجل. يمكنك فقط حذف السجلات التي قمت بإضافتها.');
             return;
         }
 
@@ -375,7 +379,7 @@ const AdminFamilyTree = () => {
                         </span>
                         {!isFTSuperAdmin && (
                             <span className="text-xs text-gray-500">
-                                ⚠️ لا تملك صلاحية الحذف
+                                ℹ️ يمكنك حذف السجلات التي أضفتها فقط
                             </span>
                         )}
                     </div>
@@ -555,11 +559,15 @@ const AdminFamilyTree = () => {
                                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                                         </svg>
                                                     </button>
-                                                    {isFTSuperAdmin && (
+                                                    {/* Delete button: Super admin can delete any, Editor can delete own records */}
+                                                    {(isFTSuperAdmin || person.createdBy === user?.username) && (
                                                         <button
                                                             onClick={() => handleDelete(person)}
-                                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                            title="حذف"
+                                                            className={`p-2 rounded-lg transition-colors ${isFTSuperAdmin
+                                                                ? 'text-red-600 hover:bg-red-50'
+                                                                : 'text-orange-500 hover:bg-orange-50'
+                                                                }`}
+                                                            title={isFTSuperAdmin ? 'حذف' : 'حذف (سجلك)'}
                                                         >
                                                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -736,8 +744,8 @@ const AdminFamilyTree = () => {
                                                     type="button"
                                                     onClick={() => handleBranchChange('')}
                                                     className={`px-3 py-1.5 text-xs rounded-full transition-colors ${selectedBranch === ''
-                                                            ? 'bg-gray-700 text-white'
-                                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                        ? 'bg-gray-700 text-white'
+                                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
                                                         }`}
                                                 >
                                                     الكل
@@ -746,8 +754,8 @@ const AdminFamilyTree = () => {
                                                     type="button"
                                                     onClick={() => handleBranchChange('zahar')}
                                                     className={`px-3 py-1.5 text-xs rounded-full transition-colors flex items-center gap-1 ${selectedBranch === 'zahar'
-                                                            ? 'bg-teal-600 text-white'
-                                                            : 'bg-teal-100 text-teal-700 hover:bg-teal-200'
+                                                        ? 'bg-teal-600 text-white'
+                                                        : 'bg-teal-100 text-teal-700 hover:bg-teal-200'
                                                         }`}
                                                 >
                                                     فرع زهار
@@ -757,8 +765,8 @@ const AdminFamilyTree = () => {
                                                     type="button"
                                                     onClick={() => handleBranchChange('saleh')}
                                                     className={`px-3 py-1.5 text-xs rounded-full transition-colors flex items-center gap-1 ${selectedBranch === 'saleh'
-                                                            ? 'bg-amber-600 text-white'
-                                                            : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                                                        ? 'bg-amber-600 text-white'
+                                                        : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
                                                         }`}
                                                 >
                                                     فرع صالح
@@ -768,8 +776,8 @@ const AdminFamilyTree = () => {
                                                     type="button"
                                                     onClick={() => handleBranchChange('ibrahim')}
                                                     className={`px-3 py-1.5 text-xs rounded-full transition-colors flex items-center gap-1 ${selectedBranch === 'ibrahim'
-                                                            ? 'bg-violet-600 text-white'
-                                                            : 'bg-violet-100 text-violet-700 hover:bg-violet-200'
+                                                        ? 'bg-violet-600 text-white'
+                                                        : 'bg-violet-100 text-violet-700 hover:bg-violet-200'
                                                         }`}
                                                 >
                                                     فرع إبراهيم
