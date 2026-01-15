@@ -141,23 +141,7 @@ router.post('/persons', authenticateFTToken, requireFTPermission('manage-members
             lastModifiedBy: req.ftUser.username
         };
 
-        // RATE LIMIT CHECK: Max 80 entries per 24 hours for editors
-        if (req.ftUser.role !== 'ft-super-admin') {
-            const ONE_DAY_MS = 24 * 60 * 60 * 1000;
-            const cutoff = new Date(Date.now() - ONE_DAY_MS);
-
-            const recentCount = await Person.countDocuments({
-                createdBy: req.ftUser.username,
-                createdAt: { $gte: cutoff }
-            });
-
-            if (recentCount >= 80) {
-                return res.status(403).json({
-                    success: false,
-                    message: 'عفواً، لقد وصلت للحد الأقصى المسموح به للإضافة اليومية (80 اسم). يرجى التوقف حالياً لإتاحة المجال للمسؤول لمراجعة المدخلات. سيتم فتح النظام للإضافة مرة أخرى بعد مرور 24 ساعة من أول عملية إضافة.'
-                });
-            }
-        }
+        // Note: Rate limiting removed - editors can now add unlimited entries
 
         const person = new Person(personData);
         await person.save();
