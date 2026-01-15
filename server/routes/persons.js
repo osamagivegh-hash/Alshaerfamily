@@ -147,7 +147,7 @@ router.get('/tree/:id', async (req, res) => {
  */
 router.get('/eligible-fathers', async (req, res) => {
     try {
-        const { generation, excludeId } = req.query;
+        const { generation, excludeId, branch } = req.query;
 
         let query = { gender: 'male' };
 
@@ -168,10 +168,85 @@ router.get('/eligible-fathers', async (req, res) => {
             query._id = { $ne: excludeId };
         }
 
-        const eligibleFathers = await Person.find(query)
+        let eligibleFathers = await Person.find(query)
             .select('_id fullName nickname generation fatherId')
             .populate('fatherId', 'fullName')
             .sort({ generation: 1, fullName: 1 });
+
+        // Branch filtering for generations 6+
+        // branch can be: 'zahar', 'saleh', 'ibrahim'
+        if (branch && parseInt(generation) >= 6) {
+            // Get all persons to build ancestry lookup
+            const allPersons = await Person.find({}).select('_id fullName fatherId generation').lean();
+            const personMap = new Map(allPersons.map(p => [p._id.toString(), p]));
+
+            // Helper to check if a person descends from a main branch
+            const getMainBranch = (personId) => {
+                let current = personMap.get(personId?.toString());
+                const visited = new Set();
+
+                while (current && current.fatherId && !visited.has(current._id.toString())) {
+                    visited.add(current._id.toString());
+
+                    // Check if we're at generation 1 (main branches directly under root)
+                    if (current.generation === 1) {
+                        const name = current.fullName || '';
+                        if (name.includes('زهار')) return 'zahar';
+                        if (name.includes('صالح')) return 'saleh';
+                        if (name.includes('براهيم') || name.includes('إبراهيم')) return 'ibrahim';
+                        return 'other';
+                    }
+
+                    current = personMap.get(current.fatherId?.toString());
+                }
+
+                return null;
+            };
+
+            // Filter by branch
+            eligibleFathers = eligibleFathers.filter(father => {
+                const fatherBranch = getMainBranch(father._id.toString());
+                return fatherBranch === branch;
+            });
+        }
+
+        // Get branch counts for UI (only for gen 6+)
+        let branchCounts = null;
+        const targetGen = parseInt(generation);
+        if (targetGen >= 6) {
+            const allFathersForGen = await Person.find({
+                gender: 'male',
+                generation: targetGen - 1
+            }).select('_id fullName fatherId generation').lean();
+
+            const allPersons = await Person.find({}).select('_id fullName fatherId generation').lean();
+            const personMap = new Map(allPersons.map(p => [p._id.toString(), p]));
+
+            const getMainBranch = (personId) => {
+                let current = personMap.get(personId?.toString());
+                const visited = new Set();
+                while (current && current.fatherId && !visited.has(current._id.toString())) {
+                    visited.add(current._id.toString());
+                    if (current.generation === 1) {
+                        const name = current.fullName || '';
+                        if (name.includes('زهار')) return 'zahar';
+                        if (name.includes('صالح')) return 'saleh';
+                        if (name.includes('براهيم') || name.includes('إبراهيم')) return 'ibrahim';
+                        return 'other';
+                    }
+                    current = personMap.get(current.fatherId?.toString());
+                }
+                return null;
+            };
+
+            branchCounts = { zahar: 0, saleh: 0, ibrahim: 0 };
+            allFathersForGen.forEach(f => {
+                const b = getMainBranch(f._id.toString());
+                if (b && branchCounts[b] !== undefined) {
+                    branchCounts[b]++;
+                }
+            });
+        }
 
         res.json({
             success: true,
@@ -185,7 +260,9 @@ router.get('/eligible-fathers', async (req, res) => {
                     ? `${p.fullName} بن ${p.fatherId.fullName}`
                     : p.fullName
             })),
-            total: eligibleFathers.length
+            total: eligibleFathers.length,
+            branchCounts,
+            hasBranchFilter: targetGen >= 6
         });
     } catch (error) {
         console.error('خطأ في جلب الآباء المؤهلين:', error);

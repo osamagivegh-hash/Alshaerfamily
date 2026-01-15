@@ -30,6 +30,8 @@ const AdminFamilyTree = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingPerson, setEditingPerson] = useState(null);
     const [eligibleFathers, setEligibleFathers] = useState([]);
+    const [selectedBranch, setSelectedBranch] = useState('');
+    const [branchCounts, setBranchCounts] = useState(null);
     const [formLoading, setFormLoading] = useState(false);
     const [viewMode, setViewMode] = useState('list'); // 'list' or 'tree'
     const [tree, setTree] = useState(null);
@@ -109,19 +111,27 @@ const AdminFamilyTree = () => {
         fetchData();
     }, [fetchData]);
 
-    const fetchEligibleFathers = async (generation) => {
+    const fetchEligibleFathers = async (generation, branch = '') => {
         if (!generation || generation === '0') {
             setEligibleFathers([]);
+            setBranchCounts(null);
             return;
         }
         try {
             // Public API - keep using fetch
-            const res = await fetch(
-                `${API_URL}/api/persons/eligible-fathers?generation=${generation}${editingPerson ? `&excludeId=${editingPerson.id || editingPerson._id}` : ''}`
-            );
+            let url = `${API_URL}/api/persons/eligible-fathers?generation=${generation}`;
+            if (editingPerson) {
+                url += `&excludeId=${editingPerson.id || editingPerson._id}`;
+            }
+            if (branch && parseInt(generation) >= 6) {
+                url += `&branch=${branch}`;
+            }
+
+            const res = await fetch(url);
             const data = await res.json();
             if (data.success) {
                 setEligibleFathers(data.data || []);
+                setBranchCounts(data.branchCounts || null);
             }
         } catch (error) {
             console.error('Error fetching eligible fathers:', error);
@@ -131,7 +141,14 @@ const AdminFamilyTree = () => {
     const handleGenerationChange = (e) => {
         const gen = e.target.value;
         setFormData(prev => ({ ...prev, targetGeneration: gen, fatherId: '' }));
-        fetchEligibleFathers(gen);
+        setSelectedBranch('');
+        fetchEligibleFathers(gen, '');
+    };
+
+    const handleBranchChange = (branch) => {
+        setSelectedBranch(branch);
+        setFormData(prev => ({ ...prev, fatherId: '' }));
+        fetchEligibleFathers(formData.targetGeneration, branch);
     };
 
     const openAddModal = () => {
@@ -709,6 +726,59 @@ const AdminFamilyTree = () => {
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">الأب</label>
+
+                                    {/* Branch Filter for Generations 6+ */}
+                                    {parseInt(formData.targetGeneration) >= 6 && branchCounts && (
+                                        <div className="mb-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                            <p className="text-xs text-amber-700 mb-2 font-medium">🔍 فلترة حسب الفرع (للتسهيل):</p>
+                                            <div className="flex flex-wrap gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleBranchChange('')}
+                                                    className={`px-3 py-1.5 text-xs rounded-full transition-colors ${selectedBranch === ''
+                                                            ? 'bg-gray-700 text-white'
+                                                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                                        }`}
+                                                >
+                                                    الكل
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleBranchChange('zahar')}
+                                                    className={`px-3 py-1.5 text-xs rounded-full transition-colors flex items-center gap-1 ${selectedBranch === 'zahar'
+                                                            ? 'bg-teal-600 text-white'
+                                                            : 'bg-teal-100 text-teal-700 hover:bg-teal-200'
+                                                        }`}
+                                                >
+                                                    فرع زهار
+                                                    <span className="bg-white/30 px-1.5 rounded-full text-[10px]">{branchCounts.zahar}</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleBranchChange('saleh')}
+                                                    className={`px-3 py-1.5 text-xs rounded-full transition-colors flex items-center gap-1 ${selectedBranch === 'saleh'
+                                                            ? 'bg-amber-600 text-white'
+                                                            : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                                                        }`}
+                                                >
+                                                    فرع صالح
+                                                    <span className="bg-white/30 px-1.5 rounded-full text-[10px]">{branchCounts.saleh}</span>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleBranchChange('ibrahim')}
+                                                    className={`px-3 py-1.5 text-xs rounded-full transition-colors flex items-center gap-1 ${selectedBranch === 'ibrahim'
+                                                            ? 'bg-violet-600 text-white'
+                                                            : 'bg-violet-100 text-violet-700 hover:bg-violet-200'
+                                                        }`}
+                                                >
+                                                    فرع إبراهيم
+                                                    <span className="bg-white/30 px-1.5 rounded-full text-[10px]">{branchCounts.ibrahim}</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+
                                     <select
                                         value={formData.fatherId}
                                         onChange={(e) => setFormData(prev => ({ ...prev, fatherId: e.target.value }))}
@@ -719,7 +789,7 @@ const AdminFamilyTree = () => {
                                             {formData.targetGeneration === '0'
                                                 ? '-- بدون أب (الجد الأكبر) --'
                                                 : formData.targetGeneration
-                                                    ? '-- اختر الأب --'
+                                                    ? `-- اختر الأب (${eligibleFathers.length} متاح) --`
                                                     : '-- اختر الجيل أولاً --'}
                                         </option>
                                         {eligibleFathers.map((father) => (
