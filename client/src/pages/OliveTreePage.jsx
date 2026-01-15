@@ -87,7 +87,7 @@ const OliveTreePage = () => {
                                     شجرة العائلة
                                 </Link>
                                 <span className="text-olive-400">/</span>
-                                <span className="text-white font-medium">الشجرة العضوية</span>
+                                <span className="text-white font-medium">غصن الزيتون</span>
                             </nav>
                         </div>
 

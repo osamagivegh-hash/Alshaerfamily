@@ -82,9 +82,9 @@ const FamilyTreeGateway = () => {
         },
         {
             id: 'olive',
-            label: 'الشجرة العضوية',
+            label: 'غصن الزيتون',
             color: '#4A3728',
-            icon: '🫒',
+            icon: '🌳🫒',
             description: 'شجرة تفاعلية حية مرسومة بأسلوب عضوي',
             path: '/family-tree/olive'
         },
