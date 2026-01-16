@@ -167,19 +167,34 @@ const ArticleDetail = () => {
             <ImageWithFallback
               src={normalizeImageUrl(src)}
               alt={alt || 'صورة'}
-              containerClassName="my-4"
-              imgClassName="w-full h-auto rounded-lg shadow-md"
+              containerClassName="my-8 bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl overflow-hidden"
+              imgClassName="w-full h-auto max-w-full"
+              objectFit="contain"
+              enableLightbox={true}
             />
           ),
           p: ({ children }) => (
-            <p className="mb-4 leading-loose text-gray-700">{children}</p>
+            <p className="mb-6 leading-loose text-gray-700 text-lg">{children}</p>
           ),
-          strong: ({ children }) => <strong className="text-palestine-black">{children}</strong>,
-          em: ({ children }) => <em className="text-gray-600">{children}</em>,
+          strong: ({ children }) => <strong className="text-gray-900 font-bold">{children}</strong>,
+          em: ({ children }) => <em className="text-gray-600 italic">{children}</em>,
           blockquote: ({ children }) => (
-            <blockquote className="border-r-4 border-palestine-green bg-gray-50 p-4 my-6 italic">
+            <blockquote className="border-r-4 border-palestine-green bg-gradient-to-l from-gray-50 to-white py-6 px-8 my-8 rounded-xl shadow-sm">
               {children}
             </blockquote>
+          ),
+          h2: ({ children }) => (
+            <h2 className="text-2xl md:text-3xl font-bold text-gray-900 mt-10 mb-6 pb-3 border-b border-gray-100">{children}</h2>
+          ),
+          h3: ({ children }) => (
+            <h3 className="text-xl md:text-2xl font-bold text-gray-900 mt-8 mb-4">{children}</h3>
+          ),
+          ul: ({ children }) => <ul className="list-disc mr-6 my-6 space-y-3 text-gray-700">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal mr-6 my-6 space-y-3 text-gray-700">{children}</ol>,
+          a: ({ href, children }) => (
+            <a href={href} className="text-palestine-green font-medium hover:text-olive-700 underline decoration-2 underline-offset-4 transition-colors" target="_blank" rel="noopener noreferrer">
+              {children}
+            </a>
           ),
         }}
       >
