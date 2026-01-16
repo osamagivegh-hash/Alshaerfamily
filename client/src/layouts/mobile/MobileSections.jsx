@@ -2,7 +2,10 @@
  * Mobile Section Content Components
  * ==================================
  * Individual content sections optimized for mobile single-screen layout.
- * Each section is designed to fit within the viewport with minimal scrolling.
+ * 
+ * IMPORTANT: For Family Tree section, we use react-router navigation
+ * to maintain the exact same page structure as desktop.
+ * The mobile UI simply provides a different navigation entry point.
  */
 
 import React, { Suspense, lazy, useState, useEffect } from 'react';
@@ -29,7 +32,7 @@ const SectionLoader = () => (
 export const MobileHomeSection = ({ data }) => {
     const navigate = useNavigate();
 
-    // Quick action cards for home screen
+    // Quick action cards for home screen - matching website sections
     const quickActions = [
         {
             id: 'family-tree',
@@ -37,30 +40,46 @@ export const MobileHomeSection = ({ data }) => {
             description: 'استكشف شجرة عائلة الشاعر',
             icon: '🌳',
             gradient: 'from-green-600 to-green-800',
-            action: () => navigate('/family-tree')
+            // Navigate to the actual family tree gateway page
+            path: '/family-tree'
         },
         {
             id: 'news',
             label: 'آخر الأخبار',
             description: 'اطلع على أحدث الأخبار',
             icon: '📰',
-            gradient: 'from-gray-700 to-gray-900'
+            gradient: 'from-gray-700 to-gray-900',
+            action: 'news'
         },
         {
             id: 'articles',
             label: 'المقالات',
             description: 'اقرأ أحدث المقالات',
             icon: '📖',
-            gradient: 'from-emerald-600 to-teal-700'
+            gradient: 'from-emerald-600 to-teal-700',
+            action: 'articles'
         },
         {
             id: 'gallery',
             label: 'معرض الصور',
             description: 'تصفح معرض الصور',
             icon: '🖼️',
-            gradient: 'from-purple-600 to-indigo-700'
+            gradient: 'from-purple-600 to-indigo-700',
+            action: 'gallery'
         }
     ];
+
+    const handleAction = (item) => {
+        if (item.path) {
+            navigate(item.path);
+        } else if (item.action) {
+            // This will be handled by LayoutContext for in-app navigation
+            window.scrollTo(0, 0);
+            // For now, we navigate to the hash section
+            const sectionHash = `#${item.action}`;
+            navigate('/' + sectionHash);
+        }
+    };
 
     return (
         <div className="mobile-section mobile-home-section">
@@ -91,7 +110,7 @@ export const MobileHomeSection = ({ data }) => {
                         <button
                             key={action.id}
                             className={`quick-action-card bg-gradient-to-br ${action.gradient}`}
-                            onClick={action.action}
+                            onClick={() => handleAction(action)}
                         >
                             <span className="quick-action-icon">{action.icon}</span>
                             <span className="quick-action-label">{action.label}</span>
@@ -127,41 +146,53 @@ export const MobileHomeSection = ({ data }) => {
 };
 
 // ==================== FAMILY TREE SECTION ====================
+// This section navigates to the actual FamilyTreeGateway page
+// to maintain the same navigation structure as desktop
 export const MobileFamilyTreeSection = () => {
     const navigate = useNavigate();
 
-    const treeOptions = [
-        {
-            id: 'visual',
-            label: 'الشجرة المرئية',
-            description: 'عرض تفاعلي لشجرة العائلة',
-            icon: '🌳',
-            gradient: 'from-green-600 to-emerald-700',
-            path: '/family-tree/visual'
-        },
-        {
-            id: 'organic',
-            label: 'شجرة الزيتون',
-            description: 'تصميم فني لشجرة الزيتون',
-            icon: '🫒',
-            gradient: 'from-olive-600 to-green-800',
-            path: '/family-tree/organic-olive'
-        },
+    // These buttons EXACTLY match the FamilyTreeGateway buttons
+    // and navigate to the SAME routes
+    const gatewayButtons = [
         {
             id: 'appreciation',
-            label: 'تقدير المؤسسين',
-            description: 'صفحة تقدير المؤسسين',
+            label: 'تقدير ووفاء للمؤسس',
+            color: '#1a1a1a',
             icon: '🏆',
-            gradient: 'from-amber-500 to-orange-600',
+            description: 'تعرف على تاريخ مؤسس شجرة العائلة وإرثه الخالد',
             path: '/family-tree/appreciation'
         },
         {
             id: 'discussions',
-            label: 'حوارات العائلة',
-            description: 'المناقشات والحوارات',
+            label: 'حوارات مع المؤسس',
+            color: '#CE1126',
             icon: '💬',
-            gradient: 'from-blue-600 to-indigo-700',
+            description: 'حوارات ومناقشات مع مؤسس العائلة',
             path: '/family-tree/discussions'
+        },
+        {
+            id: 'tree',
+            label: 'شجرة العائلة',
+            color: '#007A3D',
+            icon: '🌳',
+            description: 'استكشف شجرة العائلة التفاعلية',
+            path: '/family-tree/tree'
+        },
+        {
+            id: 'organic-olive',
+            label: 'شجرة الزيتون',
+            color: '#1B5E20',
+            icon: '🫒',
+            description: 'شجرة زيتون عضوية - كل ورقة تمثل فرداً من العائلة',
+            path: '/family-tree/organic-olive'
+        },
+        {
+            id: 'devTeam',
+            label: 'فريق التطوير',
+            color: '#0d9488',
+            icon: '👨‍💻',
+            description: 'تواصل مع فريق التطوير وشاركنا اقتراحاتك',
+            path: '/family-tree/dev-team'
         }
     ];
 
@@ -172,42 +203,25 @@ export const MobileFamilyTreeSection = () => {
                 <p className="section-subtitle">استكشف شجرة عائلة الشاعر بطرق مختلفة</p>
             </div>
 
+            {/* Gateway Buttons - Same as FamilyTreeGateway */}
             <div className="tree-options-grid">
-                {treeOptions.map((option) => (
+                {gatewayButtons.map((button) => (
                     <button
-                        key={option.id}
-                        className={`tree-option-card bg-gradient-to-br ${option.gradient}`}
-                        onClick={() => navigate(option.path)}
+                        key={button.id}
+                        className="tree-option-card"
+                        style={{ backgroundColor: button.color }}
+                        onClick={() => navigate(button.path)}
                     >
-                        <span className="option-icon">{option.icon}</span>
+                        <span className="option-icon">{button.icon}</span>
                         <div className="option-content">
-                            <span className="option-label">{option.label}</span>
-                            <span className="option-desc">{option.description}</span>
+                            <span className="option-label">{button.label}</span>
+                            <span className="option-desc">{button.description}</span>
                         </div>
                         <svg className="option-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="9 18 15 12 9 6" />
+                            <polyline points="15 18 9 12 15 6" />
                         </svg>
                     </button>
                 ))}
-            </div>
-
-            {/* Branch Selection Quick Access */}
-            <div className="branch-quick-access">
-                <h3>الفروع الرئيسية</h3>
-                <div className="branches-grid">
-                    <button
-                        className="branch-card zahar"
-                        onClick={() => navigate('/family-tree/tree/zahar')}
-                    >
-                        <span className="branch-name">فرع زاهر</span>
-                    </button>
-                    <button
-                        className="branch-card saleh"
-                        onClick={() => navigate('/family-tree/tree/saleh')}
-                    >
-                        <span className="branch-name">فرع صالح</span>
-                    </button>
-                </div>
             </div>
         </div>
     );
