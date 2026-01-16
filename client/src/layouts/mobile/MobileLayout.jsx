@@ -45,6 +45,7 @@ const MobileLayout = () => {
     const touchStartX = useRef(0);
     const touchStartY = useRef(0);
     const touchEndX = useRef(0);
+    const touchEndY = useRef(0);
     const contentRef = useRef(null);
 
     // Fetch data on mount
@@ -71,15 +72,16 @@ const MobileLayout = () => {
 
     const handleTouchMove = useCallback((e) => {
         touchEndX.current = e.touches[0].clientX;
+        touchEndY.current = e.touches[0].clientY;
     }, []);
 
     const handleTouchEnd = useCallback(() => {
         const deltaX = touchStartX.current - touchEndX.current;
-        const deltaY = Math.abs(touchStartY.current - touchEndX.current);
+        const deltaY = Math.abs(touchStartY.current - touchEndY.current);
         const minSwipeDistance = 50;
 
         // Only trigger swipe if horizontal movement is significant
-        // and greater than vertical movement
+        // and greater than vertical movement (to avoid triggering on scroll)
         if (Math.abs(deltaX) > minSwipeDistance && Math.abs(deltaX) > deltaY) {
             if (deltaX > 0) {
                 // Swiped left (in RTL, this goes to next)
