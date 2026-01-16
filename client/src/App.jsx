@@ -24,6 +24,7 @@ import FamilyTreePage from './pages/FamilyTreePage'
 // Family Tree Section Pages
 import FamilyTreeGateway from './pages/FamilyTreeGateway'
 import FounderAppreciation from './pages/FounderAppreciation'
+import FounderDiscussions from './pages/FounderDiscussions'
 import FamilyTreeDisplayPage from './pages/FamilyTreeDisplayPage'
 import OliveTreePage from './pages/OliveTreePage'
 import LineageTreePage from './pages/LineageTreePage'
@@ -79,6 +80,8 @@ function App() {
                 {/* Family Tree Section Routes */}
                 <Route path="/family-tree" element={<FamilyTreeGateway />} />
                 <Route path="/family-tree/appreciation" element={<FounderAppreciation />} />
+                <Route path="/family-tree/discussions" element={<FounderDiscussions />} />
+                <Route path="/family-tree/discussions/:id" element={<FounderDiscussions />} />
                 <Route path="/family-tree/tree" element={<FamilyTreeBranchSelection />} />
                 <Route path="/family-tree/tree/zahar" element={<ZaharBranchSelection />} />
                 <Route path="/family-tree/tree/saleh" element={<SalehBranchSelection />} />
