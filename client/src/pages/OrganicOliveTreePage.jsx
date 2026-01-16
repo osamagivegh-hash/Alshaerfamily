@@ -121,25 +121,37 @@ const OrganicOliveTreePage = () => {
 
                 {/* STEP 1: Main Branch Selection */}
                 {viewStep === 'MAIN_SELECTION' && (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-5xl animate-fade-in-up">
-                        <BranchCard
-                            title="آل زهار"
-                            color="from-amber-700 to-amber-900"
-                            onClick={() => handleMainBranchSelect('زهار')}
-                            icon="🌿"
-                        />
-                        <BranchCard
-                            title="آل صالح"
-                            color="from-emerald-700 to-emerald-900"
-                            onClick={() => handleMainBranchSelect('صالح')}
-                            icon="🌳"
-                        />
-                        <BranchCard
-                            title="آل إبراهيم"
-                            color="from-blue-700 to-blue-900"
-                            onClick={() => handleMainBranchSelect('براهيم')}
-                            icon="🍀"
-                        />
+                    <div className="w-full max-w-4xl px-4 animate-fade-in-up">
+                        <div className="grid grid-cols-2 gap-4 md:gap-8 justify-items-center">
+                            {/* Zahar */}
+                            <BranchCard
+                                title="آل زهار"
+                                color="from-amber-700 to-amber-900"
+                                onClick={() => handleMainBranchSelect('زهار')}
+                                icon="🌿"
+                                className="w-full"
+                            />
+
+                            {/* Saleh */}
+                            <BranchCard
+                                title="آل صالح"
+                                color="from-emerald-700 to-emerald-900"
+                                onClick={() => handleMainBranchSelect('صالح')}
+                                icon="🌳"
+                                className="w-full"
+                            />
+
+                            {/* Ibrahim - Centered in the next row if grid-cols-2 */}
+                            <div className="col-span-2 w-full md:w-1/2 mt-4">
+                                <BranchCard
+                                    title="آل إبراهيم"
+                                    color="from-blue-700 to-blue-900"
+                                    onClick={() => handleMainBranchSelect('براهيم')}
+                                    icon="🍀"
+                                    className="w-full"
+                                />
+                            </div>
+                        </div>
                     </div>
                 )}
 
@@ -186,7 +198,7 @@ const BranchCard = ({ title, color, onClick, icon }) => (
         <div className="absolute top-0 left-0 w-full h-full bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
         <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform">{icon}</div>
         <h3 className="text-4xl font-bold mb-2 shadow-sm">{title}</h3>
-        <p className="text-white/80 opacity-0 group-hover:opacity-100 transition-opacity mt-2">اضغط لاستعراض الفروع</p>
+        <p className="text-white/90 mt-2 font-medium">اضغط لاستعراض الفروع</p>
     </button>
 );
 

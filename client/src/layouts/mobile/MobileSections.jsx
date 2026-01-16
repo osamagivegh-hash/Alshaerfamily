@@ -151,7 +151,7 @@ export const MobileHomeSection = ({ data }) => {
 export const MobileFamilyTreeSection = () => {
     const navigate = useNavigate();
 
-    // These buttons EXACTLY match the FamilyTreeGateway buttons (without discussions)
+    // These buttons EXACTLY match the FamilyTreeGateway buttons
     const gatewayButtons = [
         {
             id: 'appreciation',
@@ -160,6 +160,14 @@ export const MobileFamilyTreeSection = () => {
             icon: '🏆',
             description: 'تعرف على تاريخ مؤسس شجرة العائلة وإرثه الخالد',
             path: '/family-tree/appreciation'
+        },
+        {
+            id: 'discussions',
+            label: 'خواطر المؤسس',
+            color: '#DBB468',
+            icon: '💬',
+            description: 'كلمات وحكم من نور',
+            path: '/family-tree/discussions'
         },
         {
             id: 'tree',
@@ -194,7 +202,7 @@ export const MobileFamilyTreeSection = () => {
                 <p className="section-subtitle">استكشف شجرة عائلة الشاعر بطرق مختلفة</p>
             </div>
 
-            {/* Gateway Buttons - Same as FamilyTreeGateway (without discussions) */}
+            {/* Gateway Buttons */}
             <div className="tree-options-grid">
                 {gatewayButtons.map((button) => (
                     <button
