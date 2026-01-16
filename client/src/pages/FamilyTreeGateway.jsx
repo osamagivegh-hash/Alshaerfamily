@@ -81,12 +81,12 @@ const FamilyTreeGateway = () => {
             path: '/family-tree/tree'
         },
         {
-            id: 'lineage',
-            label: 'شجرة الأنساب',
-            color: '#2E7D32',
-            icon: '🌿',
-            description: 'شجرة أنساب العائلة الشاملة - أكثر من 3000 اسم',
-            path: '/family-tree/lineage'
+            id: 'organic-olive',
+            label: 'شجرة الزيتون',
+            color: '#1B5E20',
+            icon: '🫒',
+            description: 'شجرة زيتون عضوية - كل ورقة تمثل فرداً من العائلة',
+            path: '/family-tree/organic-olive'
         },
         {
             id: 'devTeam',

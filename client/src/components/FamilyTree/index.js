@@ -7,5 +7,7 @@ export { default as FamilyTreeSection } from './FamilyTreeSection';
 export { default as TreeVisualization } from './TreeVisualization';
 export { default as OliveTreeVisualization } from './OliveTreeVisualization';
 export { default as LineageTreeVisualization } from './LineageTreeVisualization';
+export { default as OrganicOliveTree } from './OrganicOliveTree';
 export { default as PersonModal } from './PersonModal';
+
 
