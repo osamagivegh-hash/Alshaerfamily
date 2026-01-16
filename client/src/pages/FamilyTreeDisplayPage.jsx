@@ -371,10 +371,6 @@ const FamilyTreeDisplayPage = () => {
                             <Link to="/family-tree/appreciation" className="text-green-200 hover:text-white transition-colors">
                                 تقدير المؤسس
                             </Link>
-                            <span className="text-green-400">|</span>
-                            <Link to="/family-tree/discussions" className="text-green-200 hover:text-white transition-colors">
-                                حوارات المؤسس
-                            </Link>
                         </div>
                     </div>
                 </div>

@@ -162,14 +162,6 @@ export const MobileFamilyTreeSection = () => {
             path: '/family-tree/appreciation'
         },
         {
-            id: 'discussions',
-            label: 'خواطر المؤسس',
-            color: '#DBB468',
-            icon: '💬',
-            description: 'كلمات وحكم من نور',
-            path: '/family-tree/discussions'
-        },
-        {
             id: 'tree',
             label: 'شجرة العائلة',
             color: '#007A3D',

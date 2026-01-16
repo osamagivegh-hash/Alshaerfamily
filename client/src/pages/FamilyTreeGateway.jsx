@@ -41,13 +41,11 @@ const FamilyTreeGateway = () => {
         gatewaySubtitle: 'اكتشف تاريخ وتراث عائلتنا العريقة',
         buttonLabels: {
             appreciation: 'تقدير ووفاء للمؤسس',
-            discussions: 'حوارات مع المؤسس',
             tree: 'شجرة العائلة',
             devTeam: 'فريق التطوير'
         },
         buttonColors: {
             appreciation: '#1a1a1a',
-            discussions: '#CE1126',
             tree: '#007A3D',
             devTeam: '#0d9488'
         }

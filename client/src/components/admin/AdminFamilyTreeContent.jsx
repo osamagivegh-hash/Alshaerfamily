@@ -392,13 +392,6 @@ const AdminFamilyTreeContent = () => {
                     color="black"
                 />
                 <TabButton
-                    active={activeTab === 'discussions'}
-                    onClick={() => setActiveTab('discussions')}
-                    icon="💬"
-                    label="الحوارات"
-                    color="red"
-                />
-                <TabButton
                     active={activeTab === 'tree'}
                     onClick={() => setActiveTab('tree')}
                     icon="🌳"
@@ -505,111 +498,6 @@ const AdminFamilyTreeContent = () => {
                                 حفظ التغييرات
                             </button>
                         </div>
-                    </div>
-                )}
-
-                {/* Discussions Tab */}
-                {activeTab === 'discussions' && (
-                    <div className="space-y-6">
-                        <div className="flex items-center justify-between border-b pb-4">
-                            <h2 className="text-xl font-bold text-gray-800">حوارات مع مؤسس العائلة</h2>
-                            <button
-                                onClick={() => {
-                                    setEditingDiscussion(null);
-                                    setShowDiscussionForm(true);
-                                }}
-                                className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-2"
-                            >
-                                <span>+</span>
-                                إضافة حوار جديد
-                            </button>
-                        </div>
-
-                        {/* Discussion Form Modal */}
-                        {showDiscussionForm && (
-                            <DiscussionForm
-                                discussion={editingDiscussion}
-                                onSave={saveDiscussion}
-                                onCancel={() => {
-                                    setShowDiscussionForm(false);
-                                    setEditingDiscussion(null);
-                                }}
-                                saving={saving}
-                            />
-                        )}
-
-                        {/* Discussions List */}
-                        {!showDiscussionForm && (
-                            <div className="space-y-4">
-                                {discussions.length === 0 ? (
-                                    <div className="text-center py-12 text-gray-500">
-                                        <div className="text-5xl mb-4">💬</div>
-                                        <p>لا توجد حوارات بعد</p>
-                                        <p className="text-sm">ابدأ بإضافة حوار جديد</p>
-                                    </div>
-                                ) : (
-                                    discussions.map((discussion) => (
-                                        <div
-                                            key={discussion.id || discussion._id}
-                                            className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                                        >
-                                            <div className="flex items-start justify-between gap-4">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <h3 className="font-bold text-gray-900">{discussion.title}</h3>
-                                                        <span className={`text-xs px-2 py-1 rounded-full ${discussion.isPublished
-                                                            ? 'bg-green-100 text-green-700'
-                                                            : 'bg-gray-100 text-gray-600'
-                                                            }`}>
-                                                            {discussion.isPublished ? 'منشور' : 'مسودة'}
-                                                        </span>
-                                                    </div>
-                                                    {discussion.subtitle && (
-                                                        <p className="text-sm text-gray-500 mb-1">{discussion.subtitle}</p>
-                                                    )}
-                                                    {discussion.summary && (
-                                                        <p className="text-sm text-gray-600 line-clamp-2">{discussion.summary}</p>
-                                                    )}
-                                                    <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
-                                                        <span>📅 {new Date(discussion.discussionDate).toLocaleDateString('ar-SA')}</span>
-                                                        {discussion.readingTime && <span>📖 {discussion.readingTime} دقائق</span>}
-                                                    </div>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        onClick={() => toggleDiscussionPublish(discussion)}
-                                                        className={`p-2 rounded-lg ${discussion.isPublished
-                                                            ? 'bg-gray-100 hover:bg-gray-200'
-                                                            : 'bg-green-100 hover:bg-green-200'
-                                                            }`}
-                                                        title={discussion.isPublished ? 'إلغاء النشر' : 'نشر'}
-                                                    >
-                                                        {discussion.isPublished ? '📤' : '📥'}
-                                                    </button>
-                                                    <button
-                                                        onClick={() => {
-                                                            setEditingDiscussion(discussion);
-                                                            setShowDiscussionForm(true);
-                                                        }}
-                                                        className="p-2 bg-blue-100 text-blue-700 hover:bg-blue-200 rounded-lg"
-                                                        title="تعديل"
-                                                    >
-                                                        ✏️
-                                                    </button>
-                                                    <button
-                                                        onClick={() => deleteDiscussion(discussion.id || discussion._id)}
-                                                        className="p-2 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg"
-                                                        title="حذف"
-                                                    >
-                                                        🗑️
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))
-                                )}
-                            </div>
-                        )}
                     </div>
                 )}
 
