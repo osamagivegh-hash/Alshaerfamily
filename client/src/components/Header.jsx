@@ -92,21 +92,21 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 w-full transition-colors duration-300 pointer-events-none ${isScrolled
+      className={`fixed top-0 w-full transition-colors duration-300 ${isScrolled
         ? 'bg-white shadow-md border-b border-gray-100'
         : 'bg-gradient-to-b from-white via-white/98 to-white/95'
         }`}
       style={{ zIndex: 80 }}
     >
       {/* شريط زخرفي علوي بألوان فلسطين */}
-      <div className="absolute top-0 left-0 right-0 h-1 flex z-50 pointer-events-auto">
+      <div className="absolute top-0 left-0 right-0 h-1 flex z-50">
         <div className="flex-1 bg-gradient-to-r from-palestine-black to-palestine-black/80"></div>
         <div className="flex-1 bg-gradient-to-r from-white to-gray-100 border-y border-gray-200"></div>
         <div className="flex-1 bg-gradient-to-r from-palestine-green/80 to-palestine-green"></div>
         <div className="flex-1 bg-gradient-to-r from-palestine-red to-palestine-red/80"></div>
       </div>
 
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 h-20 md:h-24 flex items-center justify-between pointer-events-auto">
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-2 h-20 md:h-24 flex items-center justify-between">
 
         {/* Right Side: Logo & Branding */}
         <div className="flex items-center gap-4 flex-shrink-0">
