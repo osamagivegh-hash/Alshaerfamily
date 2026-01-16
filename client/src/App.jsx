@@ -20,6 +20,7 @@ import FounderAppreciation from './pages/FounderAppreciation'
 import FounderDiscussions from './pages/FounderDiscussions'
 import FamilyTreeDisplayPage from './pages/FamilyTreeDisplayPage'
 import OliveTreePage from './pages/OliveTreePage'
+import LineageTreePage from './pages/LineageTreePage'
 import FamilyTreeBranchSelection from './pages/FamilyTreeBranchSelection'
 import ZaharBranchSelection from './pages/ZaharBranchSelection'
 import SalehBranchSelection from './pages/SalehBranchSelection'
@@ -79,6 +80,7 @@ function App() {
               <Route path="/family-tree/tree/saleh/salman" element={<SalmanBranchSelection />} />
               <Route path="/family-tree/visual" element={<FamilyTreeDisplayPage />} />
               <Route path="/family-tree/olive" element={<OliveTreePage />} />
+              <Route path="/family-tree/lineage" element={<LineageTreePage />} />
               <Route path="/family-tree/dev-team" element={<DevTeamPage />} />
               {/* Legacy route - redirects to gateway */}
               <Route path="/family-tree-old" element={<FamilyTreePage />} />
