@@ -1,475 +1,380 @@
 /**
- * شجرة الزيتون العضوية - الإصدار النهائي المحسن
- * Organic Olive Tree - Final Enhanced Version
+ * شجرة "نانو بنانا" - Nano Banana Style Tree
  * 
- * التركيز على:
- * 1. منع التداخل بين الأوراق
- * 2. أسماء مقروءة على كل ورقة
- * 3. توزيع منظم ومنطقي
+ * تصميم مطابق للصورة المرجعية:
+ * - تخطيط مروحي (Fan Layout) منظم
+ * - أوراق بيضاوية تحتوي الأسماء
+ * - فروع انسيابية سميكة من الأسفل ورفيعة من الأعلى
+ * - خلفية بيج وإطار كلاسيكي
  */
 
 import React, { useRef, useEffect, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 
-// ==================== SEEDED RANDOM (لمنع الاهتزاز) ====================
-const seededRandom = (seed) => {
-    const x = Math.sin(seed * 9999) * 10000;
-    return x - Math.floor(x);
-};
-
-// ==================== CONFIGURATION ====================
-const COLORS = {
-    trunk: '#5D4037',
-    trunkLight: '#795548',
-    trunkDark: '#3E2723',
-    branch: '#6D4C41',
-    branchLight: '#8D6E63',
-    leafGreen: ['#1B5E20', '#2E7D32', '#388E3C', '#43A047', '#4CAF50'],
-    gold: '#FFD54F',
-    goldDark: '#FF8F00',
-    text: '#FFFFFF',
-    textDark: '#1B5E20'
+// ==================== STYLES & CONFIG ====================
+const CONFIG = {
+    colors: {
+        bg: '#F9F9F0', // بيج كلاسيكي فاتح
+        frame: '#C4A962', // ذهبي معتق
+        trunk: '#6D4C41', // بني
+        trunkDark: '#3E2723',
+        branch: '#795548',
+        leaf: '#558B2F', // أخضر زيتوني
+        leafGradient: ['#33691E', '#558B2F', '#689F38'],
+        text: '#FFFFFF', // نص أبيض داخل الورقة
+        textDark: '#3E2723'
+    },
+    dimensions: {
+        leafWidth: 45,
+        leafHeight: 20,
+        nodeRadius: 4
+    }
 };
 
 const OrganicOliveTree = ({ data, onNodeClick, className = '', style = {} }) => {
     const svgRef = useRef(null);
     const containerRef = useRef(null);
-    const [dimensions, setDimensions] = useState({ width: 1200, height: 1000 });
-    const [zoomLevel, setZoomLevel] = useState(100);
+    const [dimensions, setDimensions] = useState({ width: 1400, height: 1000 });
+    const [transform, setTransform] = useState({ k: 1, x: 0, y: 0 });
     const [selectedNode, setSelectedNode] = useState(null);
 
-    // ==================== PROCESS DATA ====================
+    // ==================== DATA PROCESSING ====================
     const treeData = useMemo(() => {
         if (!data) return null;
 
-        const root = d3.hierarchy(data);
+        const root = d3.hierarchy(data)
+            // ترتيب الأبناء لضمان التوازن
+            .sort((a, b) => (b.height - a.height) || a.data.fullName.localeCompare(b.data.fullName));
+
         const allNodes = root.descendants();
-        const maxDepth = d3.max(allNodes, d => d.depth) || 1;
+        const maxDepth = d3.max(allNodes, d => d.depth);
 
-        // Assign stable random values
-        allNodes.forEach((node, i) => {
-            node.stableRandom = seededRandom(i + 1);
-            node.stableRandom2 = seededRandom((i + 1) * 7);
-            node.stableRandom3 = seededRandom((i + 1) * 13);
-        });
-
-        return { root, allNodes, maxDepth, count: allNodes.length };
+        return { root, allNodes, maxDepth, total: allNodes.length };
     }, [data]);
 
-    // ==================== MAIN RENDER ====================
+    // ==================== RENDERING ====================
     useEffect(() => {
-        if (!svgRef.current || !containerRef.current || !treeData) return;
+        if (!treeData || !svgRef.current || !containerRef.current) return;
 
-        const { root, allNodes, maxDepth, count } = treeData;
+        const { root, maxDepth } = treeData;
 
-        // Dimensions
-        const container = containerRef.current.getBoundingClientRect();
-        const width = Math.max(container.width || 1200, 1000);
-        const height = Math.max(container.height || 1000, 900);
+        // 1. Setup Dimensions & SVG
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const width = Math.max(containerRect.width || 1400, 1200);
+        const height = Math.max(containerRect.height || 1000, 900);
         setDimensions({ width, height });
 
         const centerX = width / 2;
-        const centerY = height / 2;
-        const treeRadius = Math.min(width, height) * 0.4;
+        const centerY = height - 100; // الجذع في الأسفل
+        const radius = Math.min(width, height) * 0.85; // نصف قطر الشجرة
 
-        // Setup SVG
         const svg = d3.select(svgRef.current);
-        svg.selectAll('*').remove();
-        svg.attr('viewBox', `0 0 ${width} ${height}`);
+        svg.selectAll('*').remove(); // Clear previous
 
-        // Defs
+        // 2. Definitions (Gradients & Filters)
         const defs = svg.append('defs');
 
-        // Trunk gradient
+        // Leaf Gradient (Green)
+        const leafGrad = defs.append('linearGradient')
+            .attr('id', 'leafGradient')
+            .attr('x1', '0%').attr('y1', '0%')
+            .attr('x2', '0%').attr('y2', '100%');
+        leafGrad.append('stop').attr('offset', '0%').attr('stop-color', '#7CB342'); // Light
+        leafGrad.append('stop').attr('offset', '100%').attr('stop-color', '#558B2F'); // Dark
+
+        // Trunk Gradient
         const trunkGrad = defs.append('linearGradient')
             .attr('id', 'trunkGradient')
-            .attr('x1', '0%').attr('x2', '100%');
-        trunkGrad.append('stop').attr('offset', '0%').attr('stop-color', COLORS.trunkLight);
-        trunkGrad.append('stop').attr('offset', '50%').attr('stop-color', COLORS.trunk);
-        trunkGrad.append('stop').attr('offset', '100%').attr('stop-color', COLORS.trunkDark);
+            .attr('x1', '0%').attr('y1', '0%')
+            .attr('x2', '100%').attr('y2', '0%');
+        trunkGrad.append('stop').attr('offset', '0%').attr('stop-color', '#5D4037');
+        trunkGrad.append('stop').attr('offset', '50%').attr('stop-color', '#8D6E63');
+        trunkGrad.append('stop').attr('offset', '100%').attr('stop-color', '#4E342E');
 
-        // Leaf gradients
-        COLORS.leafGreen.forEach((color, i) => {
-            const grad = defs.append('radialGradient')
-                .attr('id', `leaf${i}`)
-                .attr('cx', '30%').attr('cy', '30%');
-            grad.append('stop').attr('offset', '0%').attr('stop-color', d3.color(color).brighter(0.3));
-            grad.append('stop').attr('offset', '100%').attr('stop-color', color);
+        // Drop Shadow
+        const shadow = defs.append('filter')
+            .attr('id', 'dropShadow')
+            .attr('x', '-20%').attr('y', '-20%').attr('width', '140%').attr('height', '140%');
+        shadow.append('feGaussianBlur').attr('in', 'SourceAlpha').attr('stdDeviation', 1.5);
+        shadow.append('feOffset').attr('dx', 1).attr('dy', 1);
+        shadow.append('feComponentTransfer').append('feFuncA').attr('type', 'linear').attr('slope', 0.3);
+        shadow.append('feMerge').call(merge => {
+            merge.append('feMergeNode');
+            merge.append('feMergeNode').attr('in', 'SourceGraphic');
         });
 
-        // Gold gradient
-        const goldGrad = defs.append('radialGradient')
-            .attr('id', 'goldGradient')
-            .attr('cx', '30%').attr('cy', '30%');
-        goldGrad.append('stop').attr('offset', '0%').attr('stop-color', '#FFE082');
-        goldGrad.append('stop').attr('offset', '100%').attr('stop-color', COLORS.gold);
-
-        // Main group
-        const mainGroup = svg.append('g').attr('class', 'tree-main');
-
-        // Zoom
+        // 3. Main Group & Zoom
+        const g = svg.append('g');
         const zoom = d3.zoom()
-            .scaleExtent([0.3, 5])
-            .on('zoom', (e) => {
-                mainGroup.attr('transform', e.transform);
-                setZoomLevel(Math.round(e.transform.k * 100));
+            .scaleExtent([0.4, 4])
+            .on('zoom', (event) => {
+                g.attr('transform', event.transform);
+                setTransform(event.transform);
             });
         svg.call(zoom);
 
-        // ==================== LAYOUT CALCULATION ====================
-        // Use D3 cluster layout for proper spacing
-        const clusterLayout = d3.cluster()
-            .size([360, treeRadius])
-            .separation((a, b) => {
-                // More separation for deeper nodes
-                return (a.parent === b.parent ? 1 : 2) / a.depth;
+        // 4. Tree Layout Algorithm (Fan / Radial)
+        // نستخدم d3.tree للحصول على توزيع متناسق (tidy tree) ثم نحوله لإحداثيات قطبية
+        // الزاوية: 180 درجة (Math.PI) من -PI/2 إلى PI/2
+
+        const treeLayout = d3.tree()
+            .size([Math.PI, radius]) // [angle, radius]
+            .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth);
+
+        treeLayout(root);
+
+        // تصحيح زاوية الجذر والأبناء للمروحة (Fan Shape)
+        // Root is at (0,0) in radial logic, we map it to (centerX, centerY)
+        root.x = Math.PI / 2; // المركز (عمودي)
+        root.y = 0;
+
+        // Custom Radial Link Generator
+        // يحول الإحداثيات من (زاوية، نصف قطر) إلى (x, y) ديكارتية
+        const project = (theta, r) => {
+            // Angle adjustment: -90 degrees to point upwards
+            // theta is in radians, 0 is right, PI is left.
+            // We want the spread to be upwards. 
+            // d3.tree outputs x as angle.
+            // Let's map x directly to angle. 
+            // We want tree to span 180 degrees upwards.
+            // So angle should be from PI (left) to 0 (right)? 
+            // Or -PI/2 to PI/2?
+
+            // Let's adjust algorithm:
+            // Input tree: x within [0, PI]
+            // We map this to angle: x - PI. (0 -> -PI, PI -> 0). 
+            // -PI is Left, 0 is Right. -PI/2 is Up.
+            const angle = theta - Math.PI;
+
+            return [
+                centerX + r * Math.cos(angle),
+                centerY + r * Math.sin(angle)
+            ];
+        };
+
+        const linkGenerator = d3.linkRadial()
+            .angle(d => d.x - Math.PI / 2) // Adjust for vertical alignment if needed
+            .radius(d => d.y);
+
+        // CUSTOM LINK PATH - Curved Bezier
+        const drawLink = (source, target) => {
+            // Calculate Cartesian coordinates
+            const s = project(source.x, source.y);
+            const t = project(target.x, target.y);
+
+            // Trunk behavior: straight line up for first segment
+            if (source.depth === 0) {
+                return `M ${centerX} ${centerY + 60} L ${centerX} ${centerY - 40} L ${t[0]} ${t[1]}`;
+            }
+
+            // Quadratic Bezier for smooth curves
+            // Control point: weighted towards the parent radius but closer to target angle
+            // Or simple simple cubic bezier
+
+            // Let's rely on D3's path generator but adapted manually for Cartesian
+            const mx = (s[0] + t[0]) / 2;
+            const my = (s[1] + t[1]) / 2;
+
+            return `M ${s[0]} ${s[1]} Q ${(s[0] + t[0]) / 2} ${(s[1] + t[1]) / 2 - (target.y - source.y) * 0.2} ${t[0]} ${t[1]}`;
+        };
+
+        // 5. Draw Links (Branches)
+        g.selectAll('.link')
+            .data(root.links())
+            .enter()
+            .append('path')
+            .attr('class', 'link')
+            .attr('d', d => {
+                // Manual projection for custom look
+                const s = project(d.source.x, d.source.y);
+                const t = project(d.target.x, d.target.y);
+
+                // For root (trunk)
+                if (d.source.depth === 0) {
+                    return `M ${centerX} ${centerY + 80} C ${centerX} ${centerY} ${t[0]} ${(s[1] + t[1]) / 2} ${t[0]} ${t[1]}`;
+                }
+
+                // For branches
+                // Use a curve that keeps the "tree" flow
+                return `M ${s[0]} ${s[1]} C ${s[0]} ${(s[1] + t[1]) / 2} ${t[0]} ${(s[1] + t[1]) / 2} ${t[0]} ${t[1]}`;
+            })
+            .attr('fill', 'none')
+            .attr('stroke', CONFIG.colors.branch)
+            .attr('stroke-width', d => Math.max(1, (maxDepth - d.target.depth) * 1.5))
+            .attr('stroke-opacity', 0.8)
+            .attr('stroke-linecap', 'round');
+
+        // Draw Trunk Base (Thick)
+        g.append('path')
+            .attr('d', `M ${centerX} ${centerY + 80} L ${centerX} ${centerY}`)
+            .attr('stroke', CONFIG.colors.trunk)
+            .attr('stroke-width', 25)
+            .attr('stroke-linecap', 'round');
+
+        // Roots decoration
+        const roots = g.append('g').attr('class', 'roots');
+        [-15, 0, 15].forEach(offset => {
+            roots.append('path')
+                .attr('d', `M ${centerX + offset} ${centerY + 70} Q ${centerX + offset * 2} ${centerY + 100} ${centerX + offset * 3} ${centerY + 110}`)
+                .attr('stroke', CONFIG.colors.trunk)
+                .attr('stroke-width', Math.abs(offset) ? 3 : 5)
+                .attr('fill', 'none');
+        });
+
+        // 6. Draw Nodes (Leaves)
+        const node = g.selectAll('.node')
+            .data(root.descendants())
+            .enter()
+            .append('g')
+            .attr('class', 'node')
+            .attr('transform', d => {
+                if (d.depth === 0) return `translate(${centerX}, ${centerY})`;
+                const p = project(d.x, d.y);
+                return `translate(${p[0]}, ${p[1]})`;
+            })
+            .style('cursor', 'pointer')
+            .on('click', (event, d) => {
+                event.stopPropagation();
+                setSelectedNode(d.data);
+                if (onNodeClick) onNodeClick(d.data);
             });
 
-        clusterLayout(root);
+        // Loop through nodes to draw leaves
+        node.each(function (d) {
+            const el = d3.select(this);
+            const isRoot = d.depth === 0;
+            const isLeaf = !d.children;
 
-        // Convert polar to cartesian
-        const polarToCartesian = (angle, radius) => {
-            const rad = (angle - 90) * Math.PI / 180;
-            return {
-                x: centerX + radius * Math.cos(rad),
-                y: centerY + radius * Math.sin(rad)
-            };
-        };
+            if (isRoot) return; // Skip drawing root here (handled separately or hidden)
 
-        // Assign cartesian positions
-        allNodes.forEach(node => {
-            if (node.depth === 0) {
-                node.pos = { x: centerX, y: centerY + treeRadius * 0.5 };
-            } else {
-                const radius = (node.depth / maxDepth) * treeRadius * 0.9;
-                node.pos = polarToCartesian(node.x, radius);
-            }
-        });
+            // Leaf Shape (Ellipse)
+            const leafW = CONFIG.dimensions.leafWidth;
+            const leafH = CONFIG.dimensions.leafHeight;
 
-        // ==================== COLLISION DETECTION & RESOLUTION ====================
-        const minDistance = 45; // Minimum distance between nodes
-        const resolveCollisions = (nodes, iterations = 50) => {
-            for (let iter = 0; iter < iterations; iter++) {
-                let moved = false;
-                for (let i = 0; i < nodes.length; i++) {
-                    for (let j = i + 1; j < nodes.length; j++) {
-                        const a = nodes[i];
-                        const b = nodes[j];
-                        if (a.depth === 0 || b.depth === 0) continue;
+            // Calculate rotation to face outward
+            // angle in degrees: (d.x - PI) * 180 / PI
+            // But we have text inside, prefer horizontal readability?
+            // User requested "Nano Banana" style. In that style, text is horizontal inside horizontal ovals usually,
+            // or slightly rotated. Let's keep them mostly horizontal or slight rotation for style.
 
-                        const dx = b.pos.x - a.pos.x;
-                        const dy = b.pos.y - a.pos.y;
-                        const dist = Math.sqrt(dx * dx + dy * dy);
+            // The image shows horizontal text in oval leaves.
+            // So NO rotation for the text/leaf itself, unless it's very crowded.
+            // Let's keep it horizontal for max readability.
 
-                        if (dist < minDistance && dist > 0) {
-                            const overlap = (minDistance - dist) / 2;
-                            const moveX = (dx / dist) * overlap;
-                            const moveY = (dy / dist) * overlap;
+            el.append('ellipse')
+                .attr('rx', leafW / 2 + (d.data.fullName.length > 8 ? 5 : 0))
+                .attr('ry', leafH / 2)
+                .attr('fill', 'url(#leafGradient)')
+                .attr('stroke', '#33691E')
+                .attr('stroke-width', 1)
+                .attr('filter', 'url(#dropShadow)');
 
-                            a.pos.x -= moveX;
-                            a.pos.y -= moveY;
-                            b.pos.x += moveX;
-                            b.pos.y += moveY;
-                            moved = true;
-                        }
+            // Name
+            el.append('text')
+                .attr('dy', '0.35em')
+                .attr('text-anchor', 'middle')
+                .text(d.data.fullName ? d.data.fullName.split(' ')[0] : '') // First name only for small scale
+                .attr('font-size', '9px')
+                .attr('font-family', "'Cairo', sans-serif")
+                .attr('fill', 'white')
+                .style('pointer-events', 'none') // Let click pass to group
+                .text(d => {
+                    // Smart truncation: First name + last name initial?
+                    // Or just first name if deep?
+                    // Let's try to fit 2 words if short, or 1 word.
+                    const names = (d.data.fullName || '').split(' ');
+                    if (names.length > 1 && (names[0].length + names[1].length < 10)) {
+                        return `${names[0]} ${names[1]}`;
                     }
-                }
-                if (!moved) break;
-            }
-        };
-
-        resolveCollisions(allNodes);
-
-        // ==================== DRAW DECORATIVE FRAME ====================
-        const frameGroup = mainGroup.append('g').attr('class', 'frame');
-        frameGroup.append('rect')
-            .attr('x', 20).attr('y', 20)
-            .attr('width', width - 40).attr('height', height - 40)
-            .attr('fill', 'none')
-            .attr('stroke', '#C4A962')
-            .attr('stroke-width', 2)
-            .attr('rx', 8);
-
-        // ==================== DRAW TRUNK ====================
-        const trunkGroup = mainGroup.append('g').attr('class', 'trunk');
-        const trunkTop = centerY + treeRadius * 0.3;
-        const trunkBottom = height - 60;
-        const trunkW = 30;
-
-        trunkGroup.append('path')
-            .attr('d', `
-                M ${centerX - trunkW} ${trunkBottom}
-                Q ${centerX - trunkW * 1.2} ${(trunkTop + trunkBottom) / 2} ${centerX - trunkW * 0.3} ${trunkTop}
-                L ${centerX} ${trunkTop - 20}
-                L ${centerX + trunkW * 0.3} ${trunkTop}
-                Q ${centerX + trunkW * 1.2} ${(trunkTop + trunkBottom) / 2} ${centerX + trunkW} ${trunkBottom}
-                Z
-            `)
-            .attr('fill', 'url(#trunkGradient)')
-            .attr('stroke', COLORS.trunkDark)
-            .attr('stroke-width', 1);
-
-        // ==================== DRAW BRANCHES ====================
-        const branchGroup = mainGroup.append('g').attr('class', 'branches');
-
-        // Link generator
-        const linkGen = d3.linkRadial()
-            .angle(d => d.x * Math.PI / 180)
-            .radius(d => d.depth === 0 ? 0 : (d.depth / maxDepth) * treeRadius * 0.9);
-
-        root.links().forEach(link => {
-            const source = link.source;
-            const target = link.target;
-
-            // Branch thickness based on descendants
-            const thickness = Math.max(1, 6 - target.depth * 0.8);
-
-            // Draw curved branch
-            const path = d3.path();
-
-            if (source.depth === 0) {
-                // From trunk top
-                path.moveTo(centerX, trunkTop - 20);
-                path.quadraticCurveTo(
-                    (centerX + target.pos.x) / 2,
-                    (trunkTop - 20 + target.pos.y) / 2 - 30,
-                    target.pos.x,
-                    target.pos.y
-                );
-            } else {
-                // Between nodes
-                path.moveTo(source.pos.x, source.pos.y);
-                const midX = (source.pos.x + target.pos.x) / 2;
-                const midY = (source.pos.y + target.pos.y) / 2;
-                const offset = (target.stableRandom - 0.5) * 20;
-                path.quadraticCurveTo(midX + offset, midY + offset, target.pos.x, target.pos.y);
-            }
-
-            branchGroup.append('path')
-                .attr('d', path.toString())
-                .attr('fill', 'none')
-                .attr('stroke', target.depth <= 2 ? COLORS.branch : COLORS.branchLight)
-                .attr('stroke-width', thickness)
-                .attr('stroke-linecap', 'round')
-                .attr('opacity', 0.85);
-        });
-
-        // ==================== DRAW LEAVES WITH NAMES ====================
-        const leavesGroup = mainGroup.append('g').attr('class', 'leaves');
-
-        allNodes.forEach((node, idx) => {
-            const { x, y } = node.pos;
-            const name = node.data.fullName || '';
-            const isRoot = node.depth === 0;
-            const isMainBranch = node.depth === 1;
-
-            const leafG = leavesGroup.append('g')
-                .attr('class', `leaf-node depth-${node.depth}`)
-                .attr('transform', `translate(${x}, ${y})`)
-                .style('cursor', 'pointer')
-                .on('click', (event) => {
-                    event.stopPropagation();
-                    setSelectedNode(node.data);
-                    if (onNodeClick) onNodeClick(node.data);
+                    return names[0];
                 });
 
-            if (isRoot) {
-                // Root: Golden circle with crown
-                leafG.append('circle')
-                    .attr('r', 25)
-                    .attr('fill', 'url(#goldGradient)')
-                    .attr('stroke', COLORS.goldDark)
-                    .attr('stroke-width', 2);
-
-                leafG.append('text')
-                    .attr('text-anchor', 'middle')
-                    .attr('dy', 6)
-                    .attr('font-size', '18px')
-                    .text('👑');
-
-                // Name below
-                leafG.append('text')
-                    .attr('text-anchor', 'middle')
-                    .attr('y', 40)
-                    .attr('font-family', "'Cairo', sans-serif")
-                    .attr('font-size', '14px')
-                    .attr('font-weight', 'bold')
-                    .attr('fill', COLORS.textDark)
-                    .text(name);
-
-            } else {
-                // Calculate leaf size based on name length
-                const displayName = name.length > 10 ? name.substring(0, 8) + '..' : name;
-                const leafWidth = Math.max(35, displayName.length * 5 + 15);
-                const leafHeight = 18;
-
-                // Leaf rotation based on position
-                const angleToCenter = Math.atan2(y - centerY, x - centerX) * 180 / Math.PI;
-                const leafRotation = angleToCenter + 90 + (node.stableRandom2 - 0.5) * 20;
-
-                // Leaf shape (ellipse)
-                const colorIdx = Math.floor(node.stableRandom3 * COLORS.leafGreen.length);
-
-                leafG.append('ellipse')
-                    .attr('rx', leafWidth / 2)
-                    .attr('ry', leafHeight / 2)
-                    .attr('fill', `url(#leaf${colorIdx})`)
-                    .attr('stroke', '#1B5E20')
-                    .attr('stroke-width', 0.5)
-                    .attr('transform', `rotate(${leafRotation})`);
-
-                // Leaf vein
-                leafG.append('line')
-                    .attr('x1', -leafWidth / 2 + 5)
-                    .attr('y1', 0)
-                    .attr('x2', leafWidth / 2 - 5)
-                    .attr('y2', 0)
-                    .attr('stroke', '#1B5E20')
-                    .attr('stroke-width', 0.5)
-                    .attr('opacity', 0.4)
-                    .attr('transform', `rotate(${leafRotation})`);
-
-                // Name text ON the leaf (horizontal for readability)
-                leafG.append('text')
-                    .attr('text-anchor', 'middle')
-                    .attr('dominant-baseline', 'middle')
-                    .attr('font-family', "'Cairo', 'Tajawal', sans-serif")
-                    .attr('font-size', isMainBranch ? '9px' : '7px')
-                    .attr('font-weight', isMainBranch ? 'bold' : 'normal')
-                    .attr('fill', COLORS.text)
-                    .attr('paint-order', 'stroke')
-                    .attr('stroke', '#1B5E20')
-                    .attr('stroke-width', '0.5px')
-                    .text(displayName);
-
-                // Tooltip for full name
-                leafG.append('title').text(name);
-            }
+            // Full name on hover
+            el.append('title').text(d.data.fullName);
         });
 
-        // ==================== TITLE & STATS ====================
-        const titleG = mainGroup.append('g').attr('class', 'title');
-
-        titleG.append('text')
-            .attr('x', centerX)
-            .attr('y', height - 30)
-            .attr('text-anchor', 'middle')
-            .attr('font-family', "'Cairo', sans-serif")
-            .attr('font-size', '18px')
-            .attr('font-weight', 'bold')
-            .attr('fill', COLORS.textDark)
-            .text(root.data.fullName || 'عائلة الشاعر');
-
-        titleG.append('text')
-            .attr('x', centerX)
-            .attr('y', height - 10)
-            .attr('text-anchor', 'middle')
-            .attr('font-family', "'Cairo', sans-serif")
-            .attr('font-size', '12px')
-            .attr('fill', COLORS.trunk)
-            .text(`${count} اسم تقريباً`);
-
-        // ==================== CANOPY OUTLINE ====================
-        mainGroup.insert('ellipse', '.trunk')
-            .attr('cx', centerX)
-            .attr('cy', centerY)
-            .attr('rx', treeRadius + 20)
-            .attr('ry', treeRadius * 0.9 + 20)
-            .attr('fill', 'none')
-            .attr('stroke', '#2E7D32')
-            .attr('stroke-width', 1)
-            .attr('stroke-dasharray', '5,5')
-            .attr('opacity', 0.15);
-
-        // Initial zoom
-        const initScale = 0.85;
+        // 7. Initial Zoom
+        const initialScale = 0.9;
         svg.call(zoom.transform, d3.zoomIdentity
-            .translate(width * (1 - initScale) / 2, height * (1 - initScale) / 2)
-            .scale(initScale)
+            .translate(width / 2 - width * initialScale / 2, 20)
+            .scale(initialScale)
         );
 
-    }, [treeData, onNodeClick]);
+    }, [treeData]);
 
-    if (!data) {
-        return (
-            <div className="flex items-center justify-center h-full p-8">
-                <p className="text-gray-500 text-lg">لا توجد بيانات للعرض</p>
-            </div>
-        );
-    }
+    if (!data) return <div className="p-10 text-center">جاري تحميل الشجرة...</div>;
 
     return (
         <div
+            className="relative w-full h-full overflow-hidden"
             ref={containerRef}
-            className={`relative w-full overflow-hidden ${className}`}
             dir="rtl"
             style={{
-                minHeight: '90vh',
-                background: 'linear-gradient(180deg, #FFFFF8 0%, #F5F5DC 50%, #FFFFF8 100%)',
-                fontFamily: "'Cairo', 'Tajawal', sans-serif",
-                ...style
+                background: CONFIG.colors.bg,
+                fontFamily: "'Cairo', 'Tajawal', sans-serif"
             }}
         >
-            {/* Header */}
-            <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-20 text-center">
-                <h1 className="text-xl md:text-2xl font-bold text-green-800">
-                    🌳 شجرة أنساب عائلة الشاعر 🌳
+            {/* Header & Title */}
+            <div className="absolute top-4 left-0 right-0 text-center z-10 pointer-events-none">
+                <h1 className="text-3xl font-bold text-[#5D4037] mb-2 drop-shadow-sm">
+                    شجرة عائلة الشاعر
                 </h1>
-                <p className="text-xs text-amber-700">
-                    {treeData?.count || 0} فرد • {(treeData?.maxDepth || 0) + 1} أجيال
-                </p>
+                <div className="inline-block bg-[#6d4c41] text-white px-4 py-1 rounded-full text-sm shadow-md">
+                    {treeData ? `${treeData.total} اسم تقريباً` : '...'}
+                </div>
             </div>
 
-            {/* Legend */}
-            <div className="absolute top-16 right-3 z-20 bg-white/95 rounded-lg p-2 shadow text-xs border border-amber-300">
-                <div className="font-bold text-green-800 border-b pb-1 mb-1">دليل الشجرة</div>
-                <div className="flex items-center gap-1 mb-1">
-                    <span className="w-3 h-3 rounded-full bg-amber-400"></span>
-                    <span>الجد المؤسس</span>
-                </div>
-                <div className="flex items-center gap-1">
-                    <span className="w-4 h-2 rounded-full bg-green-600"></span>
-                    <span>أفراد العائلة</span>
-                </div>
+            {/* Decorative Frame Corners */}
+            <div className="absolute top-0 left-0 w-32 h-32 pointer-events-none" style={{ backgroundImage: 'url("/assets/frame-corner.svg")', transform: 'rotate(0deg)' }}>
+                {/* Corner SVG inline if file not exists */}
+                <svg viewBox="0 0 100 100" className="w-full h-full text-[#C4A962] fill-current opacity-80">
+                    <path d="M0 0 L100 0 L100 10 L20 10 C15 10 10 15 10 20 L10 100 L0 100 Z" />
+                    <circle cx="15" cy="15" r="3" />
+                </svg>
+            </div>
+            <div className="absolute top-0 right-0 w-32 h-32 pointer-events-none transform scale-x-[-1]">
+                <svg viewBox="0 0 100 100" className="w-full h-full text-[#C4A962] fill-current opacity-80">
+                    <path d="M0 0 L100 0 L100 10 L20 10 C15 10 10 15 10 20 L10 100 L0 100 Z" />
+                    <circle cx="15" cy="15" r="3" />
+                </svg>
+            </div>
+            <div className="absolute bottom-0 left-0 w-32 h-32 pointer-events-none transform scale-y-[-1]">
+                <svg viewBox="0 0 100 100" className="w-full h-full text-[#C4A962] fill-current opacity-80">
+                    <path d="M0 0 L100 0 L100 10 L20 10 C15 10 10 15 10 20 L10 100 L0 100 Z" />
+                    <circle cx="15" cy="15" r="3" />
+                </svg>
+            </div>
+            <div className="absolute bottom-0 right-0 w-32 h-32 pointer-events-none transform scale-[-1]">
+                <svg viewBox="0 0 100 100" className="w-full h-full text-[#C4A962] fill-current opacity-80">
+                    <path d="M0 0 L100 0 L100 10 L20 10 C15 10 10 15 10 20 L10 100 L0 100 Z" />
+                    <circle cx="15" cy="15" r="3" />
+                </svg>
             </div>
 
             {/* SVG Canvas */}
-            <svg
-                ref={svgRef}
-                width="100%"
-                height="100%"
-                style={{ display: 'block', minHeight: '90vh' }}
-            />
+            <svg ref={svgRef} className="w-full h-full" style={{ minHeight: '90vh' }} />
 
             {/* Controls */}
-            <div className="absolute bottom-3 left-1/2 transform -translate-x-1/2 z-20 bg-green-800/90 rounded-full px-4 py-1.5 text-white text-xs flex items-center gap-2">
-                <span>🔍 تكبير</span>
-                <span>•</span>
-                <span>✋ تنقل</span>
-                <span>•</span>
-                <span>👆 تفاصيل</span>
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 flex gap-2">
+                <button className="bg-white/90 p-2 rounded-full shadow-lg hover:bg-white text-gray-700 transition" onClick={() => {
+                    const svg = d3.select(svgRef.current);
+                    svg.transition().duration(750).call(d3.zoom().transform, d3.zoomIdentity.translate(dimensions.width / 2, dimensions.height / 2).scale(1));
+                }}>
+                    🔄 إعادة تعيين
+                </button>
             </div>
 
-            {/* Zoom Level */}
-            <div className="absolute bottom-3 right-3 z-20 bg-white/90 rounded px-2 py-1 text-xs text-amber-700">
-                {zoomLevel}%
-            </div>
-
-            {/* Selected Node Panel */}
+            {/* Node Info Panel */}
             {selectedNode && (
-                <div className="absolute bottom-12 left-1/2 transform -translate-x-1/2 z-30 bg-white rounded-lg shadow-xl p-3 max-w-xs border-2 border-green-600">
-                    <button
-                        onClick={() => setSelectedNode(null)}
-                        className="absolute top-1 left-1 text-gray-400 hover:text-gray-600 text-sm"
-                    >
-                        ✕
-                    </button>
-                    <h3 className="text-base font-bold text-green-800 pr-4">
-                        {selectedNode.fullName}
-                    </h3>
-                    {selectedNode.generation && (
-                        <p className="text-xs text-gray-600 mt-1">الجيل: {selectedNode.generation}</p>
-                    )}
+                <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-white rounded-xl shadow-2xl p-4 max-w-sm w-full border border-amber-200 z-30 animate-fade-in-up">
+                    <div className="flex justify-between items-start mb-2">
+                        <h3 className="font-bold text-lg text-[#5D4037]">{selectedNode.fullName}</h3>
+                        <button onClick={() => setSelectedNode(null)} className="text-gray-400 hover:text-red-500">✕</button>
+                    </div>
+                    <div className="text-sm text-gray-600 space-y-1">
+                        {selectedNode.fatherName && <p>الأب: {selectedNode.fatherName}</p>}
+                        {selectedNode.generation && <p>الجيل: {selectedNode.generation}</p>}
+                    </div>
                 </div>
             )}
         </div>
