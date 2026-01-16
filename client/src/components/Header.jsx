@@ -92,14 +92,14 @@ const Header = () => {
 
   return (
     <header
-      className={`fixed top-0 w-full transition-colors duration-300 ${isScrolled
+      className={`fixed top-0 left-0 right-0 transition-colors duration-300 ${isScrolled
         ? 'bg-white shadow-md border-b border-gray-100'
         : 'bg-gradient-to-b from-white via-white/98 to-white/95'
         }`}
-      style={{ zIndex: 80 }}
+      style={{ zIndex: 1000 }}
     >
       {/* شريط زخرفي علوي بألوان فلسطين */}
-      <div className="absolute top-0 left-0 right-0 h-1 flex z-50">
+      <div className="absolute top-0 left-0 right-0 h-1 flex">
         <div className="flex-1 bg-gradient-to-r from-palestine-black to-palestine-black/80"></div>
         <div className="flex-1 bg-gradient-to-r from-white to-gray-100 border-y border-gray-200"></div>
         <div className="flex-1 bg-gradient-to-r from-palestine-green/80 to-palestine-green"></div>
@@ -125,20 +125,18 @@ const Header = () => {
         </div>
 
         {/* Center: Navigation (Desktop) */}
-        <div className="hidden lg:flex items-center justify-center flex-1 px-8 relative z-[60]">
-          <div
-            className="flex items-center space-x-reverse space-x-1 bg-gray-50 rounded-full px-3 py-1.5 shadow-sm border border-gray-100 relative z-[60]"
-            style={{ zIndex: 60, pointerEvents: 'auto' }}
-          >
+        <div className="hidden lg:flex items-center justify-center flex-1 px-8">
+          <div className="flex items-center space-x-reverse space-x-1 bg-gray-50 rounded-full px-3 py-1.5 shadow-sm border border-gray-100">
             {navItems.map((item) => (
               <button
                 type="button"
                 key={item.id}
                 onClick={(e) => {
-                  e.stopPropagation();
-                  scrollToSection(item.id);
+                  e.preventDefault()
+                  e.stopPropagation()
+                  scrollToSection(item.id)
                 }}
-                className={`relative px-4 py-2 text-sm font-bold rounded-full transition-all duration-200 cursor-pointer select-none whitespace-nowrap z-[70] hover:scale-105 active:scale-95 ${activeSection === item.id
+                className={`relative px-4 py-2 text-sm font-bold rounded-full transition-all duration-200 cursor-pointer select-none whitespace-nowrap hover:scale-105 active:scale-95 ${activeSection === item.id
                   ? 'bg-gradient-to-r from-palestine-green to-olive-600 text-white shadow-md'
                   : 'text-gray-700 hover:text-palestine-green hover:bg-white hover:shadow-sm'
                   }`}
@@ -150,7 +148,7 @@ const Header = () => {
         </div>
 
         {/* Left Side: Actions (Flags, Search, Mobile Menu) */}
-        <div className="flex items-center gap-3 md:gap-4 relative z-[60]">
+        <div className="flex items-center gap-3 md:gap-4">
 
           {/* Flags Container - Now Inline */}
           <div className="hidden md:flex items-center gap-2 bg-gray-50/50 rounded-full px-3 py-1.5 border border-gray-100 hover:bg-white transition-colors">
@@ -163,25 +161,25 @@ const Header = () => {
             {/* Palestine */}
             <div className="relative group cursor-pointer hover:-translate-y-1 transition-transform duration-200">
               <img src="https://flagcdn.com/w40/ps.png" alt="فلسطين" className="w-9 h-6 rounded shadow-sm object-cover border border-gray-200" />
-              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-lg">فلسطين</div>
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg">فلسطين</div>
             </div>
 
             {/* Egypt */}
             <div className="relative group cursor-pointer hover:-translate-y-1 transition-transform duration-200">
               <img src="https://flagcdn.com/w40/eg.png" alt="مصر" className="w-9 h-6 rounded shadow-sm object-cover border border-gray-200" />
-              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-lg">مصر</div>
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg">مصر</div>
             </div>
 
             {/* Jordan */}
             <div className="relative group cursor-pointer hover:-translate-y-1 transition-transform duration-200">
               <img src="https://flagcdn.com/w40/jo.png" alt="الأردن" className="w-9 h-6 rounded shadow-sm object-cover border border-gray-200" />
-              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-lg">الأردن</div>
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg">الأردن</div>
             </div>
 
             {/* KSA */}
             <div className="relative group cursor-pointer hover:-translate-y-1 transition-transform duration-200">
               <img src="https://flagcdn.com/w40/sa.png" alt="السعودية" className="w-9 h-6 rounded shadow-sm object-cover border border-gray-200" />
-              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-[100] shadow-lg">السعودية</div>
+              <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap shadow-lg">السعودية</div>
             </div>
 
           </div>
@@ -191,13 +189,12 @@ const Header = () => {
             <SearchBar />
           </div>
 
-          {/* Mobile Menu Button - High Z-Index ensuring it's always clickable */}
-          <div className="lg:hidden relative" style={{ zIndex: 90 }}>
+          {/* Mobile Menu Button */}
+          <div className="lg:hidden relative">
             <button
               onClick={() => setIsMobileMenuOpen(true)}
               className="group flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 text-black hover:text-palestine-green hover:bg-gray-100 border border-gray-200 shadow-sm transition-all duration-300 active:scale-95 touch-manipulation"
               aria-label="فتح القائمة"
-              style={{ pointerEvents: 'auto' }}
             >
               <svg className="h-7 w-7 transition-transform group-hover:rotate-180 duration-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M4 6h16M4 12h16M4 18h16" />
