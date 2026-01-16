@@ -214,8 +214,8 @@ const FounderAppreciation = () => {
                     <div className="flex flex-col md:flex-row items-center justify-between gap-4">
                         <p className="text-gray-400">© {new Date().getFullYear()} عائلة الشاعر</p>
                         <div className="flex items-center gap-4">
-                            <Link to="/family-tree/discussions" className="text-gray-400 hover:text-white transition-colors">
-                                حوارات المؤسس
+                            <Link to="/family-tree" className="text-gray-400 hover:text-white transition-colors">
+                                القائمة الرئيسية
                             </Link>
                             <span className="text-gray-600">|</span>
                             <Link to="/family-tree/tree" className="text-gray-400 hover:text-white transition-colors">

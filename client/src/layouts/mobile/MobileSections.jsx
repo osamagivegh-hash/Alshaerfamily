@@ -8,9 +8,9 @@
  * The mobile UI simply provides a different navigation entry point.
  */
 
-import React, { Suspense, lazy, useState, useEffect } from 'react';
+import React, { Suspense, lazy } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchSectionsData } from '../../utils/api';
+import { useLayout } from '../../contexts/LayoutContext';
 
 // Lazy load heavy components
 const News = lazy(() => import('../../components/News'));
@@ -31,6 +31,7 @@ const SectionLoader = () => (
 // ==================== HOME SECTION ====================
 export const MobileHomeSection = ({ data }) => {
     const navigate = useNavigate();
+    const { navigateToSection } = useLayout();
 
     // Quick action cards for home screen - matching website sections
     const quickActions = [
@@ -49,7 +50,8 @@ export const MobileHomeSection = ({ data }) => {
             description: 'اطلع على أحدث الأخبار',
             icon: '📰',
             gradient: 'from-gray-700 to-gray-900',
-            action: 'news'
+            // Navigate to news section in mobile layout
+            section: 'news'
         },
         {
             id: 'articles',
@@ -57,7 +59,7 @@ export const MobileHomeSection = ({ data }) => {
             description: 'اقرأ أحدث المقالات',
             icon: '📖',
             gradient: 'from-emerald-600 to-teal-700',
-            action: 'articles'
+            section: 'articles'
         },
         {
             id: 'gallery',
@@ -65,19 +67,17 @@ export const MobileHomeSection = ({ data }) => {
             description: 'تصفح معرض الصور',
             icon: '🖼️',
             gradient: 'from-purple-600 to-indigo-700',
-            action: 'gallery'
+            section: 'gallery'
         }
     ];
 
     const handleAction = (item) => {
         if (item.path) {
+            // External navigation to a route
             navigate(item.path);
-        } else if (item.action) {
-            // This will be handled by LayoutContext for in-app navigation
-            window.scrollTo(0, 0);
-            // For now, we navigate to the hash section
-            const sectionHash = `#${item.action}`;
-            navigate('/' + sectionHash);
+        } else if (item.section) {
+            // Internal navigation within mobile layout
+            navigateToSection(item.section);
         }
     };
 
@@ -146,13 +146,12 @@ export const MobileHomeSection = ({ data }) => {
 };
 
 // ==================== FAMILY TREE SECTION ====================
-// This section navigates to the actual FamilyTreeGateway page
-// to maintain the same navigation structure as desktop
+// This section displays the same buttons as FamilyTreeGateway
+// and navigates to the SAME routes (without "discussions" button)
 export const MobileFamilyTreeSection = () => {
     const navigate = useNavigate();
 
-    // These buttons EXACTLY match the FamilyTreeGateway buttons
-    // and navigate to the SAME routes
+    // These buttons EXACTLY match the FamilyTreeGateway buttons (without discussions)
     const gatewayButtons = [
         {
             id: 'appreciation',
@@ -161,14 +160,6 @@ export const MobileFamilyTreeSection = () => {
             icon: '🏆',
             description: 'تعرف على تاريخ مؤسس شجرة العائلة وإرثه الخالد',
             path: '/family-tree/appreciation'
-        },
-        {
-            id: 'discussions',
-            label: 'حوارات مع المؤسس',
-            color: '#CE1126',
-            icon: '💬',
-            description: 'حوارات ومناقشات مع مؤسس العائلة',
-            path: '/family-tree/discussions'
         },
         {
             id: 'tree',
@@ -203,7 +194,7 @@ export const MobileFamilyTreeSection = () => {
                 <p className="section-subtitle">استكشف شجرة عائلة الشاعر بطرق مختلفة</p>
             </div>
 
-            {/* Gateway Buttons - Same as FamilyTreeGateway */}
+            {/* Gateway Buttons - Same as FamilyTreeGateway (without discussions) */}
             <div className="tree-options-grid">
                 {gatewayButtons.map((button) => (
                     <button

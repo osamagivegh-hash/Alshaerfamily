@@ -65,14 +65,6 @@ const FamilyTreeGateway = () => {
             path: '/family-tree/appreciation'
         },
         {
-            id: 'discussions',
-            label: currentSettings.buttonLabels?.discussions || defaultSettings.buttonLabels.discussions,
-            color: currentSettings.buttonColors?.discussions || defaultSettings.buttonColors.discussions,
-            icon: '💬',
-            description: 'حوارات ومناقشات مع مؤسس العائلة',
-            path: '/family-tree/discussions'
-        },
-        {
             id: 'tree',
             label: currentSettings.buttonLabels?.tree || defaultSettings.buttonLabels.tree,
             color: currentSettings.buttonColors?.tree || defaultSettings.buttonColors.tree,
