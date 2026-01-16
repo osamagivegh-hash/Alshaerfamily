@@ -64,10 +64,14 @@ const MobileLayout = () => {
         loadData();
     }, []);
 
-    // Swipe gesture handlers
+    // Swipe gesture handlers - Production-grade implementation
+    // Prevents accidental swipes during taps, scrolls, or link clicks
     const handleTouchStart = useCallback((e) => {
+        // Reset all touch refs at start to prevent stale values
         touchStartX.current = e.touches[0].clientX;
         touchStartY.current = e.touches[0].clientY;
+        touchEndX.current = e.touches[0].clientX; // Initialize to same position
+        touchEndY.current = e.touches[0].clientY; // Initialize to same position
     }, []);
 
     const handleTouchMove = useCallback((e) => {
@@ -75,14 +79,34 @@ const MobileLayout = () => {
         touchEndY.current = e.touches[0].clientY;
     }, []);
 
-    const handleTouchEnd = useCallback(() => {
+    const handleTouchEnd = useCallback((e) => {
+        // If the touch target is a link or inside a link, do NOT process swipe
+        // This allows router navigation to work without interference
+        const target = e.target;
+        if (target.closest('a') || target.closest('button') || target.closest('[role="button"]')) {
+            // User is clicking a link/button - don't intercept
+            return;
+        }
+
         const deltaX = touchStartX.current - touchEndX.current;
         const deltaY = Math.abs(touchStartY.current - touchEndY.current);
-        const minSwipeDistance = 50;
+        const absDeltaX = Math.abs(deltaX);
 
-        // Only trigger swipe if horizontal movement is significant
-        // and greater than vertical movement (to avoid triggering on scroll)
-        if (Math.abs(deltaX) > minSwipeDistance && Math.abs(deltaX) > deltaY) {
+        // Stricter thresholds for swipe detection
+        const minSwipeDistance = 80; // Increased from 50 for more deliberate swipes
+        const maxVerticalMovement = 50; // Max vertical movement allowed
+        const swipeThresholdRatio = 2.5; // Horizontal must be 2.5x vertical movement
+
+        // Only trigger swipe if:
+        // 1. Horizontal movement exceeds minimum threshold
+        // 2. Horizontal movement is significantly greater than vertical (ratio check)
+        // 3. Vertical movement is below max threshold (not a scroll)
+        const isValidSwipe =
+            absDeltaX > minSwipeDistance &&
+            absDeltaX > deltaY * swipeThresholdRatio &&
+            deltaY < maxVerticalMovement;
+
+        if (isValidSwipe) {
             if (deltaX > 0) {
                 // Swiped left (in RTL, this goes to next)
                 navigateBySwipe('right');

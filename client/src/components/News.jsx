@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import ArticleCard from './common/ArticleCard'
 import { NEWS_CATEGORY_OPTIONS, NEWS_CATEGORY_LABELS, resolveNewsCategory } from '../constants/newsCategories'
@@ -50,6 +50,11 @@ const News = ({ data }) => {
       featured
     }
   }, [data])
+
+  // Prevent touch event interference on mobile
+  const handleLinkClick = useCallback((e) => {
+    e.stopPropagation()
+  }, [])
 
   if ((!data || data.length === 0) && groupedNews.groups.length === 0 && groupedNews.uncategorized.length === 0) {
     return (
@@ -167,6 +172,7 @@ const News = ({ data }) => {
               <div className="text-center mt-6">
                 <Link
                   to={`/news?category=${group.value}`}
+                  onClick={handleLinkClick}
                   className="inline-flex items-center gap-2 text-palestine-green hover:text-olive-700 font-medium transition-colors duration-200"
                 >
                   <span>عرض المزيد من {group.label}</span>
@@ -225,6 +231,7 @@ const News = ({ data }) => {
         <div className="text-center mt-12">
           <Link
             to="/news"
+            onClick={handleLinkClick}
             className="inline-flex items-center gap-2 bg-gradient-to-r from-palestine-red to-red-600 text-white px-8 py-3 rounded-xl font-semibold hover:from-red-600 hover:to-palestine-red transition-all duration-300 shadow-lg hover:shadow-xl"
           >
             <span>تصفح جميع الأخبار</span>

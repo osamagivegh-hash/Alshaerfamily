@@ -1,5 +1,5 @@
-import React from 'react'
-import { Link } from 'react-router-dom'
+import React, { useCallback } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
 import ImageWithFallback from './ImageWithFallback'
 import { normalizeImageUrl } from '../../utils/imageUtils'
 
@@ -22,6 +22,8 @@ const ArticleCard = ({
     linkPrefix = '/articles',
     variant = 'default', // 'default' | 'featured' | 'compact' | 'horizontal'
 }) => {
+    const navigate = useNavigate()
+
     const displaySummary = (summary || content || '')
         .replace(/\\s+/g, ' ')
         .trim()
@@ -34,11 +36,19 @@ const ArticleCard = ({
         day: 'numeric'
     }) : ''
 
+    // Prevent event bubbling and ensure clean navigation
+    // This stops parent touch handlers from interfering with link clicks
+    const handleClick = useCallback((e) => {
+        e.stopPropagation()
+        // Let the Link component handle navigation naturally
+    }, [])
+
     // Featured variant - large card
     if (variant === 'featured') {
         return (
             <Link
                 to={`${linkPrefix}/${id}`}
+                onClick={handleClick}
                 className="group block relative overflow-hidden rounded-2xl bg-white shadow-xl hover:shadow-2xl transition-all duration-500"
             >
                 {/* Image Container - Full width with gradient overlay */}
@@ -95,6 +105,7 @@ const ArticleCard = ({
         return (
             <Link
                 to={`${linkPrefix}/${id}`}
+                onClick={handleClick}
                 className="group flex flex-col md:flex-row gap-6 bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border border-gray-100"
             >
                 {/* Image - side */}
@@ -157,6 +168,7 @@ const ArticleCard = ({
         return (
             <Link
                 to={`${linkPrefix}/${id}`}
+                onClick={handleClick}
                 className="group block bg-white rounded-xl shadow-md hover:shadow-lg transition-all duration-300 overflow-hidden border border-gray-100"
             >
                 {image && (
@@ -191,6 +203,7 @@ const ArticleCard = ({
     return (
         <Link
             to={`${linkPrefix}/${id}`}
+            onClick={handleClick}
             className="group block bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 overflow-hidden border border-gray-100 hover:border-palestine-green/30"
         >
             {/* Image Container - Natural aspect ratio */}
