@@ -1,6 +1,6 @@
 /**
- * صفحة شجرة الزيتون العضوية - Nano Banana Style
- * Organic Olive Tree Page
+ * صفحة غصن الزيتون العضوي - Organic Olive Branch Page
+ * كل ورقة تمثل فرداً من العائلة
  */
 
 import React, { useState, useEffect } from 'react';
@@ -112,7 +112,7 @@ const OrganicOliveTreePage = () => {
                     </span>
                 </div>
                 <div className="text-sm bg-white/20 px-3 py-1 rounded-full hidden sm:block">
-                    شجرة الزيتون العضوية
+                    غصن الزيتون العضوي
                 </div>
             </div>
 

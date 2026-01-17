@@ -1,6 +1,6 @@
 /**
- * شجرة العائلة - إصدار "شجرة الزيتون العضوية" - دائري كامل 360 درجة
- * Organic Olive Tree - Full 360 Radial Layout
+ * شجرة العائلة - إصدار "غصن الزيتون العضوي" - دائري كامل 360 درجة
+ * Organic Olive Branch - Full 360 Radial Layout
  */
 
 import React, { useRef, useEffect, useState, useMemo } from 'react';
@@ -174,7 +174,7 @@ const OrganicOliveTree = ({ data, onNodeClick, className = '', style = {} }) => 
                 .text(root.data.fullName || "محمد الشاعر");
 
             // =========================================================
-            // DRAW LEAVES (NODES) - Dynamic Sizing
+            // DRAW LEAVES (NODES) - Enhanced for Parents & Children
             // =========================================================
 
             // Calculate siblings count for each node to determine leaf size
@@ -183,14 +183,29 @@ const OrganicOliveTree = ({ data, onNodeClick, className = '', style = {} }) => 
                 return node.parent.children?.length || 1;
             };
 
+            // Check if node is a main patriarch (depth 1 or 2 with children)
+            const isMainPatriarch = (node) => {
+                return (node.depth <= 2 && node.children && node.children.length > 0);
+            };
+
+            // Get different colors for different levels
+            const getNodeColor = (node) => {
+                if (node.depth === 1) {
+                    return { fill: '#8B4513', stroke: '#5D3A1A', textColor: '#FFD700' }; // Brown/Gold for main branches
+                } else if (node.depth === 2 && node.children && node.children.length > 0) {
+                    return { fill: '#2E7D32', stroke: '#1B5E20', textColor: '#FFFFFF' }; // Darker green for sub-branches
+                }
+                return { fill: COLORS.leafFill, stroke: COLORS.leafStroke, textColor: 'white' };
+            };
+
             const nodes = g.selectAll('.node')
                 .data(root.descendants().slice(1)) // Skip root
                 .enter()
                 .append('g')
-                .attr('class', 'node')
+                .attr('class', d => `node ${isMainPatriarch(d) ? 'patriarch' : 'regular'}`)
                 .attr('transform', d => {
                     const r = d.y;
-                    const a = d.x - Math.PI / 2; // subtract PI/2 to align with standard d3 radial layout (0 is up)
+                    const a = d.x - Math.PI / 2;
                     const x = r * Math.cos(a);
                     const y = r * Math.sin(a);
                     return `translate(${cx + x}, ${cy + y})`;
@@ -202,60 +217,94 @@ const OrganicOliveTree = ({ data, onNodeClick, className = '', style = {} }) => 
                     if (onNodeClick) onNodeClick(d.data);
                 });
 
-            // Dynamic Leaf Graphics - smaller leaves for crowded areas
+            // Dynamic Leaf Graphics - ENHANCED for patriarch visibility
             const baseLeafW = 55;
             const baseLeafH = 24;
             const minLeafW = 35;
             const minLeafH = 16;
 
+            // Patriarch (depth 1-2 with children) sizes
+            const patriarchLeafW = 75;
+            const patriarchLeafH = 35;
+
             nodes.append('ellipse')
                 .attr('rx', d => {
+                    // Patriots are larger
+                    if (isMainPatriarch(d)) {
+                        return d.depth === 1 ? patriarchLeafW / 2 : (patriarchLeafW / 2) * 0.85;
+                    }
+                    // Regular nodes
                     const siblings = getSiblingCount(d);
-                    // Reduce size based on sibling count
                     const scaleFactor = Math.max(0.6, 1 - (siblings - 1) * 0.05);
                     return Math.max(minLeafW / 2, (baseLeafW / 2) * scaleFactor);
                 })
                 .attr('ry', d => {
+                    if (isMainPatriarch(d)) {
+                        return d.depth === 1 ? patriarchLeafH / 2 : (patriarchLeafH / 2) * 0.85;
+                    }
                     const siblings = getSiblingCount(d);
                     const scaleFactor = Math.max(0.6, 1 - (siblings - 1) * 0.05);
                     return Math.max(minLeafH / 2, (baseLeafH / 2) * scaleFactor);
                 })
-                .attr('fill', COLORS.leafFill)
-                .attr('stroke', COLORS.leafStroke)
-                .attr('stroke-width', 1.5)
+                .attr('fill', d => getNodeColor(d).fill)
+                .attr('stroke', d => getNodeColor(d).stroke)
+                .attr('stroke-width', d => isMainPatriarch(d) ? 3 : 1.5)
                 .attr('transform', d => {
-                    // Rotate leaf to align with radius
                     const angleDeg = (d.x * 180 / Math.PI) - 90;
                     return `rotate(${angleDeg})`;
                 })
-                .on('mouseover', function () {
-                    d3.select(this).attr('fill', '#4CAF50').attr('stroke', COLORS.gold);
+                .style('filter', d => isMainPatriarch(d) ? 'drop-shadow(0px 2px 4px rgba(0,0,0,0.3))' : 'none')
+                .on('mouseover', function (e, d) {
+                    if (isMainPatriarch(d)) {
+                        d3.select(this).attr('fill', '#A0522D').attr('stroke', COLORS.gold);
+                    } else {
+                        d3.select(this).attr('fill', '#4CAF50').attr('stroke', COLORS.gold);
+                    }
                 })
-                .on('mouseout', function () {
-                    d3.select(this).attr('fill', COLORS.leafFill).attr('stroke', COLORS.leafStroke);
+                .on('mouseout', function (e, d) {
+                    const colors = getNodeColor(d);
+                    d3.select(this).attr('fill', colors.fill).attr('stroke', colors.stroke);
                 });
 
-            // Leaf Labels - Dynamic font size
+            // Draw small connecting dots for patriarchs to show they have children
+            nodes.filter(d => isMainPatriarch(d))
+                .append('circle')
+                .attr('r', 4)
+                .attr('fill', COLORS.gold)
+                .attr('cx', d => {
+                    const angleDeg = (d.x * 180 / Math.PI) - 90;
+                    const rad = angleDeg * Math.PI / 180;
+                    return Math.cos(rad) * (patriarchLeafW / 2 + 8);
+                })
+                .attr('cy', d => {
+                    const angleDeg = (d.x * 180 / Math.PI) - 90;
+                    const rad = angleDeg * Math.PI / 180;
+                    return Math.sin(rad) * (patriarchLeafW / 2 + 8);
+                })
+                .style('filter', 'drop-shadow(0px 0px 3px rgba(255,215,0,0.8))');
+
+            // Leaf Labels - Dynamic font size with emphasis on patriarchs
             nodes.append('text')
                 .attr('dy', '0.35em')
                 .attr('text-anchor', 'middle')
                 .attr('font-family', "'Cairo', sans-serif")
                 .attr('font-size', d => {
+                    if (isMainPatriarch(d)) {
+                        return d.depth === 1 ? '13px' : '11px';
+                    }
                     const siblings = getSiblingCount(d);
-                    // Smaller font for crowded areas
                     const baseSize = 10;
                     const minSize = 7;
                     const scaleFactor = Math.max(0.7, 1 - (siblings - 1) * 0.03);
                     return `${Math.max(minSize, baseSize * scaleFactor)}px`;
                 })
-                .attr('font-weight', '600')
-                .attr('fill', 'white')
+                .attr('font-weight', d => isMainPatriarch(d) ? '800' : '600')
+                .attr('fill', d => getNodeColor(d).textColor)
                 .text(d => d.data.fullName ? d.data.fullName.split(' ')[0] : '')
                 .attr('transform', d => {
                     let angleDeg = (d.x * 180 / Math.PI) - 90;
 
                     // SMART ROTATION 360:
-                    // If angle is between 90 and 270 (Left Side), flip text 180.
                     let normalizedAngle = angleDeg % 360;
                     if (normalizedAngle < 0) normalizedAngle += 360;
 
