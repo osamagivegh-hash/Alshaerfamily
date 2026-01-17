@@ -75,7 +75,7 @@ const FamilyTreeGateway = () => {
             label: 'غصن الزيتون',
             color: '#1B5E20',
             icon: '🫒',
-            description: 'غصن زيتون عضوي - كل ورقة تمثل فرداً من العائلة',
+            description: 'كل ورقة تمثل فرداً من العائلة',
             path: '/family-tree/organic-olive'
         },
         {

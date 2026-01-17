@@ -34,14 +34,13 @@ export const MobileHomeSection = ({ data }) => {
     const { navigateToSection } = useLayout();
 
     // Quick action cards for home screen - matching website sections
-    // Using tree-option-card style (rectangular, elegant buttons)
     const quickActions = [
         {
             id: 'family-tree',
             label: 'شجرة العائلة',
             description: 'استكشف شجرة عائلة الشاعر',
             icon: '🌳',
-            color: '#007A3D',
+            gradient: 'from-green-600 to-green-800',
             // Navigate to the actual family tree gateway page
             path: '/family-tree'
         },
@@ -50,7 +49,7 @@ export const MobileHomeSection = ({ data }) => {
             label: 'آخر الأخبار',
             description: 'اطلع على أحدث الأخبار',
             icon: '📰',
-            color: '#374151',
+            gradient: 'from-gray-700 to-gray-900',
             // Navigate to news section in mobile layout
             section: 'news'
         },
@@ -59,7 +58,7 @@ export const MobileHomeSection = ({ data }) => {
             label: 'المقالات',
             description: 'اقرأ أحدث المقالات',
             icon: '📖',
-            color: '#0d9488',
+            gradient: 'from-emerald-600 to-teal-700',
             section: 'articles'
         },
         {
@@ -67,7 +66,7 @@ export const MobileHomeSection = ({ data }) => {
             label: 'معرض الصور',
             description: 'تصفح معرض الصور',
             icon: '🖼️',
-            color: '#7c3aed',
+            gradient: 'from-purple-600 to-indigo-700',
             section: 'gallery'
         }
     ];
@@ -83,69 +82,62 @@ export const MobileHomeSection = ({ data }) => {
     };
 
     return (
-        <div className="mobile-section mobile-home-section" style={{ gap: '12px', padding: '12px' }}>
-            {/* Compact Hero Welcome */}
-            <div className="mobile-hero" style={{ padding: '16px', marginBottom: '4px' }}>
+        <div className="mobile-section mobile-home-section">
+            {/* Hero Welcome */}
+            <div className="mobile-hero">
                 <div className="mobile-hero-content">
-                    <h1 className="mobile-hero-title" style={{ fontSize: '1.25rem', marginBottom: '4px' }}>
+                    <h1 className="mobile-hero-title">
                         أهلاً بكم في موقع
                         <br />
                         <span className="highlight">عائلة الشاعر</span>
                     </h1>
-                    <p className="mobile-hero-subtitle" style={{ fontSize: '0.75rem' }}>
+                    <p className="mobile-hero-subtitle">
                         المنصة الرقمية لشجرة عائلة الشاعر الإلكترونية
                     </p>
                 </div>
 
                 {/* Decorative olive tree */}
-                <div className="mobile-hero-decoration" style={{ fontSize: '3rem' }}>
+                <div className="mobile-hero-decoration">
                     <div className="olive-tree-simple">🫒</div>
                 </div>
             </div>
 
-            {/* Quick Actions - Rectangular Cards (Same as tree-option-card style) */}
-            <div className="tree-options-grid" style={{ gap: '10px' }}>
-                {quickActions.map((action) => (
-                    <button
-                        key={action.id}
-                        className="tree-option-card"
-                        style={{
-                            backgroundColor: action.color,
-                            padding: '14px 18px',
-                            minHeight: '60px'
-                        }}
-                        onClick={() => handleAction(action)}
-                    >
-                        <span className="option-icon" style={{ fontSize: '1.5rem' }}>{action.icon}</span>
-                        <div className="option-content">
-                            <span className="option-label">{action.label}</span>
-                            <span className="option-desc" style={{ fontSize: '0.7rem' }}>{action.description}</span>
-                        </div>
-                        <svg className="option-arrow" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                            <polyline points="15 18 9 12 15 6" />
-                        </svg>
-                    </button>
-                ))}
+            {/* Quick Actions Grid */}
+            <div className="mobile-quick-actions">
+                <h2 className="quick-actions-title">الوصول السريع</h2>
+                <div className="quick-actions-grid">
+                    {quickActions.map((action) => (
+                        <button
+                            key={action.id}
+                            className={`quick-action-card bg-gradient-to-br ${action.gradient}`}
+                            onClick={() => handleAction(action)}
+                        >
+                            <span className="quick-action-icon">{action.icon}</span>
+                            <span className="quick-action-label">{action.label}</span>
+                            <span className="quick-action-desc">{action.description}</span>
+                        </button>
+                    ))}
+                </div>
             </div>
 
-            {/* Country Flags - More Compact */}
-            <div className="mobile-flags-section" style={{ padding: '12px', marginTop: '4px' }}>
+            {/* Country Flags */}
+            <div className="mobile-flags-section">
                 <div className="flags-row">
                     <div className="flag-item">
-                        <img src="https://flagcdn.com/w40/ps.png" alt="فلسطين" style={{ width: '32px', height: '22px' }} />
-                        <span style={{ fontSize: '0.6rem' }}>فلسطين</span>
+                        <img src="https://flagcdn.com/w40/ps.png" alt="فلسطين" />
+                        <span>فلسطين</span>
                     </div>
                     <div className="flag-item">
-                        <img src="https://flagcdn.com/w40/eg.png" alt="مصر" style={{ width: '32px', height: '22px' }} />
-                        <span style={{ fontSize: '0.6rem' }}>مصر</span>
+                        <img src="https://flagcdn.com/w40/eg.png" alt="مصر" />
+                        <span>مصر</span>
                     </div>
                     <div className="flag-item">
-                        <img src="https://flagcdn.com/w40/jo.png" alt="الأردن" style={{ width: '32px', height: '22px' }} />
-                        <span style={{ fontSize: '0.6rem' }}>الأردن</span>
+                        <img src="https://flagcdn.com/w40/jo.png" alt="الأردن" />
+                        <span>الأردن</span>
                     </div>
                     <div className="flag-item">
-                        <img src="https://flagcdn.com/w40/sa.png" alt="السعودية" style={{ width: '32px', height: '22px' }} />
-                        <span style={{ fontSize: '0.6rem' }}>السعودية</span>
+                        <img src="https://flagcdn.com/w40/sa.png" alt="السعودية" />
+                        <span>السعودية</span>
                     </div>
                 </div>
             </div>
@@ -182,7 +174,7 @@ export const MobileFamilyTreeSection = () => {
             label: 'غصن الزيتون',
             color: '#1B5E20',
             icon: '🫒',
-            description: 'غصن زيتون عضوي - كل ورقة تمثل فرداً من العائلة',
+            description: 'كل ورقة تمثل فرداً من العائلة',
             path: '/family-tree/organic-olive'
         },
         {
