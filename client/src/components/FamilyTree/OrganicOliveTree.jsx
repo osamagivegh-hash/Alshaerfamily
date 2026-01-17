@@ -75,17 +75,57 @@ const OrganicOliveTree = ({ data, onNodeClick, className = '', style = {} }) => 
             svg.call(zoom);
 
             // =========================================================
-            // ALGORITHM: Weighted Radial Cluster (360 Degrees)
+            // ALGORITHM: Weighted Radial Tree (360 Degrees) - Anti-Overlap
             // =========================================================
 
-            const cluster = d3.cluster()
+            // Calculate the maximum depth and total leaves for better spacing
+            const maxDepth = root.height;
+            const totalLeaves = root.leaves().length;
+
+            // Calculate dynamic spacing based on tree complexity
+            // More leaves = need more angle separation
+            const baseAnglePadding = Math.max(0.02, 0.1 / Math.sqrt(totalLeaves));
+
+            // Use d3.tree() instead of d3.cluster() for better distribution
+            // tree() spaces nodes based on their subtree size
+            const tree = d3.tree()
                 .size([2 * Math.PI, radius]) // 360 degrees
                 .separation((a, b) => {
-                    // Expanded separation
-                    return (a.parent === b.parent ? 1 : 3) / a.depth;
+                    // Dynamic separation based on:
+                    // 1. Sibling vs non-sibling
+                    // 2. Depth level
+                    // 3. Number of descendants (weight)
+                    const sameSibling = a.parent === b.parent;
+                    const aWeight = (a.value || 1) + (a.children?.length || 0);
+                    const bWeight = (b.value || 1) + (b.children?.length || 0);
+                    const avgWeight = (aWeight + bWeight) / 2;
+
+                    // Base separation
+                    let sep = sameSibling ? 1.5 : 4;
+
+                    // Add weight-based padding for nodes with many children
+                    sep += Math.log2(avgWeight + 1) * 0.3;
+
+                    // Reduce separation at deeper levels to avoid too much spread
+                    // but keep minimum for readability
+                    const depthFactor = Math.max(0.5, 1.2 - (a.depth * 0.1));
+                    sep *= depthFactor;
+
+                    return sep;
                 });
 
-            cluster(root);
+            tree(root);
+
+            // =========================================================
+            // POST-PROCESS: Adjust radial distances for better spacing
+            // =========================================================
+
+            // Add padding between generations
+            const depthPadding = radius / (maxDepth + 1) * 0.3;
+            root.each(node => {
+                // Increase radius for each depth level with padding
+                node.y = (node.depth / maxDepth) * radius + (node.depth * depthPadding);
+            });
 
             // =========================================================
             // DRAW LINKS (BRANCHES)
@@ -102,9 +142,9 @@ const OrganicOliveTree = ({ data, onNodeClick, className = '', style = {} }) => 
                 .attr('class', 'link')
                 .attr('fill', 'none')
                 .attr('stroke', COLORS.branch)
-                // Stronger branches
-                .attr('stroke-width', d => Math.max(1, 12 - d.target.depth * 2))
-                .attr('stroke-opacity', 0.8)
+                // Thinner branches to avoid overlap
+                .attr('stroke-width', d => Math.max(1, 8 - d.target.depth * 1.5))
+                .attr('stroke-opacity', 0.7)
                 .attr('stroke-linecap', 'round')
                 .attr('d', linkGenerator)
                 .attr('transform', `translate(${cx},${cy})`);
@@ -131,16 +171,17 @@ const OrganicOliveTree = ({ data, onNodeClick, className = '', style = {} }) => 
                 .attr('font-weight', '800')
                 .attr('fill', COLORS.gold)
                 .attr('font-size', '14px')
-                .text(root.data.fullName || "محمد الشاعر")
-                // Split text if needed, or keep simple
-                .call(text => {
-                    // Simple wrap logic could go here if name is long, 
-                    // but "محمد الشاعر" fits well.
-                });
+                .text(root.data.fullName || "محمد الشاعر");
 
             // =========================================================
-            // DRAW LEAVES (NODES)
+            // DRAW LEAVES (NODES) - Dynamic Sizing
             // =========================================================
+
+            // Calculate siblings count for each node to determine leaf size
+            const getSiblingCount = (node) => {
+                if (!node.parent) return 1;
+                return node.parent.children?.length || 1;
+            };
 
             const nodes = g.selectAll('.node')
                 .data(root.descendants().slice(1)) // Skip root
@@ -161,19 +202,29 @@ const OrganicOliveTree = ({ data, onNodeClick, className = '', style = {} }) => 
                     if (onNodeClick) onNodeClick(d.data);
                 });
 
-            // Leaf Graphics
-            const leafW = 60;
-            const leafH = 28;
+            // Dynamic Leaf Graphics - smaller leaves for crowded areas
+            const baseLeafW = 55;
+            const baseLeafH = 24;
+            const minLeafW = 35;
+            const minLeafH = 16;
 
             nodes.append('ellipse')
-                .attr('rx', leafW / 2)
-                .attr('ry', leafH / 2)
+                .attr('rx', d => {
+                    const siblings = getSiblingCount(d);
+                    // Reduce size based on sibling count
+                    const scaleFactor = Math.max(0.6, 1 - (siblings - 1) * 0.05);
+                    return Math.max(minLeafW / 2, (baseLeafW / 2) * scaleFactor);
+                })
+                .attr('ry', d => {
+                    const siblings = getSiblingCount(d);
+                    const scaleFactor = Math.max(0.6, 1 - (siblings - 1) * 0.05);
+                    return Math.max(minLeafH / 2, (baseLeafH / 2) * scaleFactor);
+                })
                 .attr('fill', COLORS.leafFill)
                 .attr('stroke', COLORS.leafStroke)
                 .attr('stroke-width', 1.5)
                 .attr('transform', d => {
                     // Rotate leaf to align with radius
-                    // d.x is angle.
                     const angleDeg = (d.x * 180 / Math.PI) - 90;
                     return `rotate(${angleDeg})`;
                 })
@@ -184,12 +235,19 @@ const OrganicOliveTree = ({ data, onNodeClick, className = '', style = {} }) => 
                     d3.select(this).attr('fill', COLORS.leafFill).attr('stroke', COLORS.leafStroke);
                 });
 
-            // Leaf Labels
+            // Leaf Labels - Dynamic font size
             nodes.append('text')
                 .attr('dy', '0.35em')
                 .attr('text-anchor', 'middle')
                 .attr('font-family', "'Cairo', sans-serif")
-                .attr('font-size', '11px')
+                .attr('font-size', d => {
+                    const siblings = getSiblingCount(d);
+                    // Smaller font for crowded areas
+                    const baseSize = 10;
+                    const minSize = 7;
+                    const scaleFactor = Math.max(0.7, 1 - (siblings - 1) * 0.03);
+                    return `${Math.max(minSize, baseSize * scaleFactor)}px`;
+                })
                 .attr('font-weight', '600')
                 .attr('fill', 'white')
                 .text(d => d.data.fullName ? d.data.fullName.split(' ')[0] : '')
@@ -198,7 +256,6 @@ const OrganicOliveTree = ({ data, onNodeClick, className = '', style = {} }) => 
 
                     // SMART ROTATION 360:
                     // If angle is between 90 and 270 (Left Side), flip text 180.
-                    // Normalize angle to 0-360 first
                     let normalizedAngle = angleDeg % 360;
                     if (normalizedAngle < 0) normalizedAngle += 360;
 
